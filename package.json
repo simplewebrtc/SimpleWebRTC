@@ -1,0 +1,21 @@
+{
+  "name": "webrtc.js",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git", 
+    "url": "git@github.com:henrikjoreteg/webrtc.js.git"
+  },
+  "description": "World's easiest webrtc",
+  "dependencies": {
+    "wildemitter": "",
+    "clientmodules": ">=0.0.3",
+    "getconfig": "",
+    "engine.io-client": "",
+    "yetify": "0.0.1",
+    "browserbuild": ""
+  },
+  "clientmodules": ["wildemitter"],
+  "scripts": {
+    "postinstall": "node node_modules/clientmodules/install.js"
+  }
+}

@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Webrtc.js Demo</title>
+    </head>
+    <body>
+        <video id="localVideo" style="border: 1px solid black; height: 100px; width: 150px"></video>
+        <div id="remotes"></div>
+        <p>Someone can call you by clicking here: <a id="link" href=""></a></p>
+        <script src="http://localhost:8888/socket.io/socket.io.js"></script>
+        <script src="webrtc.js"></script>
+        <script>
+            // get our link element (we'll put our connection ID in there)
+            var link = document.getElementById('link'),
+                userWeWantToCall = location.search && location.search.split('?')[1];
+
+            // create our webrtc connection
+            var connection = new WebRTC();
+
+            // if wewhen it's ready call if we've got an id in our URL
+            connection.on('ready', function (sessionId) {
+                // here we just create a link that can be used to call you
+                var url = '?' + sessionId;
+                link.href = url;
+                link.innerHTML = url;
+
+                // if we've got an id in the url, start the call
+                if (userWeWantToCall) {
+                    //connection.startVideoCall(userWeWantToCall);
+                }
+            });
+
+            connection.startLocalVideo();
+        </script>
+    </body>
+</html>

@@ -113,10 +113,13 @@ function WebRTC() {
     // where we'll store our peer connections
     this.pcs = {};
 
-    var connection = this.connection = io.connect('http://localhost:8888');
+    //var connection = this.connection = io.connect('http://localhost:8888');
+    var connection = this.connection = io.connect('http://tool.andyet.net:8888');
 
     connection.on('connect', function () {
         self.emit('ready', connection.socket.sessionid);
+        self.sessionReady = true;
+        self.testReadiness();
     });
 
     connection.on('message', function (message) {
@@ -234,11 +237,18 @@ WebRTC.prototype.handleIncomingIceCandidate = function (candidate, moreToFollow)
     this.pc.processIceMessage(candidate);
 };
 
-WebRTC.prototype.startLocalVideo = function () {
+WebRTC.prototype.testReadiness = function () {
+    if (this.localStream && this.sessionReady) {
+        this.emit('readyToCall', this.connection.socket.sessionid);
+    }
+};
+
+WebRTC.prototype.startLocalVideo = function (element) {
     var self = this;
     WebRTC.getUserMedia({audio: true, video: true}, function (stream) {
-        WebRTC.attachMediaStream(self.getLocalVideoContainer(), stream);
+        WebRTC.attachMediaStream(element || self.getLocalVideoContainer(), stream);
         self.localStream = stream;
+        self.testReadiness();
     }, function () {
         console.log('error');
     });

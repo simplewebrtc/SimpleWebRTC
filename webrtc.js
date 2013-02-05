@@ -113,8 +113,8 @@ function WebRTC() {
     // where we'll store our peer connections
     this.pcs = {};
 
-    var connection = this.connection = io.connect('http://localhost:8888');
-    //var connection = this.connection = io.connect('http://tool.andyet.net:8888');
+    //var connection = this.connection = io.connect('http://localhost:8888');
+    var connection = this.connection = io.connect('http://tool.andyet.net:8888');
 
     connection.on('connect', function () {
         self.emit('ready', connection.socket.sessionid);

@@ -113,8 +113,8 @@ function WebRTC() {
     // where we'll store our peer connections
     this.pcs = {};
 
-    //var connection = this.connection = io.connect('http://localhost:8888');
-    var connection = this.connection = io.connect('http://tool.andyet.net:8888');
+    var connection = this.connection = io.connect('http://localhost:8888');
+    //var connection = this.connection = io.connect('http://tool.andyet.net:8888');
 
     connection.on('connect', function () {
         self.emit('ready', connection.socket.sessionid);
@@ -123,7 +123,6 @@ function WebRTC() {
     });
 
     connection.on('message', function (message) {
-        console.log("GOT A MESSAGE", message);
         var existing = self.pcs[message.from];
         if (existing) {
             existing.handleMessage(message);
@@ -139,6 +138,17 @@ function WebRTC() {
         }
     });
 
+    connection.on('joined', function (room) {
+        console.log('got a joined', room);
+        if (!self.pcs[room.id]) {
+            self.startVideoCall(room.id);
+        }
+    });
+    connection.on('left', function (room) {
+        var conv = self.pcs[room.id];
+        if (conv) conv.handleStreamRemoved();
+    });
+
     this.config = {
         localVideoId: 'localVideo',
         remoteVideoId: 'remoteVideo'
@@ -147,7 +157,11 @@ function WebRTC() {
     WildEmitter.call(this);
 }
 
-WebRTC.prototype = new WildEmitter;
+WebRTC.prototype = Object.create(WildEmitter.prototype, {
+    constructor: {
+        value: WebRTC
+    }
+});
 
 // Thankfully borrowed from Google's examples
 WebRTC.normalizeEnvironment = function () {
@@ -231,6 +245,22 @@ WebRTC.prototype.startVideoCall = function (id) {
     this.pcs[id].start();
 };
 
+WebRTC.prototype.createRoom = function (name, cb) {
+    if (arguments.length === 2) {
+        this.connection.emit('create', name, cb);
+    } else {
+        this.connection.emit('create', name);
+    }
+};
+
+WebRTC.prototype.joinRoom = function (name) {
+    this.connection.emit('join', name);
+};
+
+WebRTC.prototype.leaveRoom = function (name) {
+    this.connection.emit('leave', name);
+};
+
 WebRTC.prototype.handleIncomingIceCandidate = function (candidate, moreToFollow) {
     console.log('received candidate');
     var candidate = new IceCandidate(payload.label, payload.candidate);
@@ -270,7 +300,8 @@ function Conversation(options) {
     this.pc = new WebRTC.RTCPeerConnection({iceServers: [{url: "stun:stun.l.google.com:19302"}]}, {"optional": []});
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
     this.pc.addStream(this.parent.localStream);
-    this.pc.onaddstream = this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
+    this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
+    this.pc.onremovestream = this.handleStreamRemoved.bind(this);
     // for re-use
     this.mediaConstraints = {
         'mandatory': {
@@ -333,8 +364,9 @@ Conversation.prototype.answer = function () {
     }, null, this.mediaConstraints);
 };
 
-function addVideoTag() {
+function addVideoTag(id) {
     var el = document.createElement('video');
+    el.id = id;
     el.style.border = "1px solid black";
     el.style.height = "150px";
     el.style.width = "200px";
@@ -344,5 +376,12 @@ function addVideoTag() {
 
 Conversation.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream;
-    WebRTC.attachMediaStream(addVideoTag(), stream);
+    WebRTC.attachMediaStream(addVideoTag(this.id), stream);
+};
+
+Conversation.prototype.handleStreamRemoved = function () {
+    console.log("HANDLE STREAM REMOVED!", this.id, document.getElementById(id));
+    var id = this.id,
+        el = document.getElementById(id);
+    if (el) el.parentElement.removeChild(el);
 };

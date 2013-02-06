@@ -22,10 +22,7 @@
 
 
             // create our webrtc connection
-            var webrtc = new WebRTC({
-                log: true,
-                url: 'http://localhost:8888'
-            });
+            var webrtc = new WebRTC();
 
             // if wewhen it's ready call if we've got an id in our URL
             webrtc.on('readyToCall', function (sessionId) {

@@ -115,7 +115,9 @@ function WebRTC(opts) {
         config = this.config = {
             url: 'http://tool.andyet.net:8888',
             log: false,
-            localVideoId: 'localVideo'
+            localVideoEl: '',
+            remoteVideosEl: '',
+            autoRequestMedia: false
         },
         item,
         connection;
@@ -177,6 +179,9 @@ function WebRTC(opts) {
     this.on('*', function (event, val1, val2) {
         logger.log('event:', event, val1, val2);
     });
+
+    // auto request if configured
+    if (this.config.autoRequestMedia) this.startLocalVideo();
 }
 
 WebRTC.prototype = Object.create(WildEmitter.prototype, {
@@ -237,18 +242,30 @@ WebRTC.normalizeEnvironment = function () {
     }
 }();
 
-WebRTC.prototype.getLocalVideoContainer = function () {
-    var found;
-
-    if (this.localVideoContainer) return this.localVideoContainer;
-
-    if (this.config.localVideoId) {
-        found = document.getElementById(this.config.localVideoId);
-        if (found) {
-            this.localVideoContainer = found;
-        }
-        return found;
+WebRTC.prototype.getEl = function (idOrEl) {
+    if (typeof idOrEl == 'string') {
+        return document.getElementById(idOrEl);
+    } else {
+        return idOrEl;
     }
+};
+
+// this accepts either element ID or element
+// and either the video tag itself or a container
+// that will be used to put the video tag into.
+WebRTC.prototype.getLocalVideoContainer = function () {
+    var el = this.getEl(this.config.localVideoEl);
+    if (el && el.tagName === 'VIDEO') {
+        return el;
+    } else {
+        var video = document.createElement('video');
+        el.appendChild(video);
+        return video;
+    }
+};
+
+WebRTC.prototype.getRemoteVideoContainer = function () {
+    return this.getEl(this.config.remoteVideosEl);
 };
 
 WebRTC.prototype.startVideoCall = function (id) {
@@ -394,14 +411,19 @@ Conversation.prototype.answer = function () {
 
 Conversation.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream,
-        el = document.createElement('video');
+        el = document.createElement('video'),
+        container = this.parent.getRemoteVideoContainer();
     el.id = this.id;
     WebRTC.attachMediaStream(el, stream);
+    if (container) container.appendChild(el);
     this.emit('videoAdded', el);
 };
 
 Conversation.prototype.handleStreamRemoved = function () {
-    this.emit('videoRemoved', document.getElementById(this.id));
+    var video = document.getElementById(this.id),
+        container = this.parent.getRemoteVideoContainer();
+    if (video && container) container.removeChild(video);
+    this.emit('videoRemoved', video);
 };
 
 // expose WebRTC

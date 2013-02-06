@@ -1,65 +1,44 @@
 # webrtc.js - World's easiest webrtc lib
 
-## Simplest WebRTC ever
-
-Starting a video call:
-
-```js
-// create our webrtc connection
-var connection = new WebRTC();
-
-connection.on('ready', function () {
-    connection.startVideoCall("userWeWantToCall");
-});
-```
-
-If we use all the defaults you don't have to do anything other than create a connection
-
-```js
-// create our webrtc connection
-var connection = new WebRTC();
-
-connection.on('ready', function () {
-    console.log('You can now be called at this ID: ' + connection.id); 
-});
-```
+Check out the demo: http://conversat.io
 
 
-## A complete working example
+## It's so easy:
 
-Open [this] and then send the generated link to a friend by chat or something.
+### 1. Some basic html
 
 ```html
+<!DOCTYPE html>
 <html>
     <head>
-        <title>Webrtc.js Demo</title>
+        <script src="http://conversat.io/latest.min.js"></script> 
     </head>
     <body>
-        <video id="localVideo" style="height: 300px; width: 400px">
-        <video id="remoteVideo" style="height: 300px; width: 400px">
-        <p>Someone can call you by clicking here: <a id="link" href=""></a></p>
-        <script src="webrtc.js"></script>
-        <script>
-            // get our link element (we'll put our connection ID in there)
-            var link = document.getElementById('link'),
-                userWeWantToCall = location.search && location.search.split('?')[1];
-
-            // create our webrtc connection
-            var connection = new WebRTC();
-
-            // if wewhen it's ready call if we've got an id in our URL
-            connection.on('ready', function () {
-                // here we just create a link that can be used to call you
-                var url = '?' + connection.id;
-                link.href = url;
-                link.innerHTML = url;
-
-                // if we've got an id in the url, start the call
-                if (userWeWantToCall) {
-                    connection.startVideoCall(userWeWantToCall);
-                }
-            });
-        </script>
+        <div id="localVideo"></div>
+        <div id="remotesVideos"></div>
     </body>
 </html>
+
+```
+
+### 1. Create our WebRTC object
+
+```js
+var webrtc = new WebRTC({
+    // the id/element of element that will hold "our" video
+    localVideoEl: 'localVideo',
+    // the id/element of the element
+    remoteVideosEl: 'remotesVideos',
+    autoRequestMedia: true
+});
+```
+
+### 2. Tell it to join a room when ready
+
+```js
+// we have to wait until it's ready
+webrtc.on('readyToCall', function () {
+    // you can name it anything
+    webrtc.joinRoom('your awesome room name');
+});
 ```

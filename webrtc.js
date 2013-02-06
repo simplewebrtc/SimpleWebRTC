@@ -6,6 +6,98 @@ var logger = {
     error: function (){}
 };
 
+// normalize environment
+var RTCPeerConnection = null;
+var getUserMedia = null;
+var attachMediaStream = null;
+var reattachMediaStream = null;
+var webrtcDetectedBrowser = null;
+var webRTCSupport = true;
+
+if (navigator.mozGetUserMedia) {
+    logger.log("This appears to be Firefox");
+
+    webrtcDetectedBrowser = "firefox";
+
+    // The RTCPeerConnection object.
+    RTCPeerConnection = mozRTCPeerConnection;
+
+    // The RTCSessionDescription object.
+    RTCSessionDescription = mozRTCSessionDescription;
+
+    // The RTCIceCandidate object.
+    RTCIceCandidate = mozRTCIceCandidate;
+
+    // Get UserMedia (only difference is the prefix).
+    // Code from Adam Barth.
+    getUserMedia = navigator.mozGetUserMedia.bind(navigator);
+
+    // Attach a media stream to an element.
+    attachMediaStream = function(element, stream) {
+        element.mozSrcObject = stream;
+        element.play();
+    };
+
+    reattachMediaStream = function(to, from) {
+        to.mozSrcObject = from.mozSrcObject;
+        to.play();
+    };
+
+    // Fake get{Video,Audio}Tracks
+    MediaStream.prototype.getVideoTracks = function() {
+        return [];
+    };
+
+    MediaStream.prototype.getAudioTracks = function() {
+        return [];
+    };
+} else if (navigator.webkitGetUserMedia) {
+    webrtcDetectedBrowser = "chrome";
+
+    // The RTCPeerConnection object.
+    RTCPeerConnection = webkitRTCPeerConnection;
+
+    // Get UserMedia (only difference is the prefix).
+    // Code from Adam Barth.
+    getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
+
+    // Attach a media stream to an element.
+    attachMediaStream = function(element, stream) {
+        element.autoplay = true;
+        element.src = webkitURL.createObjectURL(stream);
+    };
+
+    reattachMediaStream = function(to, from) {
+        to.src = from.src;
+    };
+
+    // The representation of tracks in a stream is changed in M26.
+    // Unify them for earlier Chrome versions in the coexisting period.
+    if (!webkitMediaStream.prototype.getVideoTracks) {
+        webkitMediaStream.prototype.getVideoTracks = function() {
+            return this.videoTracks;
+        };
+        webkitMediaStream.prototype.getAudioTracks = function() {
+            return this.audioTracks;
+        };
+    }
+
+    // New syntax of getXXXStreams method in M26.
+    if (!webkitRTCPeerConnection.prototype.getLocalStreams) {
+        webkitRTCPeerConnection.prototype.getLocalStreams = function() {
+            return this.localStreams;
+        };
+        webkitRTCPeerConnection.prototype.getRemoteStreams = function() {
+            return this.remoteStreams;
+        };
+    }
+} else {
+    webRTCSupport = false;
+    throw new Error("Browser does not appear to be WebRTC-capable");
+}
+
+
+// emitter that we use as a base
 function WildEmitter() {
     this.callbacks = {};
 }
@@ -123,7 +215,7 @@ function WebRTC(opts) {
         connection;
 
     // check for support
-    if (!WebRTC.support) {
+    if (!webRTCSupport) {
         console.error('Your browser doesn\'t seem to support WebRTC');
     }
 
@@ -190,58 +282,6 @@ WebRTC.prototype = Object.create(WildEmitter.prototype, {
     }
 });
 
-// Thankfully borrowed from Google's examples
-WebRTC.normalizeEnvironment = function () {
-    WebRTC.RTCPeerConnection = null,
-    WebRTC.getUserMedia = null,
-    WebRTC.attachMediaStream = null,
-    WebRTC.support = true;
-
-    if (navigator.mozGetUserMedia) {
-        // The RTCPeerConnection object.
-        WebRTC.RTCPeerConnection = mozRTCPeerConnection;
-
-        // Get UserMedia (only difference is the prefix).
-        // Code from Adam Barth.
-        WebRTC.getUserMedia = navigator.mozGetUserMedia.bind(navigator);
-
-        // Attach a media stream to an element.
-        WebRTC.attachMediaStream = function(element, stream) {
-            element.mozSrcObject = stream;
-            element.play();
-        };
-    } else if (navigator.webkitGetUserMedia) {
-        // The RTCPeerConnection object.
-        WebRTC.RTCPeerConnection = webkitRTCPeerConnection;
-
-        // Get UserMedia (only difference is the prefix).
-        // Code from Adam Barth.
-        WebRTC.getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
-
-        // Attach a media stream to an element.
-        WebRTC.attachMediaStream = function(element, stream) {
-            element.autoplay = true;
-            element.src = webkitURL.createObjectURL(stream);
-        };
-
-        // The representation of tracks in a stream is changed in M26.
-        // Unify them for earlier Chrome versions in the coexisting period.
-        if (!webkitMediaStream.prototype.getVideoTracks) {
-            webkitMediaStream.prototype.getVideoTracks = function() {
-                return this.videoTracks;
-            }
-        }
-        if (!webkitMediaStream.prototype.getAudioTracks) {
-            webkitMediaStream.prototype.getAudioTracks = function() {
-                return this.audioTracks;
-            }
-        }
-    } else {
-        WebRTC.support = false;
-        throw new Error("Browser does not appear to be WebRTC-capable");
-    }
-}();
-
 WebRTC.prototype.getEl = function (idOrEl) {
     if (typeof idOrEl == 'string') {
         return document.getElementById(idOrEl);
@@ -295,7 +335,7 @@ WebRTC.prototype.leaveRoom = function (name) {
 
 WebRTC.prototype.handleIncomingIceCandidate = function (candidate, moreToFollow) {
     logger.log('received candidate');
-    var candidate = new IceCandidate(payload.label, payload.candidate);
+    candidate = new IceCandidate(payload.label, payload.candidate);
     this.pc.processIceMessage(candidate);
 };
 
@@ -307,8 +347,11 @@ WebRTC.prototype.testReadiness = function () {
 
 WebRTC.prototype.startLocalVideo = function (element) {
     var self = this;
-    WebRTC.getUserMedia({audio: true, video: true}, function (stream) {
-        WebRTC.attachMediaStream(element || self.getLocalVideoContainer(), stream);
+    getUserMedia({audio: true, video: {
+        mandatory: {},
+        optional: []
+    }}, function (stream) {
+        attachMediaStream(element || self.getLocalVideoContainer(), stream);
         self.localStream = stream;
         self.testReadiness();
     }, function () {
@@ -326,11 +369,19 @@ WebRTC.prototype.send = function (to, type, payload) {
 };
 
 function Conversation(options) {
-    var self = this;
+    var self = this,
+        pc_config = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]},
+        pc_constraints = {"optional": [{"DtlsSrtpKeyAgreement": true}]};
+
     this.id = options.id;
     this.parent = options.parent;
     this.initiator = options.initiator;
-    this.pc = new WebRTC.RTCPeerConnection({iceServers: [{url: "stun:stun.l.google.com:19302"}]}, {"optional": []});
+    if (webrtcDetectedBrowser == "firefox") {
+        pc_config = {"iceServers":[{"url":"stun:23.21.150.121"}]};
+    }
+    // Create an RTCPeerConnection via the polyfill (adapter.js).
+    this.pc = new RTCPeerConnection(pc_config, pc_constraints);
+    //this.pc = new RTCPeerConnection({iceServers: [{url: "stun:stun.l.google.com:19302"}]}, {"optional": []});
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
     this.pc.addStream(this.parent.localStream);
     this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
@@ -414,7 +465,7 @@ Conversation.prototype.handleRemoteStreamAdded = function (event) {
         el = document.createElement('video'),
         container = this.parent.getRemoteVideoContainer();
     el.id = this.id;
-    WebRTC.attachMediaStream(el, stream);
+    attachMediaStream(el, stream);
     if (container) container.appendChild(el);
     this.emit('videoAdded', el);
 };

@@ -11,7 +11,7 @@ Check out the demo: http://conversat.io
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="http://conversat.io/latest.min.js"></script> 
+        <script src="http://static.conversat.io/latest.js"></script> 
     </head>
     <body>
         <div id="localVideo"></div>

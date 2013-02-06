@@ -1,4 +1,4 @@
-# webrtc.js - World's easiest webrtc lib
+# SimpleWebRTC - World's easiest WebRTC lib
 
 Check out the demo: http://conversat.io
 

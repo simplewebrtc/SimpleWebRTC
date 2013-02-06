@@ -1,3 +1,11 @@
+;(function () {
+
+var logger = {
+    log: function (){},
+    warn: function (){},
+    error: function (){}
+};
+
 function WildEmitter() {
     this.callbacks = {};
 }
@@ -101,20 +109,35 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
 };
 
 
+function WebRTC(opts) {
+    var self = this,
+        options = opts || {},
+        config = this.config = {
+            url: 'http://tool.andyet.net:8888',
+            log: false,
+            localVideoId: 'localVideo'
+        },
+        item,
+        connection;
 
-
-
-function WebRTC() {
-    var self = this;
+    // check for support
     if (!WebRTC.support) {
         console.error('Your browser doesn\'t seem to support WebRTC');
     }
 
+    // set options
+    for (item in options) {
+        this.config[item] = options[item];
+    }
+
+    // log if configured to
+    if (this.config.log) logger = console;
+
     // where we'll store our peer connections
     this.pcs = {};
 
-    //var connection = this.connection = io.connect('http://localhost:8888');
-    var connection = this.connection = io.connect('http://tool.andyet.net:8888');
+    // our socket.io connection
+    connection = this.connection = io.connect(this.config.url);
 
     connection.on('connect', function () {
         self.emit('ready', connection.socket.sessionid);
@@ -133,13 +156,12 @@ function WebRTC() {
                 parent: self,
                 initiator: false
             });
-
             self.pcs[message.from].handleMessage(message);
         }
     });
 
     connection.on('joined', function (room) {
-        console.log('got a joined', room);
+        logger.log('got a joined', room);
         if (!self.pcs[room.id]) {
             self.startVideoCall(room.id);
         }
@@ -149,12 +171,12 @@ function WebRTC() {
         if (conv) conv.handleStreamRemoved();
     });
 
-    this.config = {
-        localVideoId: 'localVideo',
-        remoteVideoId: 'remoteVideo'
-    };
-
     WildEmitter.call(this);
+
+    // log events
+    this.on('*', function (event, val1, val2) {
+        logger.log('event:', event, val1, val2);
+    });
 }
 
 WebRTC.prototype = Object.create(WildEmitter.prototype, {
@@ -171,8 +193,6 @@ WebRTC.normalizeEnvironment = function () {
     WebRTC.support = true;
 
     if (navigator.mozGetUserMedia) {
-        console.log("This appears to be Firefox");
-
         // The RTCPeerConnection object.
         WebRTC.RTCPeerConnection = mozRTCPeerConnection;
 
@@ -182,13 +202,10 @@ WebRTC.normalizeEnvironment = function () {
 
         // Attach a media stream to an element.
         WebRTC.attachMediaStream = function(element, stream) {
-            console.log("Attaching media stream");
             element.mozSrcObject = stream;
             element.play();
         };
     } else if (navigator.webkitGetUserMedia) {
-        console.log("This appears to be Chrome");
-
         // The RTCPeerConnection object.
         WebRTC.RTCPeerConnection = webkitRTCPeerConnection;
 
@@ -216,10 +233,9 @@ WebRTC.normalizeEnvironment = function () {
         }
     } else {
         WebRTC.support = false;
-        console.log("Browser does not appear to be WebRTC-capable");
+        throw new Error("Browser does not appear to be WebRTC-capable");
     }
 }();
-
 
 WebRTC.prototype.getLocalVideoContainer = function () {
     var found;
@@ -241,7 +257,6 @@ WebRTC.prototype.startVideoCall = function (id) {
         parent: this,
         initiator: true
     });
-
     this.pcs[id].start();
 };
 
@@ -262,7 +277,7 @@ WebRTC.prototype.leaveRoom = function (name) {
 };
 
 WebRTC.prototype.handleIncomingIceCandidate = function (candidate, moreToFollow) {
-    console.log('received candidate');
+    logger.log('received candidate');
     var candidate = new IceCandidate(payload.label, payload.candidate);
     this.pc.processIceMessage(candidate);
 };
@@ -280,7 +295,7 @@ WebRTC.prototype.startLocalVideo = function (element) {
         self.localStream = stream;
         self.testReadiness();
     }, function () {
-        console.log('error');
+        throw new Error('Failed to get access to local media.');
     });
 };
 
@@ -294,6 +309,7 @@ WebRTC.prototype.send = function (to, type, payload) {
 };
 
 function Conversation(options) {
+    var self = this;
     this.id = options.id;
     this.parent = options.parent;
     this.initiator = options.initiator;
@@ -309,11 +325,23 @@ function Conversation(options) {
             'OfferToReceiveVideo':true
         }
     };
+    WildEmitter.call(this);
+
+    // proxy events to parent
+    this.on('*', function (name, value) {
+        self.parent.emit(name, value, self);
+    });
 }
+
+Conversation.prototype = Object.create(WildEmitter.prototype, {
+    constructor: {
+        value: Conversation
+    }
+});
 
 Conversation.prototype.handleMessage = function (message) {
     if (message.type === 'offer') {
-        console.log('setting remote description');
+        logger.log('setting remote description');
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
         this.answer();
     } else if (message.type === 'answer') {
@@ -339,49 +367,44 @@ Conversation.prototype.onIceCandidate = function (event) {
             candidate: event.candidate.candidate
         });
     } else {
-      console.log("End of candidates.");
+      logger.log("End of candidates.");
     }
 };
 
 Conversation.prototype.start = function () {
     var self = this;
     this.pc.createOffer(function (sessionDescription) {
-        console.log('setting local description');
+        logger.log('setting local description');
         self.pc.setLocalDescription(sessionDescription);
-        console.log('sending offer', sessionDescription);
+        logger.log('sending offer', sessionDescription);
         self.send('offer', sessionDescription);
     }, null, this.mediaConstraints);
 };
 
 Conversation.prototype.answer = function () {
     var self = this;
-    console.log('answer called');
+    logger.log('answer called');
     this.pc.createAnswer(function (sessionDescription) {
-        console.log('setting local description');
+        logger.log('setting local description');
         self.pc.setLocalDescription(sessionDescription);
-        console.log('sending answer', sessionDescription);
+        logger.log('sending answer', sessionDescription);
         self.send('answer', sessionDescription);
     }, null, this.mediaConstraints);
 };
 
-function addVideoTag(id) {
-    var el = document.createElement('video');
-    el.id = id;
-    el.style.border = "1px solid black";
-    el.style.height = "150px";
-    el.style.width = "200px";
-    remotes.appendChild(el);
-    return el;
-}
-
 Conversation.prototype.handleRemoteStreamAdded = function (event) {
-    var stream = this.stream = event.stream;
-    WebRTC.attachMediaStream(addVideoTag(this.id), stream);
+    var stream = this.stream = event.stream,
+        el = document.createElement('video');
+    el.id = this.id;
+    WebRTC.attachMediaStream(el, stream);
+    this.emit('videoAdded', el);
 };
 
 Conversation.prototype.handleStreamRemoved = function () {
-    console.log("HANDLE STREAM REMOVED!", this.id, document.getElementById(id));
-    var id = this.id,
-        el = document.getElementById(id);
-    if (el) el.parentElement.removeChild(el);
+    this.emit('videoRemoved', document.getElementById(this.id));
 };
+
+// expose WebRTC
+window.WebRTC = WebRTC;
+
+}());

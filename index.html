@@ -20,45 +20,54 @@
                 subTitle = document.getElementById('subTitle'),
                 room = location.search && location.search.split('?')[1];
 
-            function sligify(s) {
-                return s.toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
-            }
 
-            function removeNode(node) {
-                node.parentNode.removeChild(node);
-            }
+            // create our webrtc connection
+            var webrtc = new WebRTC({
+                log: true,
+                url: 'http://localhost:8888'
+            });
 
+            // if wewhen it's ready call if we've got an id in our URL
+            webrtc.on('readyToCall', function (sessionId) {
+                // if we've got a room in the URL join it
+                if (room) webrtc.joinRoom(room);
+            });
+
+            // When we have a new video added, we get a video element
+            // that we can just put whever we want it.
+            webrtc.on('videoAdded', function (videoEl) {
+                remotes.appendChild(videoEl);
+            });
+
+            // When a video is removed we'll just remove it from the
+            // container.
+            webrtc.on('videoRemoved', function (videoEl) {
+                remotes.removeChild(videoEl);
+            });
+
+            // We immediately request video access
+            webrtc.startLocalVideo(localVideo);
+
+            // Since we use this twice we put it here
             function setRoom(name) {
-                removeNode(form);
+                form.parentNode.removeChild(form);
                 h1.textContent = name;
                 subTitle.textContent = 'Link to join: ' + location.href; 
             }
-
-            // create our webrtc connection
-            var connection = new WebRTC();
-
-            // if wewhen it's ready call if we've got an id in our URL
-            connection.on('readyToCall', function (sessionId) {
-                // if we've got a room in the URL join it
-                if (room) connection.joinRoom(room);
-            });
-
-            connection.startLocalVideo(localVideo);
-
 
             if (room) {
                 setRoom(room);
             } else {
                 form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    var val = sligify(sessionInput.value);
-                    connection.createRoom(val, function (err, name) {
+                    var val = (sessionInput.value || '').toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
+                    webrtc.createRoom(val, function (err, name) {
                         var newUrl = location.pathname + '?' + name;
                         if (!err) {
-                            history.replaceState({foo: 'bar'}, "page 2", newUrl);
+                            history.replaceState({foo: 'bar'}, null, newUrl);
                             setRoom(name);
                         }
                     });
+                    e.preventDefault();
                     return false;          
                 });
             }

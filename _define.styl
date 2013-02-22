@@ -1,0 +1,105 @@
+helv()
+  font-family: "Helvetica Neue", Arial, Helvetica, sans-serif
+
+shadow($color, $x, $y, $blur)
+  -webkit-box-shadow: color $x $y $blur
+  -moz-box-shadow: $color $x $y $blur
+  box-shadow: $color $x $y $blur
+
+innerShadow($color, $x, $y, $blur)
+  box-shadow: inset $color $x $y $blurpx
+  -moz-box-shadow: inset $color $x $y $blurpx
+  -webkit-box-shadow: inset $color $x $y $blur
+
+gradient($top, $bottom)
+  background-image: $top
+  background-image: -moz-linear-gradient(top, $top, $bottom)
+  background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, $top),color-stop(1, $bottom))
+
+radial($inner, $outer)
+  background: $inner
+  background-image: -webkit-radial-gradient(center center, circle cover, $inner, $outer)
+  background-image: -moz-radial-gradient(center center, circle cover, $inner, $outer)
+  background-image: -ms-radial-gradient(center center, circle cover, $inner, $outer)
+  background-image: -o-radial-gradient(center center, circle cover, $inner, $outer)
+  background-image: radial-gradient(center center, circle cover, $inner, $outer)
+
+roundall($round)
+  -moz-border-radius: $round
+  -webkit-border-radius: $round
+  -khtml-border-radius: $round
+  -o-border-radius: $round
+  -border-radius: $round
+  border-radius: $round
+
+round($roundtl, $roundtr, $roundbr, $roundbl)
+  -webkit-border-top-left-radius: $roundtl
+  -webkit-border-top-right-radius: $roundtr
+  -webkit-border-bottom-left-radius: $roundbl
+  -webkit-border-bottom-right-radius: $roundbr
+  -moz-border-radius-topleft: $roundtl
+  -moz-border-radius-topright: $roundtr
+  -moz-border-radius-bottomleft: $roundbl
+  -moz-border-radius-bottomright: $roundbr
+  -border-top-left-radius: $roundtl
+  -border-top-right-radius: $roundtr
+  -border-bottom-left-radius: $roundbl
+  -border-bottom-right-radius: $roundbr
+  border-top-left-radius: $roundtl
+  border-top-right-radius: $roundtr
+  border-bottom-left-radius: $roundbl
+  border-bottom-right-radius: $roundbr
+
+textShadow($color, $x, $y, $blur)
+  text-shadow: $color $x $y $blur
+
+noselect()
+  -webkit-touch-callout: none
+  -webkit-user-select: none
+  -khtml-user-select: none
+  -moz-user-select: none
+  -ms-user-select: none
+  user-select: none
+
+turn($deg)
+  -moz-transform: rotate($deg)
+  -webkit-transform: rotate($deg)
+  -o-transform: rotate($deg)
+  transform: rotate($deg)
+
+transform($param)
+  -webkit-transform: $param
+  -moz-transform: $param
+  -ms-transform: $param
+  transform: $param
+
+transition($attr, $dur, $timing, $delay)
+  -webkit-transition: $attr $dur $timing $delay
+  -moz-transition: $attr $dur $timing $delay
+  -o-transition: $attr $dur $timing $delay
+  transition: $attr $dur $timing $delay
+
+flip-horizontal()
+  -moz-transform: scaleX(-1)
+  -webkit-transform: scaleX(-1)
+  -o-transform: scaleX(-1)
+  transform: scaleX(-1)
+  -ms-filter: fliph
+  filter: fliph
+
+flip-vertical()
+  -moz-transform: scaleY(-1)
+  -webkit-transform: scaleY(-1)
+  -o-transform: scaleY(-1)
+  transform: scaleY(-1)
+  -ms-filter: flipv
+  filter: flipv
+
+colorDot($color)
+  display: block
+  height: 10px
+  width: 10px
+  gradient: $color + #777 $color + #000
+  border-radius: 25px
+  border-bottom: 1px solid rgba(0,0,0,1)
+  border-top: 1px solid rgba(255,255,255,.9)

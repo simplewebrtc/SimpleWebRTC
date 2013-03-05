@@ -2,8 +2,9 @@
   "name": "webrtc.js",
   "version": "0.0.1",
   "repository": {
-    "type": "git", 
+    "type": "git",
     "url": "git@github.com:henrikjoreteg/webrtc.js.git"
   },
-  "description": "World's easiest webrtc"
+  "description": "World's easiest webrtc",
+  "main": "webrtc.js"
 }

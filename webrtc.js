@@ -1,4 +1,16 @@
-;(function () {
+// UMD adapted from https://github.com/umdjs/umd/blob/master/commonjsStrict.js
+(function (root, factory) {
+    if (typeof exports === 'object') {
+        // CommonJS
+        factory(exports);
+    } else if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['exports'], factory);
+    } else {
+        // Browser globals
+        factory(root);
+    }
+}(this, function (exports) {
 
 var logger = {
     log: function (){},
@@ -478,6 +490,6 @@ Conversation.prototype.handleStreamRemoved = function () {
 };
 
 // expose WebRTC
-window.WebRTC = WebRTC;
+exports.WebRTC = WebRTC;
 
-}());
+}));

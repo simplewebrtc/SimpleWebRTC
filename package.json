@@ -1,9 +1,13 @@
 {
   "name": "webrtc.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git", 
     "url": "git@github.com:henrikjoreteg/webrtc.js.git"
   },
-  "description": "World's easiest webrtc"
+  "description": "World's easiest webrtc",
+  "devDependencies": {
+    "request": "",
+    "uglify-js": ""
+  }
 }

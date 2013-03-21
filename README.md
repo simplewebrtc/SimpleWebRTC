@@ -11,7 +11,7 @@ Check out the demo: http://conversat.io
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="http://static.conversat.io/latest.js"></script> 
+        <script src="http://simplewebrtc.com/latest.js"></script> 
     </head>
     <body>
         <div id="localVideo"></div>

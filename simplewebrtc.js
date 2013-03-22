@@ -209,7 +209,8 @@ function WebRTC(opts) {
             log: false,
             localVideoEl: '',
             remoteVideosEl: '',
-            autoRequestMedia: false
+            autoRequestMedia: false,
+            progressIndicator: false
         },
         item,
         connection;
@@ -222,6 +223,10 @@ function WebRTC(opts) {
     // set options
     for (item in options) {
         this.config[item] = options[item];
+    }
+
+    if (this.config.progressIndicator) { // show the progress indicator
+        this.getEl(this.config.remoteVideosEl).innerHTML = "<img id='webRTCProgress' src='"+self.config.progressIndicator+"'>";
     }
 
     // log if configured to

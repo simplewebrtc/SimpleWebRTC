@@ -210,14 +210,19 @@ function WebRTC(opts) {
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
-            iceServersFF: [{"url":"stun:124.124.124.2"}],
-            iceServersChrome: [{"url": "stun:stun.l.google.com:19302"}],
             // makes the entire PC config overridable
             peerConnectionConfig: {
-                iceServers: browser == 'firefox' ? iceServersFF : iceServersChrome
+                iceServers: browser == 'firefox' ? [{"url":"stun:124.124.124.2"}] : [{"url": "stun:stun.l.google.com:19302"}]
             },
             peerConnectionContraints: {
                 optional: [{"DtlsSrtpKeyAgreement": true}]
+            },
+            media: {
+                audio:true,
+                video: {
+                    mandatory: {},
+                    optional: []
+                }
             }
         },
         item,
@@ -356,10 +361,7 @@ WebRTC.prototype.testReadiness = function () {
 
 WebRTC.prototype.startLocalVideo = function (element) {
     var self = this;
-    getUserMedia(this.config.media || {audio:true, video: {
-        mandatory: {},
-        optional: []
-    }}, function (stream) {
+    getUserMedia(this.config.media, function (stream) {
         attachMediaStream(element || self.getLocalVideoContainer(), stream);
         self.localStream = stream;
         self.testReadiness();
@@ -378,14 +380,13 @@ WebRTC.prototype.send = function (to, type, payload) {
 };
 
 function Conversation(options) {
-    var self = this,
-        config = this.parent.config;
+    var self = this;
 
     this.id = options.id;
     this.parent = options.parent;
     this.initiator = options.initiator;
     // Create an RTCPeerConnection via the polyfill (adapter.js).
-    this.pc = new RTCPeerConnection(config.peerConnectionConfig, config.peerConnectionContraints);
+    this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
     this.pc.addStream(this.parent.localStream);
     this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);

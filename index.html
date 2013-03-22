@@ -12,7 +12,8 @@
         <video id="localVideo" style="height: 150px;"></video>
         <div id="remotes"></div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-        <script src="http://simplewebrtc.com/latest.js"></script>
+        <script src="http://signaling.simplewebrtc.com:8888/socket.io/socket.io.js"></script>
+        <script src="simplewebrtc.js"></script>
         <script>
             // grab the room from the URL
             var room = location.search && location.search.split('?')[1];

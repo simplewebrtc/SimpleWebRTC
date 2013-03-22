@@ -333,6 +333,17 @@ WebRTC.prototype.leaveRoom = function (name) {
     this.connection.emit('leave', name);
 };
 
+WebRTC.prototype.hangUp = function(){
+    var localVideoContainer = document.getElementById(this.config.localVideoEl); // get the local video container
+    var localVideo = localVideoContainer.getElementsByTagName('video'); // get the local video
+    localVideo[0].setAttribute("src", null); // set the SRC to null
+    for(var pc in this.pcs) {
+      if(this.pcs.hasOwnProperty(pc)){
+        this.pcs[pc].pc.close(); // Hangup the Connection
+      }
+    }
+}
+
 WebRTC.prototype.handleIncomingIceCandidate = function (candidate, moreToFollow) {
     logger.log('received candidate');
     candidate = new IceCandidate(payload.label, payload.candidate);
@@ -367,6 +378,7 @@ WebRTC.prototype.send = function (to, type, payload) {
         payload: payload
     });
 };
+
 
 function Conversation(options) {
     var self = this,

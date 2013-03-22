@@ -333,14 +333,14 @@ WebRTC.prototype.leaveRoom = function (name) {
     this.connection.emit('leave', name);
 };
 
-WebRTC.prototype.hangUp = function(){
+WebRTC.prototype.hangUp = function() {
     var localVideoContainer = document.getElementById(this.config.localVideoEl); // get the local video container
     var localVideo = localVideoContainer.getElementsByTagName('video'); // get the local video
     localVideo[0].setAttribute("src", null); // set the SRC to null
     for(var pc in this.pcs) {
-      if(this.pcs.hasOwnProperty(pc)){
-        this.pcs[pc].pc.close(); // Hangup the Connection
-      }
+        if(this.pcs.hasOwnProperty(pc)) {
+            this.pcs[pc].pc.close(); // Hangup the Connection
+        }
     }
 }
 

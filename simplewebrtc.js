@@ -354,8 +354,14 @@ WebRTC.prototype.leaveRoom = function () {
 };
 
 WebRTC.prototype.testReadiness = function () {
+    var self = this;
     if (this.localStream && this.sessionReady) {
-        this.emit('readyToCall', this.connection.socket.sessionid);
+        // This timeout is a workaround for the strange no-audio bug
+        // as described here: https://code.google.com/p/webrtc/issues/detail?id=1525
+        // remove timeout when this is fixed.
+        setTimeout(function () {
+            self.emit('readyToCall', self.connection.socket.sessionid);
+        }, 1000);
     }
 };
 

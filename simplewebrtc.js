@@ -341,27 +341,16 @@ WebRTC.prototype.createRoom = function (name, cb) {
 
 WebRTC.prototype.joinRoom = function (name) {
     this.connection.emit('join', name);
+    this.roomName = name;
 };
 
-WebRTC.prototype.leaveRoom = function (name) {
-    this.connection.emit('leave', name);
-};
-
-WebRTC.prototype.hangUp = function() {
-    var localVideoContainer = document.getElementById(this.config.localVideoEl); // get the local video container
-    var localVideo = localVideoContainer.getElementsByTagName('video'); // get the local video
-    localVideo[0].setAttribute("src", null); // set the SRC to null
-    for(var pc in this.pcs) {
-        if(this.pcs.hasOwnProperty(pc)) {
-            this.pcs[pc].pc.close(); // Hangup the Connection
+WebRTC.prototype.leaveRoom = function () {
+    if (this.roomName) {
+        this.connection.emit('leave', this.roomName);
+        for (var pc in this.pcs) {
+            this.pcs[pc].end();
         }
     }
-}
-
-WebRTC.prototype.handleIncomingIceCandidate = function (candidate, moreToFollow) {
-    logger.log('received candidate');
-    candidate = new IceCandidate(payload.label, payload.candidate);
-    this.pc.processIceMessage(candidate);
 };
 
 WebRTC.prototype.testReadiness = function () {
@@ -432,6 +421,7 @@ Conversation.prototype.handleMessage = function (message) {
     } else if (message.type === 'answer') {
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
     } else if (message.type === 'candidate') {
+        console.log('message.payload', message.payload);
         var candidate = new RTCIceCandidate({
             sdpMLineIndex: message.payload.label,
             candidate: message.payload.candidate
@@ -445,6 +435,7 @@ Conversation.prototype.send = function (type, payload) {
 };
 
 Conversation.prototype.onIceCandidate = function (event) {
+    if (this.closed) return;
     if (event.candidate) {
         this.send('candidate', {
             label: event.candidate.sdpMLineIndex,
@@ -464,6 +455,11 @@ Conversation.prototype.start = function () {
         logger.log('sending offer', sessionDescription);
         self.send('offer', sessionDescription);
     }, null, this.mediaConstraints);
+};
+
+Conversation.prototype.end = function () {
+    this.pc.close();
+    this.handleStreamRemoved();
 };
 
 Conversation.prototype.answer = function () {
@@ -492,6 +488,8 @@ Conversation.prototype.handleStreamRemoved = function () {
         container = this.parent.getRemoteVideoContainer();
     if (video && container) container.removeChild(video);
     this.emit('videoRemoved', video);
+    delete this.parent.pcs[this.id];
+    this.closed = true;
 };
 
 // expose WebRTC

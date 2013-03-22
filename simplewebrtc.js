@@ -210,6 +210,8 @@ function WebRTC(opts) {
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
+            progressIndicator: false,
+
             // makes the entire PC config overridable
             peerConnectionConfig: {
                 iceServers: browser == 'firefox' ? [{"url":"stun:124.124.124.2"}] : [{"url": "stun:stun.l.google.com:19302"}]
@@ -224,6 +226,7 @@ function WebRTC(opts) {
                     optional: []
                 }
             }
+>>>>>>> 43655865a5fe5eb2b7fe266b9a2f6303160c383d
         },
         item,
         connection;
@@ -236,6 +239,10 @@ function WebRTC(opts) {
     // set options
     for (item in options) {
         this.config[item] = options[item];
+    }
+
+    if (this.config.progressIndicator) { // show the progress indicator
+        this.getEl(this.config.remoteVideosEl).innerHTML = "<img id='webRTCProgress' src='"+self.config.progressIndicator+"'>";
     }
 
     // log if configured to

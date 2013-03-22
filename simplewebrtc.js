@@ -7,17 +7,17 @@ var logger = {
 };
 
 // normalize environment
-var RTCPeerConnection = null;
-var getUserMedia = null;
-var attachMediaStream = null;
-var reattachMediaStream = null;
-var webrtcDetectedBrowser = null;
-var webRTCSupport = true;
+var RTCPeerConnection = null,
+    getUserMedia = null,
+    attachMediaStream = null,
+    reattachMediaStream = null,
+    browser = null,
+    webRTCSupport = true;
 
 if (navigator.mozGetUserMedia) {
     logger.log("This appears to be Firefox");
 
-    webrtcDetectedBrowser = "firefox";
+    browser = "firefox";
 
     // The RTCPeerConnection object.
     RTCPeerConnection = mozRTCPeerConnection;
@@ -52,7 +52,7 @@ if (navigator.mozGetUserMedia) {
         return [];
     };
 } else if (navigator.webkitGetUserMedia) {
-    webrtcDetectedBrowser = "chrome";
+    browser = "chrome";
 
     // The RTCPeerConnection object.
     RTCPeerConnection = webkitRTCPeerConnection;
@@ -210,7 +210,23 @@ function WebRTC(opts) {
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
-            progressIndicator: false
+            progressIndicator: false,
+
+            // makes the entire PC config overridable
+            peerConnectionConfig: {
+                iceServers: browser == 'firefox' ? [{"url":"stun:124.124.124.2"}] : [{"url": "stun:stun.l.google.com:19302"}]
+            },
+            peerConnectionContraints: {
+                optional: [{"DtlsSrtpKeyAgreement": true}]
+            },
+            media: {
+                audio:true,
+                video: {
+                    mandatory: {},
+                    optional: []
+                }
+            }
+>>>>>>> 43655865a5fe5eb2b7fe266b9a2f6303160c383d
         },
         item,
         connection;
@@ -332,16 +348,16 @@ WebRTC.prototype.createRoom = function (name, cb) {
 
 WebRTC.prototype.joinRoom = function (name) {
     this.connection.emit('join', name);
+    this.roomName = name;
 };
 
-WebRTC.prototype.leaveRoom = function (name) {
-    this.connection.emit('leave', name);
-};
-
-WebRTC.prototype.handleIncomingIceCandidate = function (candidate, moreToFollow) {
-    logger.log('received candidate');
-    candidate = new IceCandidate(payload.label, payload.candidate);
-    this.pc.processIceMessage(candidate);
+WebRTC.prototype.leaveRoom = function () {
+    if (this.roomName) {
+        this.connection.emit('leave', this.roomName);
+        for (var pc in this.pcs) {
+            this.pcs[pc].end();
+        }
+    }
 };
 
 WebRTC.prototype.testReadiness = function () {
@@ -352,10 +368,7 @@ WebRTC.prototype.testReadiness = function () {
 
 WebRTC.prototype.startLocalVideo = function (element) {
     var self = this;
-    getUserMedia({audio: true, video: {
-        mandatory: {},
-        optional: []
-    }}, function (stream) {
+    getUserMedia(this.config.media, function (stream) {
         attachMediaStream(element || self.getLocalVideoContainer(), stream);
         self.localStream = stream;
         self.testReadiness();
@@ -373,20 +386,15 @@ WebRTC.prototype.send = function (to, type, payload) {
     });
 };
 
+
 function Conversation(options) {
-    var self = this,
-        pc_config = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]},
-        pc_constraints = {"optional": [{"DtlsSrtpKeyAgreement": true}]};
+    var self = this;
 
     this.id = options.id;
     this.parent = options.parent;
     this.initiator = options.initiator;
-    if (webrtcDetectedBrowser == "firefox") {
-        pc_config = {"iceServers":[{"url":"stun:23.21.150.121"}]};
-    }
     // Create an RTCPeerConnection via the polyfill (adapter.js).
-    this.pc = new RTCPeerConnection(pc_config, pc_constraints);
-    //this.pc = new RTCPeerConnection({iceServers: [{url: "stun:stun.l.google.com:19302"}]}, {"optional": []});
+    this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
     this.pc.addStream(this.parent.localStream);
     this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
@@ -420,6 +428,7 @@ Conversation.prototype.handleMessage = function (message) {
     } else if (message.type === 'answer') {
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
     } else if (message.type === 'candidate') {
+        console.log('message.payload', message.payload);
         var candidate = new RTCIceCandidate({
             sdpMLineIndex: message.payload.label,
             candidate: message.payload.candidate
@@ -433,6 +442,7 @@ Conversation.prototype.send = function (type, payload) {
 };
 
 Conversation.prototype.onIceCandidate = function (event) {
+    if (this.closed) return;
     if (event.candidate) {
         this.send('candidate', {
             label: event.candidate.sdpMLineIndex,
@@ -452,6 +462,11 @@ Conversation.prototype.start = function () {
         logger.log('sending offer', sessionDescription);
         self.send('offer', sessionDescription);
     }, null, this.mediaConstraints);
+};
+
+Conversation.prototype.end = function () {
+    this.pc.close();
+    this.handleStreamRemoved();
 };
 
 Conversation.prototype.answer = function () {
@@ -480,6 +495,8 @@ Conversation.prototype.handleStreamRemoved = function () {
         container = this.parent.getRemoteVideoContainer();
     if (video && container) container.removeChild(video);
     this.emit('videoRemoved', video);
+    delete this.parent.pcs[this.id];
+    this.closed = true;
 };
 
 // expose WebRTC

@@ -43,3 +43,9 @@ webrtc.on('readyToCall', function () {
     webrtc.joinRoom('your awesome room name');
 });
 ```
+
+### Optional Parameters
+
+```
+iceServers: {"iceServers":[{"url":"stun:124.124.124.2"}]}
+```

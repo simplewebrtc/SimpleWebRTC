@@ -7,17 +7,17 @@ var logger = {
 };
 
 // normalize environment
-var RTCPeerConnection = null;
-var getUserMedia = null;
-var attachMediaStream = null;
-var reattachMediaStream = null;
-var webrtcDetectedBrowser = null;
-var webRTCSupport = true;
+var RTCPeerConnection = null,
+    getUserMedia = null,
+    attachMediaStream = null,
+    reattachMediaStream = null,
+    browser = null,
+    webRTCSupport = true;
 
 if (navigator.mozGetUserMedia) {
     logger.log("This appears to be Firefox");
 
-    webrtcDetectedBrowser = "firefox";
+    browser = "firefox";
 
     // The RTCPeerConnection object.
     RTCPeerConnection = mozRTCPeerConnection;
@@ -52,7 +52,7 @@ if (navigator.mozGetUserMedia) {
         return [];
     };
 } else if (navigator.webkitGetUserMedia) {
-    webrtcDetectedBrowser = "chrome";
+    browser = "chrome";
 
     // The RTCPeerConnection object.
     RTCPeerConnection = webkitRTCPeerConnection;
@@ -209,7 +209,16 @@ function WebRTC(opts) {
             log: false,
             localVideoEl: '',
             remoteVideosEl: '',
-            autoRequestMedia: false
+            autoRequestMedia: false,
+            iceServersFF: [{"url":"stun:124.124.124.2"}],
+            iceServersChrome: [{"url": "stun:stun.l.google.com:19302"}],
+            // makes the entire PC config overridable
+            peerConnectionConfig: {
+                iceServers: browser == 'firefox' ? iceServersFF : iceServersChrome
+            },
+            peerConnectionContraints: {
+                optional: [{"DtlsSrtpKeyAgreement": true}]
+            }
         },
         item,
         connection;
@@ -370,18 +379,13 @@ WebRTC.prototype.send = function (to, type, payload) {
 
 function Conversation(options) {
     var self = this,
-        pc_config = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]},
-        pc_constraints = {"optional": [{"DtlsSrtpKeyAgreement": true}]};
+        config = this.parent.config;
 
     this.id = options.id;
     this.parent = options.parent;
     this.initiator = options.initiator;
-    if (webrtcDetectedBrowser == "firefox") {
-        pc_config = {"iceServers":[{"url":"stun:23.21.150.121"}]};
-    }
-    pc_config = this.parent.config.iceServers || pc_config;
     // Create an RTCPeerConnection via the polyfill (adapter.js).
-    this.pc = new RTCPeerConnection(pc_config, pc_constraints);
+    this.pc = new RTCPeerConnection(config.peerConnectionConfig, config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
     this.pc.addStream(this.parent.localStream);
     this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);

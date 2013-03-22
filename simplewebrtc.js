@@ -356,7 +356,7 @@ WebRTC.prototype.testReadiness = function () {
 
 WebRTC.prototype.startLocalVideo = function (element) {
     var self = this;
-    getUserMedia({audio: true, video: {
+    getUserMedia(this.config.media || {audio:true, video: {
         mandatory: {},
         optional: []
     }}, function (stream) {

@@ -210,6 +210,7 @@ function WebRTC(opts) {
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
+            watchOnly: false,
             // makes the entire PC config overridable
             peerConnectionConfig: {
                 iceServers: browser == 'firefox' ? [{"url":"stun:124.124.124.2"}] : [{"url": "stun:stun.l.google.com:19302"}]
@@ -395,7 +396,7 @@ function Conversation(options) {
     // Create an RTCPeerConnection via the polyfill (adapter.js).
     this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
-    this.pc.addStream(this.parent.localStream);
+    if (!this.parent.config.watchOnly) this.pc.addStream(this.parent.localStream);
     this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
     this.pc.onremovestream = this.handleStreamRemoved.bind(this);
     // for re-use

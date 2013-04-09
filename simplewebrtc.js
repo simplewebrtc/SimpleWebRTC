@@ -13,6 +13,7 @@ var attachMediaStream = null;
 var reattachMediaStream = null;
 var webrtcDetectedBrowser = null;
 var webRTCSupport = true;
+var monitorAudio;
 
 if (navigator.mozGetUserMedia) {
     logger.log("This appears to be Firefox");
@@ -51,6 +52,8 @@ if (navigator.mozGetUserMedia) {
     MediaStream.prototype.getAudioTracks = function() {
         return [];
     };
+
+    monitorAudio = function() {};
 } else if (navigator.webkitGetUserMedia) {
     webrtcDetectedBrowser = "chrome";
 
@@ -91,6 +94,56 @@ if (navigator.mozGetUserMedia) {
             return this.remoteStreams;
         };
     }
+
+    monitorAudio = function(stream) {
+      //Config
+      var speakingThreshold = -45;
+      var smoothing = 0.5;
+      var pollPeriod = 100;
+
+      //Set up audio graph
+      var audioContext = new webkitAudioContext();
+      var sourceNode = audioContext.createMediaStreamSource(stream);
+      var analyser = audioContext.createAnalyser();
+      var fftBins = new Float32Array(analyser.fftSize);
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = smoothing;
+      sourceNode.connect(analyser);
+
+      var emitter = new WildEmitter();
+      var speaking = false;
+
+      // Poll the analyser node to determine if speaking
+      // and emit events if changed
+      setInterval(function() {
+        var currentVolume = -Infinity;
+        analyser.getFloatFrequencyData(fftBins)
+
+        for(var i=0, ii=fftBins.length; i < ii; i++) {
+          if (fftBins[i] > currentVolume && fftBins[i] < 0) {
+            currentVolume = fftBins[i];
+          }
+        };
+        //logger.log('Current Volume: ', Math.floor(currentVolume));
+
+        if (currentVolume > speakingThreshold) {
+          if (!speaking) {
+            speaking = true;
+            emitter.emit('speaking');
+            logger.log('I am speaking');
+          }
+        } else {
+          if (speaking) {
+            speaking = false;
+            emitter.emit('stopped_speaking');
+            logger.log('I stopped speaking');
+          }
+        }
+      }, pollPeriod);
+
+      return emitter;
+    };
+
 } else {
     webRTCSupport = false;
     throw new Error("Browser does not appear to be WebRTC-capable");
@@ -237,6 +290,7 @@ function WebRTC(opts) {
         self.emit('ready', connection.socket.sessionid);
         self.sessionReady = true;
         self.testReadiness();
+        self.sessionid = connection.socket.sessionid;
     });
 
     connection.on('message', function (message) {
@@ -281,6 +335,14 @@ WebRTC.prototype = Object.create(WildEmitter.prototype, {
         value: WebRTC
     }
 });
+
+WebRTC.prototype.sendToAll = function (message, content) {
+  for(var pc in this.pcs) {
+    if (pc != this.sessionid) {
+      this.pcs[pc].send(message, content);
+    }
+  }
+};
 
 WebRTC.prototype.getEl = function (idOrEl) {
     if (typeof idOrEl == 'string') {
@@ -352,11 +414,24 @@ WebRTC.prototype.startLocalVideo = function (element) {
         optional: []
     }}, function (stream) {
         attachMediaStream(element || self.getLocalVideoContainer(), stream);
+        self.setupAudioMonitor(stream);
         self.localStream = stream;
         self.testReadiness();
     }, function () {
         throw new Error('Failed to get access to local media.');
     });
+};
+
+WebRTC.prototype.setupAudioMonitor = function (stream) {
+  logger.log('Setup audio');
+  var audio = monitorAudio(stream, this.connection);
+  var self = this;
+  audio.on('speaking', function() {
+    self.sendToAll('speaking', {})
+  });
+  audio.on('stopped_speaking', function() {
+    self.sendToAll('stopped_speaking', {})
+  });
 };
 
 
@@ -420,6 +495,10 @@ Conversation.prototype.handleMessage = function (message) {
             candidate: message.payload.candidate
         });
         this.pc.addIceCandidate(candidate);
+    } else if (message.type === 'speaking') {
+      this.parent.emit('speaking', {id: message.from});
+    } else if (message.type === 'stopped_speaking') {
+      this.parent.emit('stopped_speaking', {id: message.from});
     }
 };
 

@@ -1,6 +1,14 @@
 <html>
     <head>
         <title>Webrtc.js Demo</title>
+        <style>
+          #remotes video {
+            opacity: 0.75;
+          }
+          #remotes video.speaking {
+            opacity: 1;
+          }
+        </style>
     </head>
     <body>
         <h1 id="title">Start a room</h1>
@@ -33,6 +41,14 @@
                 // you can name it anything
                 if (room) webrtc.joinRoom(room);
             });
+
+            webrtc.on('speaking', function(data) {
+              $('#'+data.id).addClass('speaking');
+            });
+            webrtc.on('stopped_speaking', function(data) {
+              $('#'+data.id).removeClass('speaking');
+            });
+
             
             // Since we use this twice we put it here
             function setRoom(name) {

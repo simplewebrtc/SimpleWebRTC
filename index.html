@@ -9,7 +9,7 @@
             <input id="sessionInput"/>
             <button type="submit">Create it!</button>
         </form>
-        <video id="localVideo" style="height: 150px;"></video>
+        <video id="localVideo" style="height: 150px;" muted></video>
         <div id="remotes"></div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
         <script src="http://signaling.simplewebrtc.com:8888/socket.io/socket.io.js"></script>
@@ -34,7 +34,7 @@
                 // you can name it anything
                 if (room) webrtc.joinRoom(room);
             });
-            
+
             // Since we use this twice we put it here
             function setRoom(name) {
                 $('form').remove();
@@ -55,7 +55,7 @@
                             setRoom(name);
                         }
                     });
-                    return false;          
+                    return false;
                 });
             }
         </script>

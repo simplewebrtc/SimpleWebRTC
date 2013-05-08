@@ -12,6 +12,7 @@ var RTCPeerConnection = null,
     attachMediaStream = null,
     reattachMediaStream = null,
     browser = null,
+    screenSharingSupport = false;
     webRTCSupport = true;
 
 if (navigator.mozGetUserMedia) {
@@ -53,6 +54,8 @@ if (navigator.mozGetUserMedia) {
     };
 } else if (navigator.webkitGetUserMedia) {
     browser = "chrome";
+
+    screenSharingSupport = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1]) >= 26
 
     // The RTCPeerConnection object.
     RTCPeerConnection = webkitRTCPeerConnection;
@@ -242,7 +245,7 @@ function WebRTC(opts) {
     if (this.config.log) logger = console;
 
     // where we'll store our peer connections
-    this.pcs = {};
+    this.peers = [];
 
     // our socket.io connection
     connection = this.connection = io.connect(this.config.url);
@@ -254,29 +257,37 @@ function WebRTC(opts) {
     });
 
     connection.on('message', function (message) {
-        var existing = self.pcs[message.from];
-        if (existing) {
-            existing.handleMessage(message);
+        var peers = self.getPeers(message.from),
+            peer;
+
+        if (peers.length) {
+            peers.forEach(function (peer) {
+                peer.handleMessage(message);
+            });
         } else {
-            // create the conversation object
-            self.pcs[message.from] = new Conversation({
+            console.log("CREATING NEW PEER");
+            peer = self.createPeer({
                 id: message.from,
-                parent: self,
                 initiator: false
             });
-            self.pcs[message.from].handleMessage(message);
+            peer.handleMessage(message);
         }
     });
 
     connection.on('joined', function (room) {
-        logger.log('got a joined', room);
-        if (!self.pcs[room.id]) {
-            self.startVideoCall(room.id);
+        var peer;
+        console.log("ROOM.id", room.id);
+        if (self.connection.socket.sessionid !== room.id) {
+            peer = self.createPeer({
+                id: room.id,
+                type: room.type,
+                initiator: true
+            });
+            peer.start();
         }
     });
     connection.on('left', function (room) {
-        var conv = self.pcs[room.id];
-        if (conv) conv.handleStreamRemoved();
+        self.removeForPeerSession(room.id);
     });
 
     WildEmitter.call(this);
@@ -322,13 +333,12 @@ WebRTC.prototype.getRemoteVideoContainer = function () {
     return this.getEl(this.config.remoteVideosEl);
 };
 
-WebRTC.prototype.startVideoCall = function (id) {
-    this.pcs[id] = new Conversation({
-        id: id,
-        parent: this,
-        initiator: true
-    });
-    this.pcs[id].start();
+WebRTC.prototype.createPeer = function (opts) {
+    var peer;
+    opts.parent = this;
+    peer = new Peer(opts);
+    this.peers.push(peer);
+    return peer;
 };
 
 WebRTC.prototype.createRoom = function (name, cb) {
@@ -347,9 +357,9 @@ WebRTC.prototype.joinRoom = function (name) {
 WebRTC.prototype.leaveRoom = function () {
     if (this.roomName) {
         this.connection.emit('leave', this.roomName);
-        for (var pc in this.pcs) {
-            this.pcs[pc].end();
-        }
+        this.peers.forEach(function (peer) {
+            peer.end();
+        });
     }
 };
 
@@ -376,6 +386,38 @@ WebRTC.prototype.startLocalVideo = function (element) {
     });
 };
 
+WebRTC.prototype.shareScreen = function () {
+    var self = this;
+    if (screenSharingSupport) {
+        getUserMedia({
+            video: {
+                mandatory: {
+                    chromeMediaSource: 'screen'
+                }
+            }
+        }, function (stream) {
+            var item;
+            self.localScreen = stream;
+            self.connection.emit('join', self.roomName, 'screen');
+        }, function () {
+            console.log(arguments);
+            throw new Error('Failed to access to screen media.');
+        });
+    }
+};
+
+WebRTC.prototype.removeForPeerSession = function (id) {
+    this.getPeers(id).forEach(function (peer) {
+        peer.end();
+    });
+};
+
+// fetches all Peer objects by session id and/or type
+WebRTC.prototype.getPeers = function (sessionId, type) {
+    return this.peers.filter(function (peer) {
+        return peer.id === sessionId && (!type || (type && peer.type === type));
+    });
+};
 
 WebRTC.prototype.send = function (to, type, payload) {
     this.connection.emit('message', {
@@ -386,23 +428,29 @@ WebRTC.prototype.send = function (to, type, payload) {
 };
 
 
-function Conversation(options) {
+function Peer(options) {
     var self = this;
 
     this.id = options.id;
     this.parent = options.parent;
+    this.type = options.type || 'video';
+    this.oneway = options.oneway || false;
     this.initiator = options.initiator;
-    // Create an RTCPeerConnection via the polyfill (adapter.js).
+    // Create an RTCPeerConnection via the polyfill
     this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
-    this.pc.addStream(this.parent.localStream);
+    if (options.type === 'screen') {
+        this.pc.addStream(this.parent.localScreen);
+    } else {
+        this.pc.addStream(this.parent.localStream);
+    }
     this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
     this.pc.onremovestream = this.handleStreamRemoved.bind(this);
     // for re-use
     this.mediaConstraints = {
-        'mandatory': {
-            'OfferToReceiveAudio':true,
-            'OfferToReceiveVideo':true
+        mandatory: {
+            OfferToReceiveAudio: true,
+            OfferToReceiveVideo: true
         }
     };
     WildEmitter.call(this);
@@ -413,13 +461,13 @@ function Conversation(options) {
     });
 }
 
-Conversation.prototype = Object.create(WildEmitter.prototype, {
+Peer.prototype = Object.create(WildEmitter.prototype, {
     constructor: {
-        value: Conversation
+        value: Peer
     }
 });
 
-Conversation.prototype.handleMessage = function (message) {
+Peer.prototype.handleMessage = function (message) {
     if (message.type === 'offer') {
         logger.log('setting remote description');
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
@@ -432,15 +480,18 @@ Conversation.prototype.handleMessage = function (message) {
             sdpMLineIndex: message.payload.label,
             candidate: message.payload.candidate
         });
+
+        console.log("GOT HERE");
+
         this.pc.addIceCandidate(candidate);
     }
 };
 
-Conversation.prototype.send = function (type, payload) {
+Peer.prototype.send = function (type, payload) {
     this.parent.send(this.id, type, payload);
 };
 
-Conversation.prototype.onIceCandidate = function (event) {
+Peer.prototype.onIceCandidate = function (event) {
     if (this.closed) return;
     if (event.candidate) {
         this.send('candidate', {
@@ -453,7 +504,7 @@ Conversation.prototype.onIceCandidate = function (event) {
     }
 };
 
-Conversation.prototype.start = function () {
+Peer.prototype.start = function () {
     var self = this;
     this.pc.createOffer(function (sessionDescription) {
         logger.log('setting local description');
@@ -463,12 +514,12 @@ Conversation.prototype.start = function () {
     }, null, this.mediaConstraints);
 };
 
-Conversation.prototype.end = function () {
+Peer.prototype.end = function () {
     this.pc.close();
     this.handleStreamRemoved();
 };
 
-Conversation.prototype.answer = function () {
+Peer.prototype.answer = function () {
     var self = this;
     logger.log('answer called');
     this.pc.createAnswer(function (sessionDescription) {
@@ -479,7 +530,7 @@ Conversation.prototype.answer = function () {
     }, null, this.mediaConstraints);
 };
 
-Conversation.prototype.handleRemoteStreamAdded = function (event) {
+Peer.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream,
         el = document.createElement('video'),
         container = this.parent.getRemoteVideoContainer();
@@ -489,12 +540,12 @@ Conversation.prototype.handleRemoteStreamAdded = function (event) {
     this.emit('videoAdded', el);
 };
 
-Conversation.prototype.handleStreamRemoved = function () {
+Peer.prototype.handleStreamRemoved = function () {
     var video = document.getElementById(this.id),
         container = this.parent.getRemoteVideoContainer();
     if (video && container) container.removeChild(video);
     this.emit('videoRemoved', video);
-    delete this.parent.pcs[this.id];
+    this.parent.peers.splice(this.parent.peers.indexOf(this), 1);
     this.closed = true;
 };
 

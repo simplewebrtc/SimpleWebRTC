@@ -8,6 +8,7 @@
   "description": "World's easiest webrtc",
   "devDependencies": {
     "request": "",
-    "uglify-js": ""
+    "uglify-js": "",
+    "express": "3.x.x"
   }
 }

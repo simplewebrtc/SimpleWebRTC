@@ -257,34 +257,41 @@ function WebRTC(opts) {
     });
 
     connection.on('message', function (message) {
-        var peers = self.getPeers(message.from),
+        var peers = self.getPeers(message.from, message.roomType),
             peer;
 
         if (peers.length) {
             peers.forEach(function (peer) {
-                console.log("CALLIN HANDLE MESSAGE", peer, message);
                 peer.handleMessage(message);
             });
         } else {
-            console.log("CREATING NEW PEER");
+            console.warn("CREATING NEW PEER!!", message.from, self.connection.socket.sessionid, message);
             peer = self.createPeer({
                 id: message.from,
-                initiator: false
+                type: message.roomType
             });
             peer.handleMessage(message);
         }
     });
 
     connection.on('joined', function (room) {
-        var peer;
-        if (room.type)
+        console.warn('ON JOINED', room);
+        var peer,
+            broadcastPeer;
         if (self.connection.socket.sessionid !== room.id) {
             peer = self.createPeer({
                 id: room.id,
-                type: room.type,
-                initiator: true
+                type: room.roomType
             });
             peer.start();
+
+            if (self.localScreenPeer) {
+                broadcastPeer = self.createPeer({
+                    id: room.id,
+                    type: 'screen'
+                });
+                broadcastPeer.startBroadcast();
+            }
         }
     });
     connection.on('left', function (room) {
@@ -439,10 +446,22 @@ WebRTC.prototype.shareScreen = function () {
                 }
             }
         }, function (stream) {
-            var item;
+            var item,
+                el = document.createElement('video'),
+                container = self.getRemoteVideoContainer();
+
             self.localScreen = stream;
-            //self.localStream.addTrack(stream.getVideoTracks()[0]);
-            //self.connection.emit('join', self.roomName, 'screen');
+
+            el.id = 'localScreen';
+            attachMediaStream(el, stream);
+            if (container) {
+                container.appendChild(el);
+            }
+            self.emit('videoAdded', el);
+            self.connection.emit('join', {
+                room: self.roomName,
+                roomType: 'screen'
+            });
         }, function () {
             throw new Error('Failed to access to screen media.');
         });
@@ -463,11 +482,12 @@ WebRTC.prototype.getPeers = function (sessionId, type) {
     });
 };
 
-WebRTC.prototype.send = function (to, type, payload) {
+WebRTC.prototype.send = function (to, roomType, type, payload) {
     this.connection.emit('message', {
         to: to,
         type: type,
-        payload: payload
+        payload: payload,
+        roomType: roomType
     });
 };
 
@@ -479,12 +499,14 @@ function Peer(options) {
     this.parent = options.parent;
     this.type = options.type || 'video';
     this.oneway = options.oneway || false;
-    this.initiator = options.initiator;
+    this.stream = options.stream;
     // Create an RTCPeerConnection via the polyfill
     this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
     if (options.type === 'screen') {
-        this.pc.addStream(this.parent.localScreen);
+        if (this.parent.localScreen) {
+            this.pc.addStream(this.parent.localScreen);
+        }
     } else {
         this.pc.addStream(this.parent.localStream);
     }
@@ -530,7 +552,7 @@ Peer.prototype.handleMessage = function (message) {
 };
 
 Peer.prototype.send = function (type, payload) {
-    this.parent.send(this.id, type, payload);
+    this.parent.send(this.id, this.type, type, payload);
 };
 
 Peer.prototype.onIceCandidate = function (event) {
@@ -556,6 +578,21 @@ Peer.prototype.start = function () {
     }, null, this.mediaConstraints);
 };
 
+Peer.prototype.startBroadcast = function () {
+    var self = this;
+    this.pc.createOffer(function (sessionDescription) {
+        logger.log('setting local description');
+        self.pc.setLocalDescription(sessionDescription);
+        logger.log('sending offer', sessionDescription);
+        self.send('offer', sessionDescription);
+    }, null, {
+        mandatory: {
+            OfferToReceiveAudio: false,
+            OfferToReceiveVideo: false
+        }
+    });
+};
+
 Peer.prototype.end = function () {
     console.log("END Called", arguments);
     this.pc.close();
@@ -577,10 +614,6 @@ Peer.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream,
         el = document.createElement('video'),
         container = this.parent.getRemoteVideoContainer();
-
-    this.stream.addEventListener('addtrack', function () {
-        console.log('ADD track', arguments);
-    });
 
     el.id = this.id;
     attachMediaStream(el, stream);

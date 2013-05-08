@@ -262,6 +262,7 @@ function WebRTC(opts) {
 
         if (peers.length) {
             peers.forEach(function (peer) {
+                console.log("CALLIN HANDLE MESSAGE", peer, message);
                 peer.handleMessage(message);
             });
         } else {
@@ -276,7 +277,7 @@ function WebRTC(opts) {
 
     connection.on('joined', function (room) {
         var peer;
-        console.log("ROOM.id", room.id);
+        if (room.type)
         if (self.connection.socket.sessionid !== room.id) {
             peer = self.createPeer({
                 id: room.id,
@@ -386,6 +387,48 @@ WebRTC.prototype.startLocalVideo = function (element) {
     });
 };
 
+// Audio controls
+WebRTC.prototype.mute = function () {
+    this._audioEnabled(false);
+    this.emit('audioOff');
+};
+WebRTC.prototype.unmute = function () {
+    this._audioEnabled(true);
+    this.emit('audioOn');
+};
+
+// Video controls
+WebRTC.prototype.pauseVideo = function () {
+    this._videoEnabled(false);
+    this.emit('videoOff');
+};
+WebRTC.prototype.resumeVideo = function () {
+    this._videoEnabled(true);
+    this.emit('videoOn');
+};
+
+// Combined controls
+WebRTC.prototype.pause = function () {
+    this.mute();
+    this.pauseVideo();
+};
+WebRTC.prototype.resume = function () {
+    this.unmute();
+    this.resumeVideo();
+};
+
+// Internal methods for enabling/disabling audio/video
+WebRTC.prototype._audioEnabled = function (bool) {
+    this.localStream.getAudioTracks().forEach(function (track) {
+        track.enabled = !!bool;
+    });
+};
+WebRTC.prototype._videoEnabled = function (bool) {
+    this.localStream.getVideoTracks().forEach(function (track) {
+        track.enabled = !!bool;
+    });
+};
+
 WebRTC.prototype.shareScreen = function () {
     var self = this;
     if (screenSharingSupport) {
@@ -398,15 +441,16 @@ WebRTC.prototype.shareScreen = function () {
         }, function (stream) {
             var item;
             self.localScreen = stream;
-            self.connection.emit('join', self.roomName, 'screen');
+            //self.localStream.addTrack(stream.getVideoTracks()[0]);
+            //self.connection.emit('join', self.roomName, 'screen');
         }, function () {
-            console.log(arguments);
             throw new Error('Failed to access to screen media.');
         });
     }
 };
 
 WebRTC.prototype.removeForPeerSession = function (id) {
+    console.log("REMOVE FOR PEER SESSION CALLED");
     this.getPeers(id).forEach(function (peer) {
         peer.end();
     });
@@ -446,6 +490,7 @@ function Peer(options) {
     }
     this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
     this.pc.onremovestream = this.handleStreamRemoved.bind(this);
+    this.pc.onnegotiationneeded = function () {console.log('ON NEGOTIATION NEEDED CALLED', arguments)}
     // for re-use
     this.mediaConstraints = {
         mandatory: {
@@ -473,16 +518,13 @@ Peer.prototype.handleMessage = function (message) {
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
         this.answer();
     } else if (message.type === 'answer') {
+        console.log('setting answer');
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
     } else if (message.type === 'candidate') {
-        console.log('message.payload', message.payload);
         var candidate = new RTCIceCandidate({
             sdpMLineIndex: message.payload.label,
             candidate: message.payload.candidate
         });
-
-        console.log("GOT HERE");
-
         this.pc.addIceCandidate(candidate);
     }
 };
@@ -515,6 +557,7 @@ Peer.prototype.start = function () {
 };
 
 Peer.prototype.end = function () {
+    console.log("END Called", arguments);
     this.pc.close();
     this.handleStreamRemoved();
 };
@@ -534,6 +577,11 @@ Peer.prototype.handleRemoteStreamAdded = function (event) {
     var stream = this.stream = event.stream,
         el = document.createElement('video'),
         container = this.parent.getRemoteVideoContainer();
+
+    this.stream.addEventListener('addtrack', function () {
+        console.log('ADD track', arguments);
+    });
+
     el.id = this.id;
     attachMediaStream(el, stream);
     if (container) container.appendChild(el);
@@ -541,6 +589,7 @@ Peer.prototype.handleRemoteStreamAdded = function (event) {
 };
 
 Peer.prototype.handleStreamRemoved = function () {
+    console.log("HANDLE STREAM REMOVED CALLED", arguments);
     var video = document.getElementById(this.id),
         container = this.parent.getRemoteVideoContainer();
     if (video && container) container.removeChild(video);

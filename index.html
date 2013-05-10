@@ -4,6 +4,12 @@
     </head>
     <body>
         <h1 id="title">Start a room</h1>
+        <style>
+            #remotes video {
+                height: 150px;
+            }
+        </style>
+        <button id="screenShareButton"></button>
         <p id="subTitle"></p>
         <form id="createRoom">
             <input id="sessionInput"/>
@@ -57,6 +63,27 @@
                         }
                     });
                     return false;          
+                });
+            }
+
+            var button = $('#screenShareButton'),
+                setButton = function (bool) {
+                    button.text(bool ? 'share screen' : 'stop sharing');
+                };
+
+            setButton(true);
+
+            if (!webrtc.screenSharingSupport) {
+                button[0].disabled = true;
+            } else {
+                button.click(function () {
+                    if (webrtc.localScreen) {
+                        webrtc.stopScreenShare();
+                        setButton(true);
+                    } else {
+                        webrtc.shareScreen();
+                        setButton(false);
+                    }
                 });
             }
         </script>

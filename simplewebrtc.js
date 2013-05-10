@@ -236,6 +236,9 @@ function WebRTC(opts) {
         console.error('Your browser doesn\'t seem to support WebRTC');
     }
 
+    // expose screensharing check
+    this.screenSharingSupport = screenSharingSupport;
+
     // set options
     for (item in options) {
         this.config[item] = options[item];
@@ -260,42 +263,24 @@ function WebRTC(opts) {
         var peers = self.getPeers(message.from, message.roomType),
             peer;
 
-        if (peers.length) {
+        if (message.type === 'offer') {
+            peer = self.createPeer({
+                id: message.from,
+                type: message.roomType,
+                sharemyscreen: message.roomType === 'screen' && !message.broadcaster
+            });
+            peer.handleMessage(message);
+        } else if (peers.length) {
             peers.forEach(function (peer) {
                 peer.handleMessage(message);
             });
-        } else {
-            console.warn("CREATING NEW PEER!!", message.from, self.connection.socket.sessionid, message);
-            peer = self.createPeer({
-                id: message.from,
-                type: message.roomType
-            });
-            peer.handleMessage(message);
         }
     });
 
-    connection.on('joined', function (room) {
-        console.warn('ON JOINED', room);
-        var peer,
-            broadcastPeer;
-        if (self.connection.socket.sessionid !== room.id) {
-            peer = self.createPeer({
-                id: room.id,
-                type: room.roomType
-            });
-            peer.start();
-
-            if (self.localScreenPeer) {
-                broadcastPeer = self.createPeer({
-                    id: room.id,
-                    type: 'screen'
-                });
-                broadcastPeer.startBroadcast();
-            }
+    connection.on('remove', function (room) {
+        if (room.id !== self.connection.socket.sessionid) {
+            self.removeForPeerSession(room.id, room.type);
         }
-    });
-    connection.on('left', function (room) {
-        self.removeForPeerSession(room.id);
     });
 
     WildEmitter.call(this);
@@ -358,8 +343,26 @@ WebRTC.prototype.createRoom = function (name, cb) {
 };
 
 WebRTC.prototype.joinRoom = function (name) {
-    this.connection.emit('join', name);
+    var self = this;
     this.roomName = name;
+    this.connection.emit('join', name, function (roomDescription) {
+        var id,
+            client,
+            type,
+            peer;
+        for (id in roomDescription) {
+            client = roomDescription[id];
+            for (type in client) {
+                if (client[type]) {
+                    peer = self.createPeer({
+                        id: id,
+                        type: type
+                    });
+                    peer.start();
+                }
+            }
+        }
+    });
 };
 
 WebRTC.prototype.leaveRoom = function () {
@@ -437,7 +440,8 @@ WebRTC.prototype._videoEnabled = function (bool) {
 };
 
 WebRTC.prototype.shareScreen = function () {
-    var self = this;
+    var self = this,
+        peer;
     if (screenSharingSupport) {
         getUserMedia({
             video: {
@@ -458,9 +462,17 @@ WebRTC.prototype.shareScreen = function () {
                 container.appendChild(el);
             }
             self.emit('videoAdded', el);
-            self.connection.emit('join', {
-                room: self.roomName,
-                roomType: 'screen'
+            self.connection.emit('shareScreen');
+            self.peers.forEach(function (existingPeer) {
+                var peer;
+                if (existingPeer.type === 'video') {
+                    peer = self.createPeer({
+                        id: existingPeer.id,
+                        type: 'screen',
+                        sharemyscreen: true
+                    });
+                    peer.start();
+                }
             });
         }, function () {
             throw new Error('Failed to access to screen media.');
@@ -468,9 +480,24 @@ WebRTC.prototype.shareScreen = function () {
     }
 };
 
-WebRTC.prototype.removeForPeerSession = function (id) {
-    console.log("REMOVE FOR PEER SESSION CALLED");
-    this.getPeers(id).forEach(function (peer) {
+WebRTC.prototype.stopScreenShare = function () {
+    this.connection.emit('unshareScreen');
+    var videoEl = document.getElementById('localScreen'),
+        container = this.getRemoteVideoContainer(),
+        stream = this.localScreen;
+
+    if (container && videoEl) {
+        container.removeChild(videoEl);
+    }
+    this.localScreen.stop();
+    this.peers.forEach(function (peer) {
+        if (peer.broadcaster) peer.end();
+    });
+    delete this.localScreen;
+};
+
+WebRTC.prototype.removeForPeerSession = function (id, type) {
+    this.getPeers(id, type).forEach(function (peer) {
         peer.end();
     });
 };
@@ -478,16 +505,7 @@ WebRTC.prototype.removeForPeerSession = function (id) {
 // fetches all Peer objects by session id and/or type
 WebRTC.prototype.getPeers = function (sessionId, type) {
     return this.peers.filter(function (peer) {
-        return peer.id === sessionId && (!type || (type && peer.type === type));
-    });
-};
-
-WebRTC.prototype.send = function (to, roomType, type, payload) {
-    this.connection.emit('message', {
-        to: to,
-        type: type,
-        payload: payload,
-        roomType: roomType
+        return (!sessionId || peer.id === sessionId) && (!type || peer.type === type);
     });
 };
 
@@ -499,20 +517,22 @@ function Peer(options) {
     this.parent = options.parent;
     this.type = options.type || 'video';
     this.oneway = options.oneway || false;
+    this.sharemyscreen = options.sharemyscreen || false;
     this.stream = options.stream;
     // Create an RTCPeerConnection via the polyfill
     this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
     this.pc.onicecandidate = this.onIceCandidate.bind(this);
     if (options.type === 'screen') {
-        if (this.parent.localScreen) {
+        if (this.parent.localScreen && this.sharemyscreen) {
+            logger.log('adding local screen stream to peer connection')
             this.pc.addStream(this.parent.localScreen);
+            this.broadcaster = this.parent.connection.socket.sessionid;
         }
     } else {
         this.pc.addStream(this.parent.localStream);
     }
     this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
     this.pc.onremovestream = this.handleStreamRemoved.bind(this);
-    this.pc.onnegotiationneeded = function () {console.log('ON NEGOTIATION NEEDED CALLED', arguments)}
     // for re-use
     this.mediaConstraints = {
         mandatory: {
@@ -540,7 +560,7 @@ Peer.prototype.handleMessage = function (message) {
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
         this.answer();
     } else if (message.type === 'answer') {
-        console.log('setting answer');
+        logger.log('setting answer');
         this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
     } else if (message.type === 'candidate') {
         var candidate = new RTCIceCandidate({
@@ -552,7 +572,13 @@ Peer.prototype.handleMessage = function (message) {
 };
 
 Peer.prototype.send = function (type, payload) {
-    this.parent.send(this.id, this.type, type, payload);
+    this.parent.connection.emit('message', {
+        to: this.id,
+        broadcaster: this.broadcaster,
+        roomType: this.type,
+        type: type,
+        payload: payload
+    });
 };
 
 Peer.prototype.onIceCandidate = function (event) {
@@ -578,23 +604,7 @@ Peer.prototype.start = function () {
     }, null, this.mediaConstraints);
 };
 
-Peer.prototype.startBroadcast = function () {
-    var self = this;
-    this.pc.createOffer(function (sessionDescription) {
-        logger.log('setting local description');
-        self.pc.setLocalDescription(sessionDescription);
-        logger.log('sending offer', sessionDescription);
-        self.send('offer', sessionDescription);
-    }, null, {
-        mandatory: {
-            OfferToReceiveAudio: false,
-            OfferToReceiveVideo: false
-        }
-    });
-};
-
 Peer.prototype.end = function () {
-    console.log("END Called", arguments);
     this.pc.close();
     this.handleStreamRemoved();
 };
@@ -615,20 +625,25 @@ Peer.prototype.handleRemoteStreamAdded = function (event) {
         el = document.createElement('video'),
         container = this.parent.getRemoteVideoContainer();
 
-    el.id = this.id;
+    el.id = this.getDomId();
     attachMediaStream(el, stream);
     if (container) container.appendChild(el);
     this.emit('videoAdded', el);
 };
 
 Peer.prototype.handleStreamRemoved = function () {
-    console.log("HANDLE STREAM REMOVED CALLED", arguments);
-    var video = document.getElementById(this.id),
+    var video = document.getElementById(this.getDomId()),
         container = this.parent.getRemoteVideoContainer();
-    if (video && container) container.removeChild(video);
-    this.emit('videoRemoved', video);
+    if (video && container) {
+        container.removeChild(video);
+        this.emit('videoRemoved', video);
+    }
     this.parent.peers.splice(this.parent.peers.indexOf(this), 1);
     this.closed = true;
+};
+
+Peer.prototype.getDomId = function () {
+    return [this.id, this.type, this.broadcaster ? 'broadcasting' : 'incoming'].join('_');
 };
 
 // expose WebRTC

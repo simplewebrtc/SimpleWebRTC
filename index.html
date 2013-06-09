@@ -1,63 +1,122 @@
 <html>
     <head>
-        <title>Webrtc.js Demo</title>
+        <script src="./socket.io.js"></script> 
+        <script src="./simplewebrtc.js"></script> 
     </head>
     <body>
-        <h1 id="title">Start a room</h1>
-        <p id="subTitle"></p>
-        <form id="createRoom">
-            <input id="sessionInput"/>
-            <button type="submit">Create it!</button>
-        </form>
-        <video id="localVideo" style="height: 150px;"></video>
-        <div id="remotes"></div>
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-        <script src="http://signaling.simplewebrtc.com:8888/socket.io/socket.io.js"></script>
-        <script src="simplewebrtc.js"></script>
-        <script>
-            // grab the room from the URL
-            var room = location.search && location.search.split('?')[1];
+        <div id="localMedia"></div>
+        <div id="remoteMedia"></div>
+        <div id="photos"></div>
+		<script>
+			// if testing locally, start run "chrome.exe --disable-web-security" to be able to grant camera/mic access
+		
+			function getURLParameter(name) {
+				return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
+			}
+			
+			String.prototype.repeat = function(num) {
+				return new Array(num + 1).join(this);
+		    };
+			
+			var receivingMediaOnly = getURLParameter('sendVideo') == 'n' &&
+									 getURLParameter('sendAudio') == 'n' &&
+									 getURLParameter('previewVideo') == 'n';
+			
+			var webrtc = new WebRTC({
+				// all true by default, this is just for testing purposes
+				video: {
+					send		: getURLParameter('sendVideo') !== 'n',
+					receive		: getURLParameter('receiveVideo') !== 'n',
+					preview		: getURLParameter('previewVideo') !== 'n' // if you don't want to see your own video, set this to false
+				},
+				// all true by default, omit for same result
+				audio: {
+					send		: getURLParameter('sendAudio') !== 'n',
+					receive		: getURLParameter('receievAudio') !== 'n'
+				},
+				local: {
+					// the id/element dom element that will hold "our" audio or video
+					_el: 'localMedia',
+					// We don't want to hear ourselves in our own headphones. You can also pass any other attributes you want set on the video or audio element
+					muted: true 
+				},
+				remote: {
+					// the id/element dom element that will hold remote audios or videos
+					_el: 'remoteMedia'
+				},
+				// true by default, omit for same result
+				data: getURLParameter('data') !== 'n',
+				// immediately ask for camera access
+				autoRequestMedia: !receivingMediaOnly
+			});
+			
+			webrtc.on('readyToCall', function () {
+				// you can name it anything
+				webrtc.joinRoom('your awesome room name');
+			});
+			
+			webrtc.on('userid', function(myid) {
+				console.log('My id is', myid);
+			});
+			
+			webrtc.on('dataOpen', function(event, conversation) {
+				// opened a private channel to another user
+			    var channel = conversation.channel,
+					userId = conversation.id;
+			
+				console.log('Opened a channel to', userId);
+				this.send("Hello everyone");
+				this.send("Hello " + userId + ". This is a private message. Trust me.", userId);
+				this.send("long message".repeat(1000)); // this message may take a while in Chrome as it needs to be sent in chunks
+			});
 
-            // create our webrtc connection
-            var webrtc = new WebRTC({
-                // the id/element dom element that will hold "our" video
-                localVideoEl: 'localVideo',
-                // the id/element dom element that will hold remote videos
-                remoteVideosEl: 'remotes',
-                // immediately ask for camera access
-                autoRequestMedia: true,
-                log: true
-            });
+			webrtc.on('dataClose', function(event, conversation) {
+				// data channel died or was closed
+			    var channel = conversation.channel,
+					userId = conversation.id;
+			});
 
-            // when it's ready, join if we got a room from the URL
-            webrtc.on('readyToCall', function () {
-                // you can name it anything
-                if (room) webrtc.joinRoom(room);
-            });
-            
-            // Since we use this twice we put it here
-            function setRoom(name) {
-                $('form').remove();
-                $('h1').text(name);
-                $('#subTitle').text('Link to join: ' + location.href);
-                $('body').addClass('active');
-            }
+			webrtc.on('dataError', function(event, conversation) {
+				// data channel experienced an error
+			    var channel = conversation.channel,
+					userId = conversation.id;
+			});
 
-            if (room) {
-                setRoom(room);
-            } else {
-                $('form').submit(function () {
-                    var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
-                    webrtc.createRoom(val, function (err, name) {
-                        var newUrl = location.pathname + '?' + name;
-                        if (!err) {
-                            history.replaceState({foo: 'bar'}, null, newUrl);
-                            setRoom(name);
-                        }
-                    });
-                    return false;          
-                });
-            }
-        </script>
+			webrtc.on('dataMessage', function(message, conversation) {
+				// data channel died or was closed
+			    var channel = conversation.channel,
+					userId = conversation.id;
+				
+				console.log('Message from ' + userId + ': ' + (typeof message === 'string' ? message : JSON.stringify(message)));
+			});
+			
+			webrtc.on('mediaAdded', function(info, conversation) {
+				// info.media has the video/audio element
+				// info.stream has the MediaStream attached to the video/audio element
+				if (info.type == 'local') {
+					// conversation is null
+				}
+				else if (info.type == 'remote') {
+				
+				}
+			});
+
+			webrtc.on('mediaRemoved', function(info, conversation) {
+				// info.media has the video/audio element
+				// info.stream has the MediaStream attached to the video/audio element
+				if (info.type == 'local') {
+					// we lost our local video
+				}
+				else if (info.type == 'remote') {
+					// we lost the remote video for user with id == conversation.id
+				}
+			});
+			
+			webrtc.on('file', function(file, conversation) {
+				debugger;
+				// we got a file from user with id == conversation.id
+			});
+		</script>
     </body>
+	
 </html>

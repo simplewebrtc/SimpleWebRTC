@@ -32,12 +32,12 @@ Check it out in action on Urbien.com (don't forget the underscore before the roo
 ```js
 var webrtc = new WebRTC({
     local: {
-        // the id/element dom element that will hold "our" video
+        // the id/element dom element that will hold "our" video or audio
         _el: 'localMedia',
         muted: true // we dont' want to hear ourselves in our headphones
     }
     remote: {
-        // the id/element dom element that will hold remote videos
+        // the id/element dom element that will hold remote videos or audios
         _el: 'remoteMedia'
     }
     // immediately ask for camera access

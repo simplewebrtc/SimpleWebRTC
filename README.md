@@ -53,12 +53,13 @@ webrtc.on('readyToCall', function () {
     // you can name it anything
     webrtc.joinRoom('your awesome room name');
 });
-```
 
 webrtc.on('dataMessage', function (data, conversation) {
     // you can name it anything
 	console.log(conversation.id, 'says:', data);
 });
+
+```
 
 ### Optional Parameters
 
@@ -72,7 +73,6 @@ audio {
     send: false, // if you don't want to send audio
     receive: false // if you don't want to receive audio
 },
-data: false // if you don't want to open a data channel (for text chat, file sharing, etc.)
-
+data: false, // if you don't want to open a data channel (for text chat, file sharing, etc.)
 iceServers: {"iceServers":[{"url":"stun:124.124.124.2"}]}
 ```

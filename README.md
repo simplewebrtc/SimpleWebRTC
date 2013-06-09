@@ -4,8 +4,8 @@ Check out the demo: http://conversat.io
 
 Run / check out the example in index.html to see the various options (to enable chat, broadcasting only, audio only, etc.)
 
-Check it out in action on Urbien.com:
-    http://urbien.com/app/UrbienApp#chatPrivate/_yourChatRoomName    // don't forget the underscore before the room name
+Check it out in action on Urbien.com (don't forget the underscore before the room name):
+    http://urbien.com/app/UrbienApp#chatPrivate/_yourChatRoomName
 
 
 ## It's so easy:
@@ -16,8 +16,8 @@ Check it out in action on Urbien.com:
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="/path/to/socket.io"></script> 
-        <script src="/path/to/simplewebrtc"></script> 
+        <script src="/path/to/socket.io.js"></script> 
+        <script src="/path/to/simplewebrtc.js"></script> 
     </head>
     <body>
         <div id="localMedia"></div>
@@ -62,6 +62,7 @@ webrtc.on('dataMessage', function (data, conversation) {
 
 ### Optional Parameters
 
+```
 video: {
     send: false, // if you don't want to send video
     receive: false, // if you don't want to receive video
@@ -73,6 +74,5 @@ audio {
 },
 data: false // if you don't want to open a data channel (for text chat, file sharing, etc.)
 
-```
 iceServers: {"iceServers":[{"url":"stun:124.124.124.2"}]}
 ```

@@ -2,6 +2,11 @@
 
 Check out the demo: http://conversat.io
 
+Run / check out the example in index.html to see the various options (to enable chat, broadcasting only, audio only, etc.)
+
+Check it out in action on Urbien.com:
+    http://urbien.com/app/UrbienApp#chatPrivate/_yourChatRoomName    // don't forget the underscore before the room name
+
 
 ## It's so easy:
 
@@ -11,11 +16,12 @@ Check out the demo: http://conversat.io
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="http://simplewebrtc.com/latest.js"></script> 
+        <script src="/path/to/socket.io"></script> 
+        <script src="/path/to/simplewebrtc"></script> 
     </head>
     <body>
-        <div id="localVideo"></div>
-        <div id="remotesVideos"></div>
+        <div id="localMedia"></div>
+        <div id="remoteMedia"></div>
     </body>
 </html>
 
@@ -25,10 +31,15 @@ Check out the demo: http://conversat.io
 
 ```js
 var webrtc = new WebRTC({
-    // the id/element dom element that will hold "our" video
-    localVideoEl: 'localVideo',
-    // the id/element dom element that will hold remote videos
-    remoteVideosEl: 'remotesVideos',
+    local: {
+        // the id/element dom element that will hold "our" video
+        _el: 'localMedia',
+        muted: true // we dont' want to hear ourselves in our headphones
+    }
+    remote: {
+        // the id/element dom element that will hold remote videos
+        _el: 'remoteMedia'
+    }
     // immediately ask for camera access
     autoRequestMedia: true
 });
@@ -44,7 +55,23 @@ webrtc.on('readyToCall', function () {
 });
 ```
 
+webrtc.on('dataMessage', function (data, conversation) {
+    // you can name it anything
+	console.log(conversation.id, 'says:', data);
+});
+
 ### Optional Parameters
+
+video: {
+    send: false, // if you don't want to send video
+    receive: false, // if you don't want to receive video
+    preview: false // if you don't want to preview your video (local media)
+},
+audio {
+    send: false, // if you don't want to send audio
+    receive: false // if you don't want to receive audio
+},
+data: false // if you don't want to open a data channel (for text chat, file sharing, etc.)
 
 ```
 iceServers: {"iceServers":[{"url":"stun:124.124.124.2"}]}

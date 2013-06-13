@@ -6,7 +6,6 @@
     <body>
         <div id="localMedia"></div>
         <div id="remoteMedia"></div>
-        <div id="photos"></div>
 		<script>
 			// if testing locally, start run "chrome.exe --disable-web-security" to be able to grant camera/mic access
 		
@@ -68,7 +67,7 @@
 				console.log('Opened a channel to', userId);
 				this.send("Hello everyone");
 				this.send("Hello " + userId + ". This is a private message. Trust me.", userId);
-				this.send("long message".repeat(1000)); // this message may take a while in Chrome as it needs to be sent in chunks
+				this.send("START" + "long message".repeat(1000) + "END"); // this message may take a while in Chrome as it needs to be sent in chunks
 			});
 
 			webrtc.on('dataClose', function(event, conversation) {
@@ -87,8 +86,6 @@
 				// data channel died or was closed
 			    var channel = conversation.channel,
 					userId = conversation.id;
-				
-				console.log('Message from ' + userId + ': ' + (typeof message === 'string' ? message : JSON.stringify(message)));
 			});
 			
 			webrtc.on('mediaAdded', function(info, conversation) {
@@ -111,12 +108,7 @@
 				else if (info.type == 'remote') {
 					// we lost the remote video for user with id == conversation.id
 				}
-			});
-			
-			webrtc.on('file', function(file, conversation) {
-				debugger;
-				// we got a file from user with id == conversation.id
-			});
+			});			
 		</script>
     </body>
 	

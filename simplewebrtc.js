@@ -1,5 +1,6 @@
 //;define('lib/simplewebrtc', ['lib/socket.io'], 
 (function(window) {
+    // util functions
     var logger = {
         log: function() {},
         warn: function() {},
@@ -48,9 +49,20 @@
       return obj;
     };
     
+    // increase the bandwidth field: https://github.com/Peer5/ShareFest/issues/10
+    // https://github.com/Peer5/ShareFest/blob/master/public/js/peerConnectionImplChrome.js
+    function transformOutgoingSdp(sessionDescription) {
+      var sdp = sessionDescription.sdp;
+      var splitted = sdp.split("b=AS:30");
+      sessionDescription.sdp = splitted[0] + "b=AS:1638400" + splitted[1];
+    };
+    
     // normalize environment
-    var RTCPeerConnection = null,
-        getUserMedia = null,
+    var RTCPeerConnection       = window.RTCPeerConnection     || window.mozRTCPeerConnection     			  || window.webkitRTCPeerConnection,
+        getUserMedia            = navigator.getUserMedia       || navigator.mozGetUserMedia.bind(navigator)   || navigator.webkitGetUserMedia.bind(navigator),
+        RTCIceCandidate         = window.RTCIceCandidate       || window.mozRTCIceCandidate,
+        RTCSessionDescription   = window.RTCSessionDescription || window.mozRTCSessionDescription,
+        MediaStream             = window.MediaStream           || window.webkitMediaStream;
         attachMediaStream = null,
         reattachMediaStream = null,
         webRTCSupport = true,
@@ -58,20 +70,14 @@
         isChrome = 'WebkitTransform' in docStyle,
         isFirefox = 'MozBoxSizing' in docStyle;
 
+    if (!(isFirefox || isChrome) || 
+        !(RTCPeerConnection && RTCIceCandidate && RTCSessionDescription && MediaStream)) {
+      
+      webRTCSupport = false;
+      throw new Error("Browser does not appear to be WebRTC-capable");
+    }
+        
     if (isFirefox) {
-        // The RTCPeerConnection object.
-        RTCPeerConnection = mozRTCPeerConnection;
-
-        // The RTCSessionDescription object.
-        RTCSessionDescription = mozRTCSessionDescription;
-
-        // The RTCIceCandidate object.
-        RTCIceCandidate = mozRTCIceCandidate;
-
-        // Get UserMedia (only difference is the prefix).
-        // Code from Adam Barth.
-        getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia.bind(navigator);
-
         // Attach a media stream to an element.
         attachMediaStream = function(element, stream) {
             element.mozSrcObject = stream;
@@ -92,15 +98,6 @@
             return [];
         };
     } else if (isChrome) {
-        // The RTCPeerConnection object.
-        RTCPeerConnection = webkitRTCPeerConnection;
-
-        MediaStream = webkitMediaStream;
-
-        // Get UserMedia (only difference is the prefix).
-        // Code from Adam Barth.
-        getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia.bind(navigator);
-
         // Attach a media stream to an element.
         attachMediaStream = function(element, stream) {
             element.autoplay = true;
@@ -572,14 +569,14 @@
         logger.log(this.initiator ? "started" : "joined", "new conversation");
         
         var self = this;
-            config = this.parent.config,
-            vConfig = config.video,
-            aConfig = config.audio;
+            config = this.config = this.parent.config,
+            vConfig = this.videoConfig = config.video,
+            aConfig = this.audioConfig = config.audio;
 
         this.receiver = new Receiver();
 
         // Create an RTCPeerConnection via the polyfill (adapter.js).
-        this.pc = new RTCPeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
+        this.pc = new RTCPeerConnection(this.config.peerConnectionConfig, this.config.peerConnectionContraints);
         this.pc.onicecandidate = this.onIceCandidate.bind(this);
         if ((vConfig.send || aConfig.send) && this.parent.localStreamSent)
             this.pc.addStream(this.parent.localStreamSent);
@@ -593,8 +590,8 @@
         this.mediaConstraints = {
             optional: [],
             mandatory: {
-                OfferToReceiveAudio: !! config.audio.receive,
-                OfferToReceiveVideo: !! config.video.receive
+                OfferToReceiveAudio: !! aConfig.receive,
+                OfferToReceiveVideo: !! vConfig.receive
             }
         };
 
@@ -602,7 +599,7 @@
           this.mediaConstraints.mandatory.MozDontOfferDataChannel = true;
 
         
-        if (this.parent.config.data) {
+        if (this.config.data) {
             // in Firefox we have to initialize the RTCDataChannel via RTCPeerConnection.createDataChannel as the offerer, 
             // and via the RTCPeerConnection.ondatachannel event handler as the answerer  
             if (isChrome || (this.initiator && isFirefox)) {
@@ -738,6 +735,7 @@
         var self = this
         this.pc.createOffer(function(sessionDescription) {
             logger.log('setting local description');
+            transformOutgoingSdp(sessionDescription);
             self.pc.setLocalDescription(sessionDescription);
             logger.log('sending offer', sessionDescription);
             self._send('offer', sessionDescription, {
@@ -753,7 +751,7 @@
         if (this.pc.signalingState !== 'closed')
             this.pc.close();
 
-        if (this.parent.config.video.receive)
+        if (this.stream)
             this.handleStreamRemoved();
 
         this.handleDataChannelRemoved();
@@ -806,7 +804,7 @@
         el.id = this.id;
         if (options) {
             for (var opt in options) {
-                if (!/_/.test(opt))
+                if (!/^_/.test(opt))
                     el[opt] = options[opt];
             }
         }
@@ -864,13 +862,16 @@
     ///////////////////////////////////////// Copyright © 2013 [Muaz Khan](https://github.com/muaz-khan)<[@muazkh](http://twitter.com/muazkh)>. /////////////////////
 
     function chunkify(text, chunkSize) {
-        var chunks = [];
-        while (text.length > chunkSize) {
-            chunks.push(text.slice(0, chunkSize));
-            text = text.slice(chunkSize);
-        }
+        var chunks = [], 
+            numChunks = Math.ceil(text.length / chunkSize),
+            from = to = 0;
         
-        chunks.push(text);
+        for (var i = 0; i < numChunks; i++) {
+          from = to;
+          to += chunkSize;
+          chunks.push(text.slice(from, to));
+        }
+
         return chunks;
     };
     

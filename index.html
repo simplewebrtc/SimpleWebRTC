@@ -47,7 +47,8 @@
 				// true by default, omit for same result
 				data: getURLParameter('data') !== 'n',
 				// immediately ask for camera access
-				autoRequestMedia: !receivingMediaOnly
+				autoRequestMedia: !receivingMediaOnly,
+				log: true
 			});
 			
 			webrtc.on('readyToCall', function () {

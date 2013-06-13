@@ -47,19 +47,18 @@
       
       return obj;
     };
-
+    
     // normalize environment
     var RTCPeerConnection = null,
         getUserMedia = null,
         attachMediaStream = null,
         reattachMediaStream = null,
         webRTCSupport = true,
-        isChrome = false,
-        isFirefox = false;
+        docStyle = document.documentElement.style,
+        isChrome = 'WebkitTransform' in docStyle,
+        isFirefox = 'MozBoxSizing' in docStyle;
 
-    if (navigator.mozGetUserMedia) {
-        isFirefox = true;
-
+    if (isFirefox) {
         // The RTCPeerConnection object.
         RTCPeerConnection = mozRTCPeerConnection;
 
@@ -71,7 +70,7 @@
 
         // Get UserMedia (only difference is the prefix).
         // Code from Adam Barth.
-        getUserMedia = navigator.mozGetUserMedia.bind(navigator);
+        getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia.bind(navigator);
 
         // Attach a media stream to an element.
         attachMediaStream = function(element, stream) {
@@ -92,9 +91,7 @@
         MediaStream.prototype.getAudioTracks = function() {
             return [];
         };
-    } else if (navigator.webkitGetUserMedia) {
-        isChrome = true;
-
+    } else if (isChrome) {
         // The RTCPeerConnection object.
         RTCPeerConnection = webkitRTCPeerConnection;
 
@@ -102,7 +99,7 @@
 
         // Get UserMedia (only difference is the prefix).
         // Code from Adam Barth.
-        getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
+        getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia.bind(navigator);
 
         // Attach a media stream to an element.
         attachMediaStream = function(element, stream) {
@@ -262,7 +259,9 @@
                     receive: true,
                     preview: true
                 },
-                local: null,
+                local: {
+                  muted: true
+                },
                 remote: null,
                 autoRequestMedia: false,
                 // makes the entire PC config overridable
@@ -285,8 +284,8 @@
                     ]
                 }
             },
-            vConfig = config.video,
-            aConfig = config.audio,
+            vConfig,
+            aConfig,
             item,
             connection;
 
@@ -301,15 +300,29 @@
 //        }
         
         deepExtend(this.config, options);
+        vConfig = config.video;
+        aConfig = config.audio;
+        this.outboundMedia = {
+          video: this.config.video.send,
+          audio: this.config.audio.send
+        };
+        
+        if (isFirefox) {
+          // in Firefox, you can't clone or partially clone MediaStream objects yet
+          if (vConfig.preview && !vConfig.send)
+            throw new Error("In Firefox, you currently can only preview video if you send it");
+          if (!aConfig.send && (this.config.local && !this.config.local.muted))
+            throw new Error("In Firefox, you currently can only preview audio if you send it");
+        }
 
         config.mediaConstraints = config.mediaConstraints || {
-            audio: this.config.audio.send,
-            video: this.config.video.send || this.config.video.preview ? {
+            audio: aConfig.send,
+            video: vConfig.send || vConfig.preview ? {
                 mandatory: {},
                 optional: []
             } : false
         }
-
+        
         // log if configured to
         if (this.config.log) logger = console;
 
@@ -318,8 +331,8 @@
 
         // our socket.io connection
         connection = this.connection = io.connect(this.config.url, {
-                'force new connection': true // otherwise the 2nd instance of WebRTC will fail to connect
-            });
+            'force new connection': true // otherwise the 2nd instance of WebRTC will fail to connect
+        });
 
         connection.on('connect', function() {
             self.emit('ready', connection.socket.sessionid);
@@ -502,10 +515,12 @@
         }
 
         this.localStream = this.localStreamSent = stream;
-        if (!vConfig.send) { // video mute
-            this.localStreamSent = new MediaStream(stream.getAudioTracks());
-        } else if (!aConfig.send) { // audio mute
-            this.localStreamSent = new MediaStream(stream.getVideoTracks());
+        if (isChrome) {
+          if (!vConfig.send) { // allow previewing video, while not sending it
+              this.localStreamSent = new MediaStream(stream.getAudioTracks());
+          } else if (!aConfig.send && !this.config.local.muted) { // only send video
+              this.localStreamSent = new MediaStream(stream.getVideoTracks());
+          }
         }
 
         this.testReadiness();
@@ -540,12 +555,12 @@
     /**
      * for internal use
      */
-    WebRTC.prototype._send = function(to, type, payload) {
-        this.connection.emit('message', {
+    WebRTC.prototype._send = function(to, type, payload, misc) {
+        this.connection.emit('message', deepExtend({
             to: to,
             type: type,
             payload: payload
-        });
+        }, misc || {}));
     };
 
     function Conversation(options) {
@@ -554,11 +569,12 @@
             this[o] = this.options[o];
         }
 
+        logger.log(this.initiator ? "started" : "joined", "new conversation");
+        
         var self = this;
-        dataEvents = ['open', 'close', 'error', 'message'], // onmessage is special
-        config = this.parent.config,
-        vConfig = config.video,
-        aConfig = config.audio;
+            config = this.parent.config,
+            vConfig = config.video,
+            aConfig = config.audio;
 
         this.receiver = new Receiver();
 
@@ -573,34 +589,6 @@
             this.pc.onremovestream = this.handleStreamRemoved.bind(this);
         }
 
-        if (config.data) {
-            this.channel = this.pc.createDataChannel(
-                'RTCDataChannel',
-                isChrome ? {
-                    reliable: false
-                } : {});
-
-            if (isFirefox)
-                this.channel.binaryType = 'blob';
-
-            for (var i = 0; i < dataEvents.length; i++) {
-                var event = dataEvents[i],
-                    cbName = 'on' + event;
-
-                switch (event) {
-                case 'open':
-                case 'close':
-                case 'error':
-                    this.channel[cbName] = this.onProcessedDataChannelEvent_For(event);
-                    break;
-                case 'message':
-                    this.channel.onmessage = this.onDataChannelMessage.bind(this);
-                }
-            }
-
-            this.pc.ondatachannel = this.handleDataChannelAdded.bind(this);
-        }
-
         // for re-use
         this.mediaConstraints = {
             optional: [],
@@ -609,6 +597,33 @@
                 OfferToReceiveVideo: !! config.video.receive
             }
         };
+
+        if (isFirefox && !config.data)
+          this.mediaConstraints.mandatory.MozDontOfferDataChannel = true;
+
+        
+        if (this.parent.config.data) {
+            // in Firefox we have to initialize the RTCDataChannel via RTCPeerConnection.createDataChannel as the offerer, 
+            // and via the RTCPeerConnection.ondatachannel event handler as the answerer  
+            if (isChrome || (this.initiator && isFirefox)) {
+                var channel = this.pc.createDataChannel(
+                    'RTCDataChannel',
+                    isChrome ? {
+                        reliable: false
+                    } : {}
+                );
+    
+                if (isFirefox)
+                  channel.binaryType = 'blob';
+    
+                this.handleDataChannelAdded({
+                    channel: channel
+                });
+            }
+            else {
+                this.pc.ondatachannel = this.handleDataChannelAdded.bind(this);
+            }
+        }
 
         WildEmitter.call(this);
 
@@ -625,25 +640,31 @@
     });
 
     Conversation.prototype.handleMessage = function(message) {
-        switch (message.type) {
+        var type = message.type,
+            payload = message.payload,
+            media = message.media;
+        
+        switch (type) {
         case 'offer':
             logger.log('setting remote description');
-            this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
+            this.remoteConfig = media;
+            this.pc.setRemoteDescription(new RTCSessionDescription(payload));
             this.answer();
             break;
         case 'answer':
-            this.pc.setRemoteDescription(new RTCSessionDescription(message.payload));
+            this.remoteConfig = media;
+            this.pc.setRemoteDescription(new RTCSessionDescription(payload));
             break;
         case 'candidate':
-            logger.log('message.payload', message.payload);
+            logger.log('message.payload', payload);
             var candidate = new RTCIceCandidate({
-                    sdpMLineIndex: message.payload.label,
-                    candidate: message.payload.candidate
-                });
+                sdpMLineIndex: message.payload.label,
+                candidate: payload.candidate
+            });
             this.pc.addIceCandidate(candidate);
             break;
         default:
-            debugger;
+            logger.log("no such message type:", type);
             break;
         }
     };
@@ -651,13 +672,23 @@
     /**
      * for internal use
      */
-    Conversation.prototype._send = function(type, payload) {
-        this.parent._send(this.id, type, payload);
+    Conversation.prototype._send = function(type, payload, misc) {
+        this.parent._send(this.id, type, payload, misc);
     };
 
     Conversation.prototype.send = function(data, callbacks) {
         var self = this,
             channel = this.channel;
+        
+        if (!channel) {
+          // data channel is not set up yet, 
+          // send the message when it opens 
+          this.once('dataOpen', function() {
+            self.send(data, callbacks);
+          });
+          
+          return;
+        }
         
         callbacks = callbacks || {};
         if (channel.readyState != 'open')
@@ -677,6 +708,7 @@
     };
 
     Conversation.prototype.onProcessedDataChannelEvent = function(event, args) {
+        logger.log('data channel event', event, args);
         this.emit.apply(this, ['data' + cap(event)].concat(args || []));
     };
 
@@ -703,12 +735,14 @@
     };
 
     Conversation.prototype.start = function() {
-        var self = this;
+        var self = this
         this.pc.createOffer(function(sessionDescription) {
             logger.log('setting local description');
             self.pc.setLocalDescription(sessionDescription);
             logger.log('sending offer', sessionDescription);
-            self._send('offer', sessionDescription);
+            self._send('offer', sessionDescription, {
+              media: self.parent.outboundMedia
+            });
         }, null, this.mediaConstraints);
     };
 
@@ -727,22 +761,44 @@
 
     Conversation.prototype.answer = function() {
         var self = this;
-        logger.log('answer called');
+        logger.log('answer called');        
         this.pc.createAnswer(function(sessionDescription) {
             logger.log('setting local description');
             self.pc.setLocalDescription(sessionDescription);
             logger.log('sending answer', sessionDescription);
-            self._send('answer', sessionDescription);
+            self._send('answer', sessionDescription, {
+              media: self.parent.fxoutboundMedia
+            });
         }, null, this.mediaConstraints);
     };
 
     Conversation.prototype.handleDataChannelAdded = function(event) {
-        // only hits in firefox, do we need this?
+      var dataEvents = ['open', 'close', 'error', 'message']; // onmessage is special
+      this.channel = event.channel;
+      if (isFirefox)
+        this.channel.binaryType = 'blob';
+      
+      for (var i = 0; i < dataEvents.length; i++) {
+        var event = dataEvents[i],
+            cbName = 'on' + event;
+
+        switch (event) {
+        case 'open':
+        case 'close':
+        case 'error':
+            this.channel[cbName] = this.onProcessedDataChannelEvent_For(event);
+            break;
+        case 'message':
+            this.channel.onmessage = this.onDataChannelMessage.bind(this);
+            break;
+        }
+      }
     };
 
     Conversation.prototype.handleRemoteStreamAdded = function(event) {
         var stream = this.stream = event.stream,
-            tag = isFirefox ? 'video' : stream.getVideoTracks().length ? 'video' : 'audio';
+            tag = this.remoteConfig && this.remoteConfig.video ? 'video' : 'audio';
+        
         el = document.createElement(tag),
         container = this.parent.getRemoteMediaContainer(),
         options = this.remote;

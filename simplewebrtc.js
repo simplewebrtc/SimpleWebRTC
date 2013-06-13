@@ -767,7 +767,7 @@
             self.pc.setLocalDescription(sessionDescription);
             logger.log('sending answer', sessionDescription);
             self._send('answer', sessionDescription, {
-              media: self.parent.fxoutboundMedia
+              media: self.parent.outboundMedia
             });
         }, null, this.mediaConstraints);
     };
@@ -797,7 +797,7 @@
 
     Conversation.prototype.handleRemoteStreamAdded = function(event) {
         var stream = this.stream = event.stream,
-            tag = this.remoteConfig && this.remoteConfig.video ? 'video' : 'audio';
+            tag = this.remoteConfig.video ? 'video' : 'audio';
         
         el = document.createElement(tag),
         container = this.parent.getRemoteMediaContainer(),

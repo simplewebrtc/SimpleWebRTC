@@ -49,35 +49,42 @@
       return obj;
     };
     
-    // increase the bandwidth field: https://github.com/Peer5/ShareFest/issues/10
-    // https://github.com/Peer5/ShareFest/blob/master/public/js/peerConnectionImplChrome.js
-    function transformOutgoingSdp(sessionDescription) {
-      var sdp = sessionDescription.sdp;
+    /* SUPER HACK! (for chrome)
+     * https://github.com/Peer5/ShareFest/blob/master/public/js/peerConnectionImplChrome.js#L201
+     * https://github.com/Peer5/ShareFest/issues/10
+     * This is a wicked impressive hack, lovingly taken from ShareFest
+     * This function should retain the following copyright per the apache 2.0 license:
+     * https://github.com/Peer5/ShareFest/blob/master/LICENSE 
+     */
+    function transformOutgoingSdp(sdp) {
       var splitted = sdp.split("b=AS:30");
-      sessionDescription.sdp = splitted[0] + "b=AS:1638400" + splitted[1];
+      var newSDP = splitted[0] + "b=AS:1638400" + splitted[1];
+      return newSDP;
     };
     
     // normalize environment
-    var RTCPeerConnection       = window.RTCPeerConnection     || window.mozRTCPeerConnection     			  || window.webkitRTCPeerConnection,
-        getUserMedia            = navigator.getUserMedia       || navigator.mozGetUserMedia.bind(navigator)   || navigator.webkitGetUserMedia.bind(navigator),
-        RTCIceCandidate         = window.RTCIceCandidate       || window.mozRTCIceCandidate,
-        RTCSessionDescription   = window.RTCSessionDescription || window.mozRTCSessionDescription,
-        MediaStream             = window.MediaStream           || window.webkitMediaStream;
+    var RTCPeerConnection       = window.mozRTCPeerConnection     || window.webkitRTCPeerConnection   || window.RTCPeerConnection,
+        RTCIceCandidate         = window.mozRTCIceCandidate       || window.RTCIceCandidate,
+        RTCSessionDescription   = window.mozRTCSessionDescription || window.RTCSessionDescription,
+        MediaStream             = window.webkitMediaStream        || window.MediaStream,
+        getUserMedia = null,
         attachMediaStream = null,
         reattachMediaStream = null,
         webRTCSupport = true,
         docStyle = document.documentElement.style,
         isChrome = 'WebkitTransform' in docStyle,
         isFirefox = 'MozBoxSizing' in docStyle;
-
+    
     if (!(isFirefox || isChrome) || 
         !(RTCPeerConnection && RTCIceCandidate && RTCSessionDescription && MediaStream)) {
       
       webRTCSupport = false;
       throw new Error("Browser does not appear to be WebRTC-capable");
     }
+
+    if (isFirefox) {      
+        getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia.bind(navigator);
         
-    if (isFirefox) {
         // Attach a media stream to an element.
         attachMediaStream = function(element, stream) {
             element.mozSrcObject = stream;
@@ -98,6 +105,8 @@
             return [];
         };
     } else if (isChrome) {
+        getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia.bind(navigator);
+      
         // Attach a media stream to an element.
         attachMediaStream = function(element, stream) {
             element.autoplay = true;
@@ -189,7 +198,11 @@
 
         // remove all handlers
         if (arguments.length === 1) {
-            delete this.callbacks[event];
+            if (event === '*')
+              this.callbacks = {};
+            else
+              delete this.callbacks[event];
+            
             return this;
         }
 
@@ -513,11 +526,11 @@
 
         this.localStream = this.localStreamSent = stream;
         if (isChrome) {
-          if (!vConfig.send) { // allow previewing video, while not sending it
-              this.localStreamSent = new MediaStream(stream.getAudioTracks());
-          } else if (!aConfig.send && !this.config.local.muted) { // only send video
-              this.localStreamSent = new MediaStream(stream.getVideoTracks());
-          }
+            if (!vConfig.send) { // allow previewing video, while not sending it
+                this.localStreamSent = new MediaStream(stream.getAudioTracks());
+            } else if (!aConfig.send && !this.config.local.muted) { // only send video
+                this.localStreamSent = new MediaStream(stream.getVideoTracks());
+            }
         }
 
         this.testReadiness();
@@ -735,7 +748,9 @@
         var self = this
         this.pc.createOffer(function(sessionDescription) {
             logger.log('setting local description');
-            transformOutgoingSdp(sessionDescription);
+            if (isChrome)
+              sessionDescription.sdp = transformOutgoingSdp(sessionDescription.sdp);
+              
             self.pc.setLocalDescription(sessionDescription);
             logger.log('sending offer', sessionDescription);
             self._send('offer', sessionDescription, {
@@ -762,6 +777,9 @@
         logger.log('answer called');        
         this.pc.createAnswer(function(sessionDescription) {
             logger.log('setting local description');
+            if (isChrome)
+              sessionDescription.sdp = transformOutgoingSdp(sessionDescription.sdp);
+            
             self.pc.setLocalDescription(sessionDescription);
             logger.log('sending answer', sessionDescription);
             self._send('answer', sessionDescription, {
@@ -854,6 +872,7 @@
             return;
 
         delete this.parent.pcs[this.id];
+        this.emit('closed');
         this.closed = true;
     }
 

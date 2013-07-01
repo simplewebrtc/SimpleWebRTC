@@ -444,7 +444,7 @@ Peer.prototype.handleMessage = function (message) {
     logger.log('getting', message.type, message.payload);
 
     if (message.type === 'offer') {
-        this.pc.answer(message.payload, function (sessionDesc) {
+        this.pc.answer(message.payload, function (err, sessionDesc) {
             self.send('answer', sessionDesc);
         });
     } else if (message.type === 'answer') {
@@ -481,7 +481,7 @@ Peer.prototype.onIceCandidate = function (candidate) {
 Peer.prototype.start = function () {
     var self = this;
     console.log('calling offer');
-    this.pc.offer(function (sessionDescription) {
+    this.pc.offer(function (err, sessionDescription) {
         self.send('offer', sessionDescription);
     });
 };

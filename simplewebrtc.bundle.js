@@ -446,7 +446,7 @@ Peer.prototype.handleMessage = function (message) {
     logger.log('getting', message.type, message.payload);
 
     if (message.type === 'offer') {
-        this.pc.answer(message.payload, function (sessionDesc) {
+        this.pc.answer(message.payload, function (err, sessionDesc) {
             self.send('answer', sessionDesc);
         });
     } else if (message.type === 'answer') {
@@ -483,7 +483,7 @@ Peer.prototype.onIceCandidate = function (candidate) {
 Peer.prototype.start = function () {
     var self = this;
     console.log('calling offer');
-    this.pc.offer(function (sessionDescription) {
+    this.pc.offer(function (err, sessionDescription) {
         self.send('offer', sessionDescription);
     });
 };
@@ -528,7 +528,7 @@ if (typeof module !== 'undefined') {
     window.WebRTC = WebRTC;
 }
 
-},{"webrtcsupport":2,"getusermedia":3,"getscreenmedia":4,"attachmediastream":5,"rtcpeerconnection":6,"wildemitter":7,"hark":8}],2:[function(require,module,exports){
+},{"webrtcsupport":2,"getusermedia":3,"getscreenmedia":4,"attachmediastream":5,"wildemitter":6,"rtcpeerconnection":7,"hark":8}],2:[function(require,module,exports){
 // created by @HenrikJoreteg
 var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
 var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
@@ -609,7 +609,7 @@ module.exports = function (element, stream, play) {
     return true;
 };
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -770,7 +770,7 @@ module.exports = function (cb) {
     getUserMedia(constraints, cb);
 };
 
-},{"getusermedia":3}],6:[function(require,module,exports){
+},{"getusermedia":3}],7:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -831,11 +831,18 @@ PeerConnection.prototype.offer = function (constraints, cb) {
         };
     var callback = hasConstraints ? cb : constraints;
 
-    this.pc.createOffer(function (sessionDescription) {
-        self.pc.setLocalDescription(sessionDescription);
-        self.emit('offer', sessionDescription);
-        if (callback) callback(sessionDescription);
-    }, null, mediaConstraints);
+    this.pc.createOffer(
+        function (sessionDescription) {
+            self.pc.setLocalDescription(sessionDescription);
+            self.emit('offer', sessionDescription);
+            if (callback) callback(null, sessionDescription);
+        },
+        function (err) {
+            self.emit('error', err);
+            if (callback) callback(err);
+        },
+        mediaConstraints
+    );
 };
 
 PeerConnection.prototype.answerAudioOnly = function (offer, cb) {
@@ -863,11 +870,17 @@ PeerConnection.prototype.answerVideoOnly = function (offer, cb) {
 PeerConnection.prototype._answer = function (offer, constraints, cb) {
     var self = this;
     this.pc.setRemoteDescription(new webrtc.SessionDescription(offer));
-    this.pc.createAnswer(function (sessionDescription) {
-        self.pc.setLocalDescription(sessionDescription);
-        self.emit('answer', sessionDescription);
-        if (cb) cb(sessionDescription);
-    }, null, constraints);
+    this.pc.createAnswer(
+        function (sessionDescription) {
+            self.pc.setLocalDescription(sessionDescription);
+            self.emit('answer', sessionDescription);
+            if (cb) cb(null, sessionDescription);
+        }, function (err) {
+            self.emit('error', err);
+            if (cb) cb(err);
+        },
+        constraints
+    );
 };
 
 PeerConnection.prototype.answer = function (offer, constraints, cb) {
@@ -895,7 +908,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"webrtcsupport":2,"wildemitter":7}],8:[function(require,module,exports){
+},{"webrtcsupport":2,"wildemitter":6}],8:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -988,6 +1001,6 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":7}]},{},[1])(1)
+},{"wildemitter":6}]},{},[1])(1)
 });
 ;

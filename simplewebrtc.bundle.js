@@ -528,11 +528,11 @@ if (typeof module !== 'undefined') {
     window.WebRTC = WebRTC;
 }
 
-},{"webrtcsupport":2,"getusermedia":3,"attachmediastream":4,"rtcpeerconnection":5,"wildemitter":6,"hark":7,"getscreenmedia":8}],2:[function(require,module,exports){
+},{"webrtcsupport":2,"getusermedia":3,"getscreenmedia":4,"attachmediastream":5,"rtcpeerconnection":6,"wildemitter":7,"hark":8}],2:[function(require,module,exports){
 // created by @HenrikJoreteg
-var PC = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-var IceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate;
-var SessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription;
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
 var prefix = function () {
     if (window.mozRTCPeerConnection) {
         return 'moz';
@@ -543,10 +543,10 @@ var prefix = function () {
 var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
 var webAudio = !!window.webkitAudioContext;
 
-// export support flags and constructors
+// export support flags and constructors.prototype && PC
 module.exports = {
     support: !!PC,
-    dataChannel: !!(PC && PC.prototype.createDataChannel),
+    dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
     prefix: prefix,
     webAudio: webAudio,
     screenSharing: screenSharing,
@@ -584,7 +584,7 @@ module.exports = function (contstraints, cb) {
     });
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function (element, stream, play) {
     var autoPlay = (play === false) ? false : true;
 
@@ -609,7 +609,7 @@ module.exports = function (element, stream, play) {
     return true;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -746,7 +746,31 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
+// getScreenMedia helper by @HenrikJoreteg
+var getUserMedia = require('getusermedia');
+
+module.exports = function (cb) {
+    var constraints = {
+            video: {
+                mandatory: {
+                    chromeMediaSource: 'screen'
+                }
+            }
+        };
+
+    if (window.location.protocol === 'http:') {
+        return cb(new Error('HttpsRequired'));
+    }
+
+    if (!navigator.webkitGetUserMedia) {
+        return cb(new Error('NotSupported'));
+    }
+
+    getUserMedia(constraints, cb);
+};
+
+},{"getusermedia":3}],6:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -798,13 +822,14 @@ PeerConnection.prototype.processIce = function (candidate) {
 
 PeerConnection.prototype.offer = function (constraints, cb) {
     var self = this;
-    var mediaConstraints = constraints || {
+    var hasConstraints = arguments.length === 2;
+    var mediaConstraints = hasConstraints ? constraints : {
             mandatory: {
                 OfferToReceiveAudio: true,
                 OfferToReceiveVideo: true
             }
         };
-    var callback = arguments.length === 2 ? cb : constraints;
+    var callback = hasConstraints ? cb : constraints;
 
     this.pc.createOffer(function (sessionDescription) {
         self.pc.setLocalDescription(sessionDescription);
@@ -870,7 +895,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"wildemitter":6,"webrtcsupport":2}],7:[function(require,module,exports){
+},{"webrtcsupport":2,"wildemitter":7}],8:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -889,7 +914,10 @@ function getMaxVolume (analyser, fftBins) {
 
 module.exports = function(stream, options) {
   var harker = new WildEmitter();
-      
+
+  // make it not break in non-supported browsers
+  if (!window.webkitAudioContext) return harker;
+
   //Config
   var options = options || {},
       smoothing = (options.smoothing || 0.5),
@@ -905,7 +933,7 @@ module.exports = function(stream, options) {
   analyser.fftSize = 512;
   analyser.smoothingTimeConstant = smoothing;
   fftBins = new Float32Array(analyser.fftSize);
-  
+
   if (stream.jquery) stream = stream[0];
   if (stream instanceof HTMLAudioElement) {
     //Audio Tag
@@ -960,30 +988,6 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":6}],8:[function(require,module,exports){
-// getScreenMedia helper by @HenrikJoreteg
-var getUserMedia = require('getusermedia');
-
-module.exports = function (cb) {
-    var constraints = {
-            video: {
-                mandatory: {
-                    chromeMediaSource: 'screen'
-                }
-            }
-        };
-
-    if (window.location.protocol === 'http:') {
-        return cb(new Error('HttpsRequired'));
-    }
-
-    if (!navigator.webkitGetUserMedia) {
-        return cb(new Error('NotSupported'));
-    }
-
-    getUserMedia(constraints, cb);
-};
-
-},{"getusermedia":3}]},{},[1])(1)
+},{"wildemitter":7}]},{},[1])(1)
 });
 ;

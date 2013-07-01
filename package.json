@@ -7,14 +7,14 @@
   },
   "description": "World's easiest webrtc",
   "dependencies": {
-    "webrtcsupport": "0.3.1",
+    "webrtcsupport": "0.3.2",
     "wildemitter": "0.0.5",
-    "rtcpeerconnection": "0.1.1",
+    "rtcpeerconnection": "0.1.3",
     "getusermedia": "0.1.0",
     "getscreenmedia": "0.1.0",
     "socket.io-client": "0.9.16",
     "attachmediastream": "0.0.1",
-    "hark": "0.1.0"
+    "hark": "0.1.1"
   },
   "devDependencies": {
     "express": "3.x.x",

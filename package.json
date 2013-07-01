@@ -1,9 +1,9 @@
 {
-  "name": "webrtc.js",
+  "name": "simplewebrtc",
   "version": "0.2.0",
   "repository": {
     "type": "git", 
-    "url": "git@github.com:henrikjoreteg/webrtc.js.git"
+    "url": "git@github.com:henrikjoreteg/SimpleWebRTC.git"
   },
   "description": "World's easiest webrtc",
   "dependencies": {

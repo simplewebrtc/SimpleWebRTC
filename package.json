@@ -5,6 +5,7 @@
     "type": "git", 
     "url": "git@github.com:henrikjoreteg/SimpleWebRTC.git"
   },
+  "main": "./simplewebrtc.js",
   "description": "World's easiest webrtc",
   "dependencies": {
     "webrtcsupport": "0.3.2",

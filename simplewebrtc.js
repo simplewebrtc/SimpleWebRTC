@@ -25,11 +25,8 @@ function WebRTC(opts) {
                 optional: [{"DtlsSrtpKeyAgreement": true}]
             },
             media: {
-                audio:true,
-                video: {
-                    mandatory: {},
-                    optional: []
-                }
+                audio: true,
+                video: true
             }
         },
         item,
@@ -212,7 +209,7 @@ WebRTC.prototype.startLocalVideo = function (el) {
 
             // start out somewhat muted if we can track audio
             if (webrtc.webAudio) {
-                self.setMicVolume(.5);
+                self.setMicVolume(0.5);
             }
         }
     });
@@ -242,7 +239,7 @@ WebRTC.prototype.setupAudioMonitor = function (stream) {
     audio.on('speaking', function() {
         if (!self.hardMuted) {
             self.setMicVolume(1);
-            self.sendToAll('speaking', {})
+            self.sendToAll('speaking', {});
         }
     });
 
@@ -251,7 +248,7 @@ WebRTC.prototype.setupAudioMonitor = function (stream) {
             clearTimeout(timeout);
         }
         timeout = setTimeout(function () {
-            self.setMicVolume(.5);
+            self.setMicVolume(0.5);
             self.sendToAll('stopped_speaking', {});
         }, 1000);
     });
@@ -323,7 +320,7 @@ WebRTC.prototype.shareScreen = function (cb) {
                 container = self.getRemoteVideoContainer();
 
             if (err) {
-                cb && cb('Screen sharing failed');
+                if (cb) cb('Screen sharing failed');
                 throw new Error('Failed to access to screen media.');
             } else {
                 self.localScreen = stream;
@@ -352,11 +349,11 @@ WebRTC.prototype.shareScreen = function (cb) {
                     }
                 });
 
-                cb && cb();
+                if (cb) cb();
             }
         });
     } else {
-        cb && cb('Screen sharing not supported');
+        if (cb) cb('Screen sharing not supported');
     }
 };
 
@@ -374,7 +371,7 @@ WebRTC.prototype.stopScreenShare = function () {
     // a hack to emit the event the removes the video
     // element that we want
     if (videoEl) this.emit('videoRemoved', videoEl);
-    this.localScreen && this.localScreen.stop();
+    if (this.localScreen) this.localScreen.stop();
     this.peers.forEach(function (peer) {
         if (peer.broadcaster) {
             peer.end();
@@ -414,26 +411,19 @@ function Peer(options) {
     this.sharemyscreen = options.sharemyscreen || false;
     this.stream = options.stream;
     // Create an RTCPeerConnection via the polyfill
-    this.pc = new webrtc.PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
-    this.pc.onicecandidate = this.onIceCandidate.bind(this);
+    this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
+    this.pc.on('ice', this.onIceCandidate.bind(this));
     if (options.type === 'screen') {
         if (this.parent.localScreen && this.sharemyscreen) {
-            logger.log('adding local screen stream to peer connection')
+            logger.log('adding local screen stream to peer connection');
             this.pc.addStream(this.parent.localScreen);
             this.broadcaster = this.parent.connection.socket.sessionid;
         }
     } else {
         this.pc.addStream(this.parent.localStream);
     }
-    this.pc.onaddstream = this.handleRemoteStreamAdded.bind(this);
-    this.pc.onremovestream = this.handleStreamRemoved.bind(this);
-    // for re-use
-    this.mediaConstraints = {
-        mandatory: {
-            OfferToReceiveAudio: true,
-            OfferToReceiveVideo: true
-        }
-    };
+    this.pc.on('addStream', this.handleRemoteStreamAdded.bind(this));
+    this.pc.on('removeStream', this.handleStreamRemoved.bind(this));
     WildEmitter.call(this);
 
     // proxy events to parent
@@ -449,19 +439,18 @@ Peer.prototype = Object.create(WildEmitter.prototype, {
 });
 
 Peer.prototype.handleMessage = function (message) {
+    var self = this;
+
+    logger.log('getting', message.type, message.payload);
+
     if (message.type === 'offer') {
-        logger.log('setting remote description');
-        this.pc.setRemoteDescription(new webrtc.SessionDescription(message.payload));
-        this.answer();
-    } else if (message.type === 'answer') {
-        logger.log('setting answer');
-        this.pc.setRemoteDescription(new webrtc.SessionDescription(message.payload));
-    } else if (message.type === 'candidate') {
-        var candidate = new webrtc.IceCandidate({
-            sdpMLineIndex: message.payload.label,
-            candidate: message.payload.candidate
+        this.pc.answer(message.payload, function (sessionDesc) {
+            self.send('answer', sessionDesc);
         });
-        this.pc.addIceCandidate(candidate);
+    } else if (message.type === 'answer') {
+        this.pc.handleAnswer(message.payload);
+    } else if (message.type === 'candidate') {
+        this.pc.processIce(message.payload);
     } else if (message.type === 'speaking') {
         this.parent.emit('speaking', {id: message.from});
     } else if (message.type === 'stopped_speaking') {
@@ -470,6 +459,7 @@ Peer.prototype.handleMessage = function (message) {
 };
 
 Peer.prototype.send = function (type, payload) {
+    logger.log('sending', type, payload);
     this.parent.connection.emit('message', {
         to: this.id,
         broadcaster: this.broadcaster,
@@ -479,43 +469,26 @@ Peer.prototype.send = function (type, payload) {
     });
 };
 
-Peer.prototype.onIceCandidate = function (event) {
+Peer.prototype.onIceCandidate = function (candidate) {
     if (this.closed) return;
-    if (event.candidate) {
-        this.send('candidate', {
-            label: event.candidate.sdpMLineIndex,
-            id: event.candidate.sdpMid,
-            candidate: event.candidate.candidate
-        });
+    if (candidate) {
+        this.send('candidate', candidate);
     } else {
-      logger.log("End of candidates.");
+        logger.log("End of candidates.");
     }
 };
 
 Peer.prototype.start = function () {
     var self = this;
-    this.pc.createOffer(function (sessionDescription) {
-        logger.log('setting local description');
-        self.pc.setLocalDescription(sessionDescription);
-        logger.log('sending offer', sessionDescription);
+    console.log('calling offer');
+    this.pc.offer(function (sessionDescription) {
         self.send('offer', sessionDescription);
-    }, null, this.mediaConstraints);
+    });
 };
 
 Peer.prototype.end = function () {
     this.pc.close();
     this.handleStreamRemoved();
-};
-
-Peer.prototype.answer = function () {
-    var self = this;
-    logger.log('answer called');
-    this.pc.createAnswer(function (sessionDescription) {
-        logger.log('setting local description');
-        self.pc.setLocalDescription(sessionDescription);
-        logger.log('sending answer', sessionDescription);
-        self.send('answer', sessionDescription);
-    }, null, this.mediaConstraints);
 };
 
 Peer.prototype.handleRemoteStreamAdded = function (event) {

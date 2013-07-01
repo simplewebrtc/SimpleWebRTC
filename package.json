@@ -1,6 +1,6 @@
 {
   "name": "webrtc.js",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "repository": {
     "type": "git", 
     "url": "git@github.com:henrikjoreteg/webrtc.js.git"
@@ -9,7 +9,7 @@
   "dependencies": {
     "webrtcsupport": "0.3.1",
     "wildemitter": "0.0.5",
-    "rtcpeerconnection": "0.0.0",
+    "rtcpeerconnection": "0.1.1",
     "getusermedia": "0.1.0",
     "getscreenmedia": "0.1.0",
     "socket.io-client": "0.9.16",

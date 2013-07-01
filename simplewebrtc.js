@@ -5,6 +5,7 @@ var attachMediaStream = require('attachmediastream');
 var PeerConnection = require('rtcpeerconnection');
 var WildEmitter = require('wildemitter');
 var hark = require('hark');
+var log;
 
 
 function WebRTC(opts) {
@@ -46,7 +47,7 @@ function WebRTC(opts) {
     }
 
     // log if configured to
-    if (this.config.log) logger = console;
+    log = (this.config.log) ? console.log.bind(console) : function () {};
 
     // where we'll store our peer connections
     this.peers = [];
@@ -87,9 +88,11 @@ function WebRTC(opts) {
     WildEmitter.call(this);
 
     // log events
-    this.on('*', function (event, val1, val2) {
-        logger.log('event:', event, val1, val2);
-    });
+    if (this.config.log) {
+        this.on('*', function (event, val1, val2) {
+            log('event:', event, val1, val2);
+        });
+    }
 
     // auto request if configured
     if (this.config.autoRequestMedia) this.startLocalVideo();
@@ -232,7 +235,7 @@ WebRTC.prototype.setupAudioMonitor = function (stream) {
     // disable for now:
     //return;
 
-    logger.log('Setup audio');
+    log('Setup audio');
     var audio = hark(stream),
         self = this,
         timeout;
@@ -415,7 +418,7 @@ function Peer(options) {
     this.pc.on('ice', this.onIceCandidate.bind(this));
     if (options.type === 'screen') {
         if (this.parent.localScreen && this.sharemyscreen) {
-            logger.log('adding local screen stream to peer connection');
+            log('adding local screen stream to peer connection');
             this.pc.addStream(this.parent.localScreen);
             this.broadcaster = this.parent.connection.socket.sessionid;
         }
@@ -441,7 +444,7 @@ Peer.prototype = Object.create(WildEmitter.prototype, {
 Peer.prototype.handleMessage = function (message) {
     var self = this;
 
-    logger.log('getting', message.type, message.payload);
+    log('getting', message.type, message.payload);
 
     if (message.type === 'offer') {
         this.pc.answer(message.payload, function (err, sessionDesc) {
@@ -459,7 +462,7 @@ Peer.prototype.handleMessage = function (message) {
 };
 
 Peer.prototype.send = function (type, payload) {
-    logger.log('sending', type, payload);
+    log('sending', type, payload);
     this.parent.connection.emit('message', {
         to: this.id,
         broadcaster: this.broadcaster,
@@ -474,7 +477,7 @@ Peer.prototype.onIceCandidate = function (candidate) {
     if (candidate) {
         this.send('candidate', candidate);
     } else {
-        logger.log("End of candidates.");
+        log("End of candidates.");
     }
 };
 

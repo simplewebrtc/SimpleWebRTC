@@ -7,6 +7,7 @@ var attachMediaStream = require('attachmediastream');
 var PeerConnection = require('rtcpeerconnection');
 var WildEmitter = require('wildemitter');
 var hark = require('hark');
+var log;
 
 
 function WebRTC(opts) {
@@ -48,7 +49,7 @@ function WebRTC(opts) {
     }
 
     // log if configured to
-    if (this.config.log) logger = console;
+    log = (this.config.log) ? console.log.bind(console) : function () {};
 
     // where we'll store our peer connections
     this.peers = [];
@@ -89,9 +90,11 @@ function WebRTC(opts) {
     WildEmitter.call(this);
 
     // log events
-    this.on('*', function (event, val1, val2) {
-        logger.log('event:', event, val1, val2);
-    });
+    if (this.config.log) {
+        this.on('*', function (event, val1, val2) {
+            log('event:', event, val1, val2);
+        });
+    }
 
     // auto request if configured
     if (this.config.autoRequestMedia) this.startLocalVideo();
@@ -234,7 +237,7 @@ WebRTC.prototype.setupAudioMonitor = function (stream) {
     // disable for now:
     //return;
 
-    logger.log('Setup audio');
+    log('Setup audio');
     var audio = hark(stream),
         self = this,
         timeout;
@@ -417,7 +420,7 @@ function Peer(options) {
     this.pc.on('ice', this.onIceCandidate.bind(this));
     if (options.type === 'screen') {
         if (this.parent.localScreen && this.sharemyscreen) {
-            logger.log('adding local screen stream to peer connection');
+            log('adding local screen stream to peer connection');
             this.pc.addStream(this.parent.localScreen);
             this.broadcaster = this.parent.connection.socket.sessionid;
         }
@@ -443,7 +446,7 @@ Peer.prototype = Object.create(WildEmitter.prototype, {
 Peer.prototype.handleMessage = function (message) {
     var self = this;
 
-    logger.log('getting', message.type, message.payload);
+    log('getting', message.type, message.payload);
 
     if (message.type === 'offer') {
         this.pc.answer(message.payload, function (err, sessionDesc) {
@@ -461,7 +464,7 @@ Peer.prototype.handleMessage = function (message) {
 };
 
 Peer.prototype.send = function (type, payload) {
-    logger.log('sending', type, payload);
+    log('sending', type, payload);
     this.parent.connection.emit('message', {
         to: this.id,
         broadcaster: this.broadcaster,
@@ -476,7 +479,7 @@ Peer.prototype.onIceCandidate = function (candidate) {
     if (candidate) {
         this.send('candidate', candidate);
     } else {
-        logger.log("End of candidates.");
+        log("End of candidates.");
     }
 };
 
@@ -528,7 +531,7 @@ if (typeof module !== 'undefined') {
     window.WebRTC = WebRTC;
 }
 
-},{"webrtcsupport":2,"getusermedia":3,"getscreenmedia":4,"attachmediastream":5,"wildemitter":6,"rtcpeerconnection":7,"hark":8}],2:[function(require,module,exports){
+},{"webrtcsupport":2,"getusermedia":3,"getscreenmedia":4,"attachmediastream":5,"rtcpeerconnection":6,"wildemitter":7,"hark":8}],2:[function(require,module,exports){
 // created by @HenrikJoreteg
 var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
 var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
@@ -609,7 +612,7 @@ module.exports = function (element, stream, play) {
     return true;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -770,7 +773,7 @@ module.exports = function (cb) {
     getUserMedia(constraints, cb);
 };
 
-},{"getusermedia":3}],7:[function(require,module,exports){
+},{"getusermedia":3}],6:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -908,7 +911,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"webrtcsupport":2,"wildemitter":6}],8:[function(require,module,exports){
+},{"wildemitter":7,"webrtcsupport":2}],8:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -1001,6 +1004,6 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":6}]},{},[1])(1)
+},{"wildemitter":7}]},{},[1])(1)
 });
 ;

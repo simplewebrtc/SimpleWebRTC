@@ -1,6 +1,6 @@
 # SimpleWebRTC - World's easiest WebRTC lib
 
-Check out the demo: http://conversat.io
+Check out the demo: https://talky.io
 
 
 ## It's so easy:
@@ -44,8 +44,3 @@ webrtc.on('readyToCall', function () {
 });
 ```
 
-### Optional Parameters
-
-```
-iceServers: {"iceServers":[{"url":"stun:124.124.124.2"}]}
-```

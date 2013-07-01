@@ -6,9 +6,20 @@
     "url": "git@github.com:henrikjoreteg/webrtc.js.git"
   },
   "description": "World's easiest webrtc",
+  "dependencies": {
+    "webrtcsupport": "0.3.1",
+    "wildemitter": "0.0.5",
+    "rtcpeerconnection": "0.0.0",
+    "getusermedia": "0.1.0",
+    "getscreenmedia": "0.1.0",
+    "socket.io-client": "0.9.16",
+    "attachmediastream": "0.0.1",
+    "hark": "0.1.0"
+  },
   "devDependencies": {
+    "express": "3.x.x",
+    "browserify": "2.22.0",
     "request": "",
-    "uglify-js": "",
-    "express": "3.x.x"
+    "uglify-js": "2.3.6"
   }
 }

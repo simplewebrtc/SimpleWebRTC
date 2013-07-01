@@ -18,11 +18,12 @@
         <video id="localVideo" style="height: 150px;"></video>
         <div id="remotes"></div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-        <script src="socket.io.js"></script>
-        <script src="simplewebrtc.js"></script>
+        <script src="latest.js"></script>
         <script>
             // grab the room from the URL
             var room = location.search && location.search.split('?')[1];
+
+            console.log("ROOM", room);
 
             // create our webrtc connection
             var webrtc = new WebRTC({

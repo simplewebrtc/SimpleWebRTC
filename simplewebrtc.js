@@ -211,9 +211,7 @@ WebRTC.prototype.startLocalVideo = function (el) {
             self.testReadiness();
 
             // start out somewhat muted if we can track audio
-            if (webrtc.webAudio) {
-                self.setMicVolume(0.5);
-            }
+            self.setMicVolume(0.5);
         }
     });
 };
@@ -240,16 +238,15 @@ WebRTC.prototype.setupAudioMonitor = function (stream) {
         self = this,
         timeout;
     audio.on('speaking', function() {
-        if (!self.hardMuted) {
-            self.setMicVolume(1);
-            self.sendToAll('speaking', {});
-        }
+        if (self.hardMuted) return;
+        self.setMicVolume(1);
+        self.sendToAll('speaking', {});
     });
 
     audio.on('stopped_speaking', function() {
-        if (timeout) {
-            clearTimeout(timeout);
-        }
+        if (self.hardMuted) return;
+        if (timeout) clearTimeout(timeout);
+
         timeout = setTimeout(function () {
             self.setMicVolume(0.5);
             self.sendToAll('stopped_speaking', {});
@@ -260,11 +257,11 @@ WebRTC.prototype.setupAudioMonitor = function (stream) {
 WebRTC.prototype.setupMicVolumeControl = function (stream) {
     if (!webrtc.webAudio) return stream;
 
-    var context = new webkitAudioContext(),
-        microphone = context.createMediaStreamSource(stream),
-        gainFilter = this.gainFilter = context.createGainNode(),
-        destination = context.createMediaStreamDestination(),
-        outputStream = destination.stream;
+    var context = new webkitAudioContext();
+    var microphone = context.createMediaStreamSource(stream);
+    var gainFilter = this.gainFilter = context.createGainNode();
+    var destination = context.createMediaStreamDestination();
+    var outputStream = destination.stream;
 
     microphone.connect(gainFilter);
     gainFilter.connect(destination);
@@ -303,6 +300,9 @@ WebRTC.prototype.resume = function () {
 
 // Internal methods for enabling/disabling audio/video
 WebRTC.prototype._audioEnabled = function (bool) {
+    // work around for chrome 27 bug where disabling tracks
+    // doesn't seem to work (works in canary, remove when working)
+    this.setMicVolume(bool ? 1 : 0);
     this.localStream.getAudioTracks().forEach(function (track) {
         track.enabled = !!bool;
     });
@@ -483,7 +483,6 @@ Peer.prototype.onIceCandidate = function (candidate) {
 
 Peer.prototype.start = function () {
     var self = this;
-    console.log('calling offer');
     this.pc.offer(function (err, sessionDescription) {
         self.send('offer', sessionDescription);
     });

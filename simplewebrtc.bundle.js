@@ -71,7 +71,8 @@ function WebRTC(opts) {
             peer = self.createPeer({
                 id: message.from,
                 type: message.roomType,
-                sharemyscreen: message.roomType === 'screen' && !message.broadcaster
+                sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
+                browserPrefix: message.prefix
             });
             peer.handleMessage(message);
         } else if (peers.length) {
@@ -412,6 +413,7 @@ function Peer(options) {
     this.id = options.id;
     this.parent = options.parent;
     this.type = options.type || 'video';
+    this.browserPrefix = options.browserPrefix;
     this.oneway = options.oneway || false;
     this.sharemyscreen = options.sharemyscreen || false;
     this.stream = options.stream;

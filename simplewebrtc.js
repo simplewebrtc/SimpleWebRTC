@@ -468,7 +468,8 @@ Peer.prototype.send = function (type, payload) {
         broadcaster: this.broadcaster,
         roomType: this.type,
         type: type,
-        payload: payload
+        payload: payload,
+        prefix: webrtc.prefix
     });
 };
 

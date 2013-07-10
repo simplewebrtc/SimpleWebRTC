@@ -470,7 +470,8 @@ Peer.prototype.send = function (type, payload) {
         broadcaster: this.broadcaster,
         roomType: this.type,
         type: type,
-        payload: payload
+        payload: payload,
+        prefix: webrtc.prefix
     });
 };
 
@@ -530,32 +531,7 @@ if (typeof module !== 'undefined') {
     window.WebRTC = WebRTC;
 }
 
-},{"getscreenmedia":2,"attachmediastream":3,"webrtcsupport":4,"rtcpeerconnection":5,"getusermedia":6,"hark":7,"wildemitter":8}],3:[function(require,module,exports){
-module.exports = function (element, stream, play) {
-    var autoPlay = (play === false) ? false : true;
-
-    if (autoPlay) element.autoplay = true;
-
-    // handle mozilla case
-    if (window.mozGetUserMedia) {
-        element.mozSrcObject = stream;
-        if (autoPlay) element.play();
-    } else {
-        if (typeof element.srcObject !== 'undefined') {
-            element.srcObject = stream;
-        } else if (typeof element.mozSrcObject !== 'undefined') {
-            element.mozSrcObject = stream;
-        } else if (typeof element.src !== 'undefined') {
-            element.src = URL.createObjectURL(stream);
-        } else {
-            return false;
-        }
-    }
-
-    return true;
-};
-
-},{}],4:[function(require,module,exports){
+},{"webrtcsupport":2,"getusermedia":3,"getscreenmedia":4,"attachmediastream":5,"rtcpeerconnection":6,"wildemitter":7,"hark":8}],2:[function(require,module,exports){
 // created by @HenrikJoreteg
 var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
 var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
@@ -582,7 +558,7 @@ module.exports = {
     IceCandidate: IceCandidate
 };
 
-},{}],6:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -611,7 +587,32 @@ module.exports = function (contstraints, cb) {
     });
 };
 
-},{}],8:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+module.exports = function (element, stream, play) {
+    var autoPlay = (play === false) ? false : true;
+
+    if (autoPlay) element.autoplay = true;
+
+    // handle mozilla case
+    if (window.mozGetUserMedia) {
+        element.mozSrcObject = stream;
+        if (autoPlay) element.play();
+    } else {
+        if (typeof element.srcObject !== 'undefined') {
+            element.srcObject = stream;
+        } else if (typeof element.mozSrcObject !== 'undefined') {
+            element.mozSrcObject = stream;
+        } else if (typeof element.src !== 'undefined') {
+            element.src = URL.createObjectURL(stream);
+        } else {
+            return false;
+        }
+    }
+
+    return element;
+};
+
+},{}],7:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -748,7 +749,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],2:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -772,7 +773,7 @@ module.exports = function (cb) {
     getUserMedia(constraints, cb);
 };
 
-},{"getusermedia":6}],5:[function(require,module,exports){
+},{"getusermedia":3}],6:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -910,7 +911,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"wildemitter":8,"webrtcsupport":4}],7:[function(require,module,exports){
+},{"wildemitter":7,"webrtcsupport":2}],8:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -1003,6 +1004,6 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":8}]},{},[1])(1)
+},{"wildemitter":7}]},{},[1])(1)
 });
 ;

@@ -44,3 +44,9 @@ webrtc.on('readyToCall', function () {
 });
 ```
 
+### Available Options
+
+
+`peerConnectionConfig` - Set this to specify your own STUN and TURN servers. SimpleWebRTC uses Google's public STUN server by default: `stun.l.google.com:19302`. It's intended for public use according to: https://twitter.com/HenrikJoreteg/status/354105684591251456
+
+

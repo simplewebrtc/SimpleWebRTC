@@ -20,7 +20,7 @@ function WebRTC(opts) {
             autoRemoveVideos: true,
             // makes the entire PC config overridable
             peerConnectionConfig: {
-                iceServers: webrtc.prefix == 'moz' ? [{"url":"stun:124.124.124.2"}] : [{"url": "stun:stun.l.google.com:19302"}]
+                iceServers: [{"url": "stun:stun.l.google.com:19302"}]
             },
             peerConnectionContraints: {
                 optional: [{"DtlsSrtpKeyAgreement": true}]

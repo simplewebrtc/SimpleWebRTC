@@ -22,7 +22,7 @@ function WebRTC(opts) {
             autoRemoveVideos: true,
             // makes the entire PC config overridable
             peerConnectionConfig: {
-                iceServers: webrtc.prefix == 'moz' ? [{"url":"stun:124.124.124.2"}] : [{"url": "stun:stun.l.google.com:19302"}]
+                iceServers: [{"url": "stun:stun.l.google.com:19302"}]
             },
             peerConnectionContraints: {
                 optional: [{"DtlsSrtpKeyAgreement": true}]
@@ -530,7 +530,32 @@ if (typeof module !== 'undefined') {
     window.WebRTC = WebRTC;
 }
 
-},{"webrtcsupport":2,"getusermedia":3,"attachmediastream":4,"getscreenmedia":5,"hark":6,"wildemitter":7,"rtcpeerconnection":8}],2:[function(require,module,exports){
+},{"getscreenmedia":2,"attachmediastream":3,"webrtcsupport":4,"rtcpeerconnection":5,"getusermedia":6,"hark":7,"wildemitter":8}],3:[function(require,module,exports){
+module.exports = function (element, stream, play) {
+    var autoPlay = (play === false) ? false : true;
+
+    if (autoPlay) element.autoplay = true;
+
+    // handle mozilla case
+    if (window.mozGetUserMedia) {
+        element.mozSrcObject = stream;
+        if (autoPlay) element.play();
+    } else {
+        if (typeof element.srcObject !== 'undefined') {
+            element.srcObject = stream;
+        } else if (typeof element.mozSrcObject !== 'undefined') {
+            element.mozSrcObject = stream;
+        } else if (typeof element.src !== 'undefined') {
+            element.src = URL.createObjectURL(stream);
+        } else {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+},{}],4:[function(require,module,exports){
 // created by @HenrikJoreteg
 var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
 var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
@@ -557,32 +582,7 @@ module.exports = {
     IceCandidate: IceCandidate
 };
 
-},{}],4:[function(require,module,exports){
-module.exports = function (element, stream, play) {
-    var autoPlay = (play === false) ? false : true;
-
-    if (autoPlay) element.autoplay = true;
-
-    // handle mozilla case
-    if (window.mozGetUserMedia) {
-        element.mozSrcObject = stream;
-        if (autoPlay) element.play();
-    } else {
-        if (typeof element.srcObject !== 'undefined') {
-            element.srcObject = stream;
-        } else if (typeof element.mozSrcObject !== 'undefined') {
-            element.mozSrcObject = stream;
-        } else if (typeof element.src !== 'undefined') {
-            element.src = URL.createObjectURL(stream);
-        } else {
-            return false;
-        }
-    }
-
-    return true;
-};
-
-},{}],3:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -611,7 +611,7 @@ module.exports = function (contstraints, cb) {
     });
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -748,7 +748,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],5:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -772,100 +772,7 @@ module.exports = function (cb) {
     getUserMedia(constraints, cb);
 };
 
-},{"getusermedia":3}],6:[function(require,module,exports){
-var WildEmitter = require('wildemitter');
-
-function getMaxVolume (analyser, fftBins) {
-  var maxVolume = -Infinity;
-  analyser.getFloatFrequencyData(fftBins);
-
-  for(var i=0, ii=fftBins.length; i < ii; i++) {
-    if (fftBins[i] > maxVolume && fftBins[i] < 0) {
-      maxVolume = fftBins[i];
-    }
-  };
-
-  return maxVolume;
-}
-
-
-module.exports = function(stream, options) {
-  var harker = new WildEmitter();
-
-  // make it not break in non-supported browsers
-  if (!window.webkitAudioContext) return harker;
-
-  //Config
-  var options = options || {},
-      smoothing = (options.smoothing || 0.5),
-      interval = (options.interval || 100),
-      threshold = options.threshold,
-      play = options.play;
-
-  //Setup Audio Context
-  var audioContext = new webkitAudioContext();
-  var sourceNode, fftBins, analyser;
-
-  analyser = audioContext.createAnalyser();
-  analyser.fftSize = 512;
-  analyser.smoothingTimeConstant = smoothing;
-  fftBins = new Float32Array(analyser.fftSize);
-
-  if (stream.jquery) stream = stream[0];
-  if (stream instanceof HTMLAudioElement) {
-    //Audio Tag
-    sourceNode = audioContext.createMediaElementSource(stream);
-    if (typeof play === 'undefined') play = true;
-    threshold = threshold || -65;
-  } else {
-    //WebRTC Stream
-    sourceNode = audioContext.createMediaStreamSource(stream);
-    threshold = threshold || -45;
-  }
-
-  sourceNode.connect(analyser);
-  if (play) analyser.connect(audioContext.destination);
-
-  harker.speaking = false;
-
-  harker.setThreshold = function(t) {
-    threshold = t;
-  };
-
-  harker.setInterval = function(i) {
-    interval = i;
-  };
-
-  // Poll the analyser node to determine if speaking
-  // and emit events if changed
-  var looper = function() {
-    setTimeout(function() {
-      var currentVolume = getMaxVolume(analyser, fftBins);
-
-      harker.emit('volume_change', currentVolume, threshold);
-
-      if (currentVolume > threshold) {
-        if (!harker.speaking) {
-          harker.speaking = true;
-          harker.emit('speaking');
-        }
-      } else {
-        if (harker.speaking) {
-          harker.speaking = false;
-          harker.emit('stopped_speaking');
-        }
-      }
-
-      looper();
-    }, interval);
-  };
-  looper();
-
-
-  return harker;
-}
-
-},{"wildemitter":7}],8:[function(require,module,exports){
+},{"getusermedia":6}],5:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -1003,6 +910,99 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"wildemitter":7,"webrtcsupport":2}]},{},[1])(1)
+},{"wildemitter":8,"webrtcsupport":4}],7:[function(require,module,exports){
+var WildEmitter = require('wildemitter');
+
+function getMaxVolume (analyser, fftBins) {
+  var maxVolume = -Infinity;
+  analyser.getFloatFrequencyData(fftBins);
+
+  for(var i=0, ii=fftBins.length; i < ii; i++) {
+    if (fftBins[i] > maxVolume && fftBins[i] < 0) {
+      maxVolume = fftBins[i];
+    }
+  };
+
+  return maxVolume;
+}
+
+
+module.exports = function(stream, options) {
+  var harker = new WildEmitter();
+
+  // make it not break in non-supported browsers
+  if (!window.webkitAudioContext) return harker;
+
+  //Config
+  var options = options || {},
+      smoothing = (options.smoothing || 0.5),
+      interval = (options.interval || 100),
+      threshold = options.threshold,
+      play = options.play;
+
+  //Setup Audio Context
+  var audioContext = new webkitAudioContext();
+  var sourceNode, fftBins, analyser;
+
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 512;
+  analyser.smoothingTimeConstant = smoothing;
+  fftBins = new Float32Array(analyser.fftSize);
+
+  if (stream.jquery) stream = stream[0];
+  if (stream instanceof HTMLAudioElement) {
+    //Audio Tag
+    sourceNode = audioContext.createMediaElementSource(stream);
+    if (typeof play === 'undefined') play = true;
+    threshold = threshold || -65;
+  } else {
+    //WebRTC Stream
+    sourceNode = audioContext.createMediaStreamSource(stream);
+    threshold = threshold || -45;
+  }
+
+  sourceNode.connect(analyser);
+  if (play) analyser.connect(audioContext.destination);
+
+  harker.speaking = false;
+
+  harker.setThreshold = function(t) {
+    threshold = t;
+  };
+
+  harker.setInterval = function(i) {
+    interval = i;
+  };
+
+  // Poll the analyser node to determine if speaking
+  // and emit events if changed
+  var looper = function() {
+    setTimeout(function() {
+      var currentVolume = getMaxVolume(analyser, fftBins);
+
+      harker.emit('volume_change', currentVolume, threshold);
+
+      if (currentVolume > threshold) {
+        if (!harker.speaking) {
+          harker.speaking = true;
+          harker.emit('speaking');
+        }
+      } else {
+        if (harker.speaking) {
+          harker.speaking = false;
+          harker.emit('stopped_speaking');
+        }
+      }
+
+      looper();
+    }, interval);
+  };
+  looper();
+
+
+  return harker;
+}
+
+},{"wildemitter":8}]},{},[1])(1)
 });
 ;

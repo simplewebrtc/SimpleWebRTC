@@ -14,7 +14,7 @@
     "getusermedia": "0.1.0",
     "getscreenmedia": "0.1.0",
     "socket.io-client": "0.9.16",
-    "attachmediastream": "0.0.1",
+    "attachmediastream": "0.1.0",
     "hark": "0.1.1"
   },
   "devDependencies": {

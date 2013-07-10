@@ -19,13 +19,14 @@
         <video id="localVideo" style="height: 150px;"></video>
         <div id="remotes"></div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-        <script src="latest.js"></script>
+        <script src="socket.io.js"></script>
+        <script src="simplewebrtc.bundle.js"></script>
         <script>
             // grab the room from the URL
             var room = location.search && location.search.split('?')[1];
 
             // create our webrtc connection
-            var webrtc = new WebRTC({
+            var webrtc = new SimpleWebRTC({
                 // the id/element dom element that will hold "our" video
                 localVideoEl: 'localVideo',
                 // the id/element dom element that will hold remote videos
@@ -72,7 +73,7 @@
 
             setButton(true);
 
-            if (!webrtc.screenSharingSupport) {
+            if (!webrtc.capabilities.screenSharing) {
                 button[0].disabled = true;
             } else {
                 button.click(function () {

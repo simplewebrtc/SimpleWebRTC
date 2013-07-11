@@ -108,7 +108,7 @@ SimpleWebRTC.prototype.leaveRoom = function () {
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
     var container = this.getRemoteVideoContainer();
     console.log("peer");
-    var video = attachMediaStream(document.createElement('video'), peer.stream);
+    var video = attachMediaStream(peer.stream);
     if (container) {
         // store video element as part of peer for easy removal
         peer.videoEl = video;
@@ -169,7 +169,10 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 };
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
-    this.webrtc.startLocalMedia(null, this.getLocalVideoContainer());
+    var self = this;
+    this.webrtc.startLocalMedia(null, function (stream) {
+        attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true})
+    });
 };
 
 // this accepts either element ID or element
@@ -205,7 +208,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
             } else {
                 self.webrtc.localScreen = stream;
                 el.id = 'localScreen';
-                attachMediaStream(el, stream);
+                attachMediaStream(stream, el);
                 if (container) {
                     container.appendChild(el);
                 }
@@ -287,7 +290,7 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
 
 module.exports = SimpleWebRTC;
 
-},{"webrtc":2,"wildemitter":3,"webrtcsupport":4,"attachmediastream":5,"getscreenmedia":6}],3:[function(require,module,exports){
+},{"attachmediastream":5,"getscreenmedia":6,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -452,11 +455,30 @@ module.exports = {
 };
 
 },{}],5:[function(require,module,exports){
-module.exports = function (element, stream, play) {
-    var autoPlay = (play === false) ? false : true;
+module.exports = function (stream, el, options) {
     var URL = window.URL;
+    var opts = {
+        autoplay: true,
+        mirror: false,
+        muted: false
+    };
+    var element = el || document.createElement('video');
+    var item;
 
-    if (autoPlay) element.autoplay = true;
+    if (options) {
+        for (item in options) {
+            opts[item] = options[item];
+        }
+    }
+
+    if (opts.autoplay) element.autoplay = 'autoplay';
+    if (opts.muted) element.muted = true;
+    if (opts.mirror) {
+        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
+            var styleName = prefix ? prefix + 'Transform' : 'transform';
+            element.style[styleName] = 'scaleX(-1)';
+        });
+    }
 
     // this first one should work most everywhere now
     // but we have a few fallbacks just in case.
@@ -476,7 +498,6 @@ module.exports = function (element, stream, play) {
 },{}],2:[function(require,module,exports){
 var webrtc = require('webrtcsupport');
 var getUserMedia = require('getusermedia');
-var attachMediaStream = require('attachmediastream');
 var PeerConnection = require('rtcpeerconnection');
 var WildEmitter = require('wildemitter');
 var hark = require('hark');
@@ -548,7 +569,7 @@ WebRTC.prototype.createPeer = function (opts) {
     return peer;
 };
 
-WebRTC.prototype.startLocalMedia = function (mediaConstraints, el) {
+WebRTC.prototype.startLocalMedia = function (mediaConstraints, cb) {
     var self = this;
     var constraints = mediaConstraints || {video: true, audio: true};
 
@@ -561,15 +582,11 @@ WebRTC.prototype.startLocalMedia = function (mediaConstraints, el) {
             }
             self.localStream = self.setupMicVolumeControl(stream);
 
-            if (el) {
-                attachMediaStream(el, stream);
-                el.muted = true;
-            }
-
-            self.emit('localStream', stream);
-
             // start out somewhat muted if we can track audio
             self.setMicVolume(0.5);
+
+            self.emit('localStream', stream);
+            if (cb) cb(stream);
         }
     });
 };
@@ -800,7 +817,7 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"webrtcsupport":4,"attachmediastream":5,"getusermedia":7,"rtcpeerconnection":8,"wildemitter":3,"hark":9}],6:[function(require,module,exports){
+},{"getusermedia":7,"hark":9,"rtcpeerconnection":8,"webrtcsupport":4,"wildemitter":3}],6:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -991,7 +1008,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"wildemitter":3,"webrtcsupport":4}],9:[function(require,module,exports){
+},{"webrtcsupport":4,"wildemitter":3}],9:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {

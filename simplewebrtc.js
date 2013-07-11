@@ -106,7 +106,7 @@ SimpleWebRTC.prototype.leaveRoom = function () {
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
     var container = this.getRemoteVideoContainer();
     console.log("peer");
-    var video = attachMediaStream(document.createElement('video'), peer.stream);
+    var video = attachMediaStream(peer.stream);
     if (container) {
         // store video element as part of peer for easy removal
         peer.videoEl = video;
@@ -167,7 +167,10 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 };
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
-    this.webrtc.startLocalMedia(null, this.getLocalVideoContainer());
+    var self = this;
+    this.webrtc.startLocalMedia(null, function (stream) {
+        attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true})
+    });
 };
 
 // this accepts either element ID or element
@@ -203,7 +206,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
             } else {
                 self.webrtc.localScreen = stream;
                 el.id = 'localScreen';
-                attachMediaStream(el, stream);
+                attachMediaStream(stream, el);
                 if (container) {
                     container.appendChild(el);
                 }

@@ -169,7 +169,7 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
     this.webrtc.startLocalMedia(null, function (stream) {
-        attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true})
+        attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
     });
 };
 
@@ -218,7 +218,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                 // we need to listen for the screenshare stream ending and call
                 // the "stopScreenShare" method to clean things up.
 
-                //self.webrtc.emit('peerStreamAdded', {stream: stream});
+                self.emit('localScreenAdded', el);
                 self.connection.emit('shareScreen');
                 self.webrtc.peers.forEach(function (existingPeer) {
                     var peer;
@@ -258,7 +258,7 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
 
     // a hack to emit the event the removes the video
     // element that we want
-    if (videoEl) this.webrtc.emit('peerStreamRemoved', videoEl);
+    if (videoEl) this.emit('videoRemoved', videoEl);
     if (stream) stream.stop();
     this.webrtc.peers.forEach(function (peer) {
         if (peer.broadcaster) {

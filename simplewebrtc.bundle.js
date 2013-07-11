@@ -171,7 +171,7 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
     this.webrtc.startLocalMedia(null, function (stream) {
-        attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true})
+        attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
     });
 };
 
@@ -220,7 +220,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                 // we need to listen for the screenshare stream ending and call
                 // the "stopScreenShare" method to clean things up.
 
-                //self.webrtc.emit('peerStreamAdded', {stream: stream});
+                self.emit('localScreenAdded', el);
                 self.connection.emit('shareScreen');
                 self.webrtc.peers.forEach(function (existingPeer) {
                     var peer;
@@ -260,7 +260,7 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
 
     // a hack to emit the event the removes the video
     // element that we want
-    if (videoEl) this.webrtc.emit('peerStreamRemoved', videoEl);
+    if (videoEl) this.emit('videoRemoved', videoEl);
     if (stream) stream.stop();
     this.webrtc.peers.forEach(function (peer) {
         if (peer.broadcaster) {
@@ -292,7 +292,34 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":4,"getscreenmedia":6,"webrtc":2,"webrtcsupport":5,"wildemitter":3}],3:[function(require,module,exports){
+},{"attachmediastream":5,"getscreenmedia":6,"webrtc":2,"webrtcsupport":3,"wildemitter":4}],3:[function(require,module,exports){
+// created by @HenrikJoreteg
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var prefix = function () {
+    if (window.mozRTCPeerConnection) {
+        return 'moz';
+    } else if (window.webkitRTCPeerConnection) {
+        return 'webkit';
+    }
+}();
+var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
+var webAudio = !!window.webkitAudioContext;
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: webAudio,
+    screenSharing: screenSharing,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate
+};
+
+},{}],4:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -429,7 +456,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = function (stream, el, options) {
     var URL = window.URL;
     var opts = {
@@ -468,33 +495,6 @@ module.exports = function (stream, el, options) {
     }
 
     return element;
-};
-
-},{}],5:[function(require,module,exports){
-// created by @HenrikJoreteg
-var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
-var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-var prefix = function () {
-    if (window.mozRTCPeerConnection) {
-        return 'moz';
-    } else if (window.webkitRTCPeerConnection) {
-        return 'webkit';
-    }
-}();
-var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
-var webAudio = !!window.webkitAudioContext;
-
-// export support flags and constructors.prototype && PC
-module.exports = {
-    support: !!PC,
-    dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
-    prefix: prefix,
-    webAudio: webAudio,
-    screenSharing: screenSharing,
-    PeerConnection: PC,
-    SessionDescription: SessionDescription,
-    IceCandidate: IceCandidate
 };
 
 },{}],2:[function(require,module,exports){
@@ -819,7 +819,7 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"getusermedia":7,"hark":9,"rtcpeerconnection":8,"webrtcsupport":5,"wildemitter":3}],6:[function(require,module,exports){
+},{"getusermedia":7,"hark":9,"rtcpeerconnection":8,"webrtcsupport":3,"wildemitter":4}],6:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -1010,7 +1010,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"webrtcsupport":5,"wildemitter":3}],9:[function(require,module,exports){
+},{"webrtcsupport":3,"wildemitter":4}],9:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -1103,6 +1103,6 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":3}]},{},[1])(1)
+},{"wildemitter":4}]},{},[1])(1)
 });
 ;

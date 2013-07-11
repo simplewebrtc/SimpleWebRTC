@@ -66,6 +66,11 @@ function SimpleWebRTC(opts) {
     // instantiate our main WebRTC helper
     this.webrtc = new WebRTC(opts);
 
+    // attach a few methods from underlying lib to simple.
+    ['mute', 'unmute', 'pause', 'resume'].forEach(function (method) {
+        self[method] = self.webrtc[method].bind(self.webrtc);
+    });
+
     // proxy events from WebRTC
     this.webrtc.on('*', function (eventname, event) {
        var args = [].splice.call(arguments, 0, 0, eventname);

@@ -68,6 +68,11 @@ function SimpleWebRTC(opts) {
     // instantiate our main WebRTC helper
     this.webrtc = new WebRTC(opts);
 
+    // attach a few methods from underlying lib to simple.
+    ['mute', 'unmute', 'pause', 'resume'].forEach(function (method) {
+        self[method] = self.webrtc[method].bind(self.webrtc);
+    });
+
     // proxy events from WebRTC
     this.webrtc.on('*', function (eventname, event) {
        var args = [].splice.call(arguments, 0, 0, eventname);
@@ -292,34 +297,7 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":5,"getscreenmedia":6,"webrtc":2,"webrtcsupport":3,"wildemitter":4}],3:[function(require,module,exports){
-// created by @HenrikJoreteg
-var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
-var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-var prefix = function () {
-    if (window.mozRTCPeerConnection) {
-        return 'moz';
-    } else if (window.webkitRTCPeerConnection) {
-        return 'webkit';
-    }
-}();
-var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
-var webAudio = !!window.webkitAudioContext;
-
-// export support flags and constructors.prototype && PC
-module.exports = {
-    support: !!PC,
-    dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
-    prefix: prefix,
-    webAudio: webAudio,
-    screenSharing: screenSharing,
-    PeerConnection: PC,
-    SessionDescription: SessionDescription,
-    IceCandidate: IceCandidate
-};
-
-},{}],4:[function(require,module,exports){
+},{"attachmediastream":5,"getscreenmedia":6,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -454,6 +432,33 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
         }
     }
     return result;
+};
+
+},{}],4:[function(require,module,exports){
+// created by @HenrikJoreteg
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var prefix = function () {
+    if (window.mozRTCPeerConnection) {
+        return 'moz';
+    } else if (window.webkitRTCPeerConnection) {
+        return 'webkit';
+    }
+}();
+var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
+var webAudio = !!window.webkitAudioContext;
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: webAudio,
+    screenSharing: screenSharing,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate
 };
 
 },{}],5:[function(require,module,exports){
@@ -819,7 +824,7 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"getusermedia":7,"hark":9,"rtcpeerconnection":8,"webrtcsupport":3,"wildemitter":4}],6:[function(require,module,exports){
+},{"getusermedia":8,"hark":9,"rtcpeerconnection":7,"webrtcsupport":4,"wildemitter":3}],6:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -843,7 +848,7 @@ module.exports = function (cb) {
     getUserMedia(constraints, cb);
 };
 
-},{"getusermedia":7}],7:[function(require,module,exports){
+},{"getusermedia":8}],8:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -872,7 +877,7 @@ module.exports = function (contstraints, cb) {
     });
 };
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -1010,7 +1015,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"webrtcsupport":3,"wildemitter":4}],9:[function(require,module,exports){
+},{"webrtcsupport":4,"wildemitter":3}],9:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -1103,6 +1108,6 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":4}]},{},[1])(1)
+},{"wildemitter":3}]},{},[1])(1)
 });
 ;

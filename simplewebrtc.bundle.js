@@ -297,7 +297,48 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":5,"getscreenmedia":6,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
+},{"attachmediastream":6,"getscreenmedia":5,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],6:[function(require,module,exports){
+module.exports = function (stream, el, options) {
+    var URL = window.URL;
+    var opts = {
+        autoplay: true,
+        mirror: false,
+        muted: false
+    };
+    var element = el || document.createElement('video');
+    var item;
+
+    if (options) {
+        for (item in options) {
+            opts[item] = options[item];
+        }
+    }
+
+    if (opts.autoplay) element.autoplay = 'autoplay';
+    if (opts.muted) element.muted = true;
+    if (opts.mirror) {
+        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
+            var styleName = prefix ? prefix + 'Transform' : 'transform';
+            element.style[styleName] = 'scaleX(-1)';
+        });
+    }
+
+    // this first one should work most everywhere now
+    // but we have a few fallbacks just in case.
+    if (URL && URL.createObjectURL) {
+        element.src = URL.createObjectURL(stream);
+    } else if (element.srcObject) {
+        element.srcObject = stream;
+    } else if (element.mozSrcObject) {
+        element.mozSrcObject = stream;
+    } else {
+        return false;
+    }
+
+    return element;
+};
+
+},{}],3:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -459,47 +500,6 @@ module.exports = {
     PeerConnection: PC,
     SessionDescription: SessionDescription,
     IceCandidate: IceCandidate
-};
-
-},{}],5:[function(require,module,exports){
-module.exports = function (stream, el, options) {
-    var URL = window.URL;
-    var opts = {
-        autoplay: true,
-        mirror: false,
-        muted: false
-    };
-    var element = el || document.createElement('video');
-    var item;
-
-    if (options) {
-        for (item in options) {
-            opts[item] = options[item];
-        }
-    }
-
-    if (opts.autoplay) element.autoplay = 'autoplay';
-    if (opts.muted) element.muted = true;
-    if (opts.mirror) {
-        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
-            var styleName = prefix ? prefix + 'Transform' : 'transform';
-            element.style[styleName] = 'scaleX(-1)';
-        });
-    }
-
-    // this first one should work most everywhere now
-    // but we have a few fallbacks just in case.
-    if (URL && URL.createObjectURL) {
-        element.src = URL.createObjectURL(stream);
-    } else if (element.srcObject) {
-        element.srcObject = stream;
-    } else if (element.mozSrcObject) {
-        element.mozSrcObject = stream;
-    } else {
-        return false;
-    }
-
-    return element;
 };
 
 },{}],2:[function(require,module,exports){
@@ -723,6 +723,7 @@ function Peer(options) {
     this.type = options.type || 'video';
     this.oneway = options.oneway || false;
     this.sharemyscreen = options.sharemyscreen || false;
+    this.browserPrefix = options.prefix;
     this.stream = options.stream;
     // Create an RTCPeerConnection via the polyfill
     this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
@@ -759,7 +760,9 @@ Peer.prototype = Object.create(WildEmitter.prototype, {
 Peer.prototype.handleMessage = function (message) {
     var self = this;
 
-    log('getting', message.type, message.payload);
+    log('getting', message.type, message);
+
+    if (message.prefix) this.browserPrefix = message.prefix;
 
     if (message.type === 'offer') {
         this.pc.answer(message.payload, function (err, sessionDesc) {
@@ -824,7 +827,7 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"getusermedia":8,"hark":9,"rtcpeerconnection":7,"webrtcsupport":4,"wildemitter":3}],6:[function(require,module,exports){
+},{"getusermedia":7,"hark":9,"rtcpeerconnection":8,"webrtcsupport":4,"wildemitter":3}],5:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -848,7 +851,7 @@ module.exports = function (cb) {
     getUserMedia(constraints, cb);
 };
 
-},{"getusermedia":8}],8:[function(require,module,exports){
+},{"getusermedia":7}],7:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -877,7 +880,7 @@ module.exports = function (contstraints, cb) {
     });
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 

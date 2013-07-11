@@ -180,10 +180,12 @@ SimpleWebRTC.prototype.getLocalVideoContainer = function () {
     var el = this.getEl(this.config.localVideoEl);
     if (el && el.tagName === 'VIDEO') {
         return el;
-    } else {
+    } else if (el) {
         var video = document.createElement('video');
         el.appendChild(video);
         return video;
+    } else {
+        return;
     }
 };
 

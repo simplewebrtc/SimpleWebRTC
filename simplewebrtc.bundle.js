@@ -182,10 +182,12 @@ SimpleWebRTC.prototype.getLocalVideoContainer = function () {
     var el = this.getEl(this.config.localVideoEl);
     if (el && el.tagName === 'VIDEO') {
         return el;
-    } else {
+    } else if (el) {
         var video = document.createElement('video');
         el.appendChild(video);
         return video;
+    } else {
+        return;
     }
 };
 
@@ -817,7 +819,7 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"getusermedia":7,"hark":9,"rtcpeerconnection":8,"webrtcsupport":4,"wildemitter":3}],6:[function(require,module,exports){
+},{"getusermedia":8,"hark":9,"rtcpeerconnection":7,"webrtcsupport":4,"wildemitter":3}],6:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -841,7 +843,7 @@ module.exports = function (cb) {
     getUserMedia(constraints, cb);
 };
 
-},{"getusermedia":7}],7:[function(require,module,exports){
+},{"getusermedia":8}],8:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -870,7 +872,7 @@ module.exports = function (contstraints, cb) {
     });
 };
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 

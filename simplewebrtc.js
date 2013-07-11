@@ -105,15 +105,15 @@ SimpleWebRTC.prototype.leaveRoom = function () {
 
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
     var container = this.getRemoteVideoContainer();
-    console.log("peer");
     var video = attachMediaStream(peer.stream);
-    if (container) {
-        // store video element as part of peer for easy removal
-        peer.videoEl = video;
-        video.id = this.getDomId(peer);
-        container.appendChild(video);
-    }
-    this.emit('videoAdded', video);
+
+    // store video element as part of peer for easy removal
+    peer.videoEl = video;
+    video.id = this.getDomId(peer);
+
+    if (container) container.appendChild(video);
+
+    this.emit('videoAdded', video, peer);
 };
 
 SimpleWebRTC.prototype.handlePeerStreamRemoved = function (peer) {
@@ -122,7 +122,7 @@ SimpleWebRTC.prototype.handlePeerStreamRemoved = function (peer) {
     if (this.config.autoRemoveVideos && container && videoEl) {
         container.removeChild(videoEl);
     }
-    if (videoEl) this.emit('videoRemoved', videoEl);
+    if (videoEl) this.emit('videoRemoved', videoEl, peer);
 };
 
 SimpleWebRTC.prototype.getDomId = function (peer) {

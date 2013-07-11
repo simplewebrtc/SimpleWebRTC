@@ -1,4 +1,4 @@
-var WebRTC = require('./webrtc');
+var WebRTC = require('webrtc');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');
@@ -213,11 +213,12 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                 // we need to listen for the screenshare stream ending and call
                 // the "stopScreenShare" method to clean things up.
 
-                self.webrtc.emit('peerStreamAdded', {stream: stream});
+                //self.webrtc.emit('peerStreamAdded', {stream: stream});
                 self.connection.emit('shareScreen');
                 self.webrtc.peers.forEach(function (existingPeer) {
                     var peer;
                     if (existingPeer.type === 'video') {
+                        console.log('creating peer');
                         peer = self.webrtc.createPeer({
                             id: existingPeer.id,
                             type: 'screen',
@@ -236,11 +237,15 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
     }
 };
 
+SimpleWebRTC.prototype.getLocalScreen = function () {
+    return this.webrtc.localScreen;
+};
+
 SimpleWebRTC.prototype.stopScreenShare = function () {
     this.connection.emit('unshareScreen');
-    var videoEl = document.getElementById('localScreen'),
-        container = this.getRemoteVideoContainer(),
-        stream = this.localScreen;
+    var videoEl = document.getElementById('localScreen');
+    var container = this.getRemoteVideoContainer();
+    var stream = this.getLocalScreen();
 
     if (this.config.autoRemoveVideos && container && videoEl) {
         container.removeChild(videoEl);
@@ -249,13 +254,13 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
     // a hack to emit the event the removes the video
     // element that we want
     if (videoEl) this.webrtc.emit('peerStreamRemoved', videoEl);
-    if (this.localScreen) this.localScreen.stop();
-    this.peers.forEach(function (peer) {
+    if (stream) stream.stop();
+    this.webrtc.peers.forEach(function (peer) {
         if (peer.broadcaster) {
             peer.end();
         }
     });
-    delete this.localScreen;
+    delete this.webrtc.localScreen;
 };
 
 SimpleWebRTC.prototype.testReadiness = function () {

@@ -1,6 +1,6 @@
 (function(e){if("function"==typeof bootstrap)bootstrap("simplewebrtc",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeSimpleWebRTC=e}else"undefined"!=typeof window?window.SimpleWebRTC=e():global.SimpleWebRTC=e()})(function(){var define,ses,bootstrap,module,exports;
 return (function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){
-var WebRTC = require('./webrtc');
+var WebRTC = require('webrtc');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');
@@ -215,11 +215,12 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                 // we need to listen for the screenshare stream ending and call
                 // the "stopScreenShare" method to clean things up.
 
-                self.webrtc.emit('peerStreamAdded', {stream: stream});
+                //self.webrtc.emit('peerStreamAdded', {stream: stream});
                 self.connection.emit('shareScreen');
                 self.webrtc.peers.forEach(function (existingPeer) {
                     var peer;
                     if (existingPeer.type === 'video') {
+                        console.log('creating peer');
                         peer = self.webrtc.createPeer({
                             id: existingPeer.id,
                             type: 'screen',
@@ -238,11 +239,15 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
     }
 };
 
+SimpleWebRTC.prototype.getLocalScreen = function () {
+    return this.webrtc.localScreen;
+};
+
 SimpleWebRTC.prototype.stopScreenShare = function () {
     this.connection.emit('unshareScreen');
-    var videoEl = document.getElementById('localScreen'),
-        container = this.getRemoteVideoContainer(),
-        stream = this.localScreen;
+    var videoEl = document.getElementById('localScreen');
+    var container = this.getRemoteVideoContainer();
+    var stream = this.getLocalScreen();
 
     if (this.config.autoRemoveVideos && container && videoEl) {
         container.removeChild(videoEl);
@@ -251,13 +256,13 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
     // a hack to emit the event the removes the video
     // element that we want
     if (videoEl) this.webrtc.emit('peerStreamRemoved', videoEl);
-    if (this.localScreen) this.localScreen.stop();
-    this.peers.forEach(function (peer) {
+    if (stream) stream.stop();
+    this.webrtc.peers.forEach(function (peer) {
         if (peer.broadcaster) {
             peer.end();
         }
     });
-    delete this.localScreen;
+    delete this.webrtc.localScreen;
 };
 
 SimpleWebRTC.prototype.testReadiness = function () {
@@ -283,7 +288,7 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
 
 module.exports = SimpleWebRTC;
 
-},{"./webrtc":2,"wildemitter":3,"webrtcsupport":4,"attachmediastream":5,"getscreenmedia":6}],3:[function(require,module,exports){
+},{"webrtc":2,"wildemitter":3,"webrtcsupport":4,"attachmediastream":5,"getscreenmedia":6}],3:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -587,13 +592,11 @@ WebRTC.prototype.unmute = function () {
 
 // Audio monitor
 WebRTC.prototype.setupAudioMonitor = function (stream) {
-    // disable for now:
-    //return;
-
     log('Setup audio');
-    var audio = hark(stream),
-        self = this,
-        timeout;
+    var audio = hark(stream);
+    var self = this;
+    var timeout;
+
     audio.on('speaking', function() {
         if (self.hardMuted) return;
         self.setMicVolume(1);
@@ -754,14 +757,16 @@ Peer.prototype.handleMessage = function (message) {
 };
 
 Peer.prototype.send = function (messageType, payload) {
-    log('sending', messageType, payload);
-    this.parent.emit('message', {
+    var message = {
         to: this.id,
         broadcaster: this.broadcaster,
         roomType: this.type,
         type: messageType,
-        payload: payload
-    });
+        payload: payload,
+        prefix: webrtc.prefix
+    };
+    log('sending', messageType, message);
+    this.parent.emit('message', message);
 };
 
 Peer.prototype.onIceCandidate = function (candidate) {
@@ -799,7 +804,31 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"webrtcsupport":4,"getusermedia":7,"attachmediastream":5,"rtcpeerconnection":8,"wildemitter":3,"hark":9}],7:[function(require,module,exports){
+},{"webrtcsupport":4,"getusermedia":7,"attachmediastream":5,"rtcpeerconnection":8,"wildemitter":3,"hark":9}],6:[function(require,module,exports){
+// getScreenMedia helper by @HenrikJoreteg
+var getUserMedia = require('getusermedia');
+
+module.exports = function (cb) {
+    var constraints = {
+            video: {
+                mandatory: {
+                    chromeMediaSource: 'screen'
+                }
+            }
+        };
+
+    if (window.location.protocol === 'http:') {
+        return cb(new Error('HttpsRequired'));
+    }
+
+    if (!navigator.webkitGetUserMedia) {
+        return cb(new Error('NotSupported'));
+    }
+
+    getUserMedia(constraints, cb);
+};
+
+},{"getusermedia":7}],7:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -828,31 +857,7 @@ module.exports = function (contstraints, cb) {
     });
 };
 
-},{}],6:[function(require,module,exports){
-// getScreenMedia helper by @HenrikJoreteg
-var getUserMedia = require('getusermedia');
-
-module.exports = function (cb) {
-    var constraints = {
-            video: {
-                mandatory: {
-                    chromeMediaSource: 'screen'
-                }
-            }
-        };
-
-    if (window.location.protocol === 'http:') {
-        return cb(new Error('HttpsRequired'));
-    }
-
-    if (!navigator.webkitGetUserMedia) {
-        return cb(new Error('NotSupported'));
-    }
-
-    getUserMedia(constraints, cb);
-};
-
-},{"getusermedia":7}],8:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 

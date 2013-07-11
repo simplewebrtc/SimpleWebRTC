@@ -77,7 +77,7 @@
                 button[0].disabled = true;
             } else {
                 button.click(function () {
-                    if (webrtc.localScreen) {
+                    if (webrtc.getLocalScreen()) {
                         webrtc.stopScreenShare();
                         setButton(true);
                     } else {

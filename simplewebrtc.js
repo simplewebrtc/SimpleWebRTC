@@ -7,9 +7,9 @@ var getScreenMedia = require('getscreenmedia');
 
 
 function SimpleWebRTC(opts) {
-	var self = this;
-	var options = opts || {};
-	var config = this.config = {
+    var self = this;
+    var options = opts || {};
+    var config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
             log: false,
             localVideoEl: '',
@@ -30,7 +30,7 @@ function SimpleWebRTC(opts) {
     // call WildEmitter constructor
     WildEmitter.call(this);
 
-   	// our socket.io connection
+       // our socket.io connection
     connection = this.connection = io.connect(this.config.url);
 
     connection.on('connect', function () {
@@ -64,34 +64,34 @@ function SimpleWebRTC(opts) {
     });
 
     // instantiate our main WebRTC helper
-   	this.webrtc = new WebRTC(opts);
+    this.webrtc = new WebRTC(opts);
 
-   	// proxy events from WebRTC
-   	this.webrtc.on('*', function (eventname, event) {
-   		var args = [].splice.call(arguments, 0, 0, eventname);
-   		//self.emit.apply(self, args);
-   	});
+    // proxy events from WebRTC
+    this.webrtc.on('*', function (eventname, event) {
+       var args = [].splice.call(arguments, 0, 0, eventname);
+       //self.emit.apply(self, args);
+    });
 
-   	// check for readiness
-   	this.webrtc.on('localStream', function () {
-   		self.testReadiness();
-   	});
+    // check for readiness
+    this.webrtc.on('localStream', function () {
+       self.testReadiness();
+    });
 
-   	this.webrtc.on('message', function (payload) {
-   		self.connection.emit('message', payload)
-   	});
+    this.webrtc.on('message', function (payload) {
+       self.connection.emit('message', payload);
+    });
 
-   	this.webrtc.on('peerStreamAdded', this.handlePeerStreamAdded.bind(this));
-   	this.webrtc.on('peerStreamRemoved', this.handlePeerStreamRemoved.bind(this));
+    this.webrtc.on('peerStreamAdded', this.handlePeerStreamAdded.bind(this));
+    this.webrtc.on('peerStreamRemoved', this.handlePeerStreamRemoved.bind(this));
 
-   	if (this.config.autoRequestMedia) this.startLocalVideo();
+    if (this.config.autoRequestMedia) this.startLocalVideo();
 }
 
 
 SimpleWebRTC.prototype = Object.create(WildEmitter.prototype, {
-	constructor: {
-		value: SimpleWebRTC
-	}
+    constructor: {
+        value: SimpleWebRTC
+    }
 });
 
 SimpleWebRTC.prototype.leaveRoom = function () {
@@ -104,25 +104,25 @@ SimpleWebRTC.prototype.leaveRoom = function () {
 };
 
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
-	var container = this.getRemoteVideoContainer();
-	console.log("peer");
-	var video = attachMediaStream(document.createElement('video'), peer.stream);
-	if (container) {
-		// store video element as part of peer for easy removal
-		peer.videoEl = video;
-		video.id = this.getDomId(peer);
-		container.appendChild(video);
-	}
-	this.emit('videoAdded', video);
+    var container = this.getRemoteVideoContainer();
+    console.log("peer");
+    var video = attachMediaStream(document.createElement('video'), peer.stream);
+    if (container) {
+        // store video element as part of peer for easy removal
+        peer.videoEl = video;
+        video.id = this.getDomId(peer);
+        container.appendChild(video);
+    }
+    this.emit('videoAdded', video);
 };
 
 SimpleWebRTC.prototype.handlePeerStreamRemoved = function (peer) {
-	var container = this.getRemoteVideoContainer();
-	var videoEl = peer.videoEl;
-	if (this.config.autoRemoveVideos && container && videoEl) {
-		container.removeChild(videoEl);
-	}
-	if (videoEl) this.emit('videoRemoved', videoEl);
+    var container = this.getRemoteVideoContainer();
+    var videoEl = peer.videoEl;
+    if (this.config.autoRemoveVideos && container && videoEl) {
+        container.removeChild(videoEl);
+    }
+    if (videoEl) this.emit('videoRemoved', videoEl);
 };
 
 SimpleWebRTC.prototype.getDomId = function (peer) {
@@ -167,7 +167,7 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 };
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
-	this.webrtc.startLocalMedia(null, this.getLocalVideoContainer());
+    this.webrtc.startLocalMedia(null, this.getLocalVideoContainer());
 };
 
 // this accepts either element ID or element

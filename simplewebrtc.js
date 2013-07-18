@@ -209,7 +209,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
 
             if (err) {
                 if (cb) cb('Screen sharing failed');
-                throw new Error('Failed to access to screen media.');
+                self.emit('error', new Error('Failed to access to screen media.'));
             } else {
                 self.webrtc.localScreen = stream;
                 el.id = 'localScreen';

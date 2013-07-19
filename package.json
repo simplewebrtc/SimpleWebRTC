@@ -1,6 +1,6 @@
 {
   "name": "simplewebrtc",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "repository": {
     "type": "git", 
     "url": "git@github.com:henrikjoreteg/SimpleWebRTC.git"
@@ -11,12 +11,11 @@
     "webrtcsupport": "0.3.2",
     "wildemitter": "0.0.5",
     "rtcpeerconnection": "0.2.0",
-    "getusermedia": "0.1.0",
-    "getscreenmedia": "0.1.0",
+    "getscreenmedia": "0.2.0",
     "socket.io-client": "0.9.16",
     "attachmediastream": "1.0.0",
     "hark": "0.1.1",
-    "webrtc": "0.1.1"
+    "webrtc": "0.2.1"
   },
   "devDependencies": {
     "express": "3.x.x",

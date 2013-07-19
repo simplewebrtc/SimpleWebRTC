@@ -13,7 +13,7 @@ function SimpleWebRTC(opts) {
     var options = opts || {};
     var config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
-            log: false,
+            log: options.log,
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
@@ -175,8 +175,13 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
-    this.webrtc.startLocalMedia(null, function (stream) {
-        attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
+    this.webrtc.startLocalMedia(null, function (err, stream) {
+        console.log('starting local media', err, stream);
+        if (err) {
+            self.emit(err);
+        } else {
+            attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
+        }
     });
 };
 
@@ -203,50 +208,45 @@ SimpleWebRTC.prototype.getRemoteVideoContainer = function () {
 SimpleWebRTC.prototype.shareScreen = function (cb) {
     var self = this,
         peer;
-    if (webrtcSupport.screenSharing) {
-        getScreenMedia(function (err, stream) {
-            var item,
-                el = document.createElement('video'),
-                container = self.getRemoteVideoContainer();
+    getScreenMedia(function (err, stream) {
+        var item,
+            el = document.createElement('video'),
+            container = self.getRemoteVideoContainer();
 
-            if (err) {
-                if (cb) cb('Screen sharing failed');
-                self.emit('error', new Error('Failed to access to screen media.'));
-            } else {
-                self.webrtc.localScreen = stream;
-                el.id = 'localScreen';
-                attachMediaStream(stream, el);
-                if (container) {
-                    container.appendChild(el);
-                }
-
-                // TODO: Once this chrome bug is fixed:
-                // https://code.google.com/p/chromium/issues/detail?id=227485
-                // we need to listen for the screenshare stream ending and call
-                // the "stopScreenShare" method to clean things up.
-
-                self.emit('localScreenAdded', el);
-                self.connection.emit('shareScreen');
-                self.webrtc.peers.forEach(function (existingPeer) {
-                    var peer;
-                    if (existingPeer.type === 'video') {
-                        console.log('creating peer');
-                        peer = self.webrtc.createPeer({
-                            id: existingPeer.id,
-                            type: 'screen',
-                            sharemyscreen: true,
-                            broadcaster: self.connection.socket.sessionid
-                        });
-                        peer.start();
-                    }
-                });
-
-                if (cb) cb();
+        if (!err) {
+            self.webrtc.localScreen = stream;
+            el.id = 'localScreen';
+            attachMediaStream(stream, el);
+            if (container) {
+                container.appendChild(el);
             }
-        });
-    } else {
-        if (cb) cb('Screen sharing not supported');
-    }
+
+            // TODO: Once this chrome bug is fixed:
+            // https://code.google.com/p/chromium/issues/detail?id=227485
+            // we need to listen for the screenshare stream ending and call
+            // the "stopScreenShare" method to clean things up.
+
+            self.emit('localScreenAdded', el);
+            self.connection.emit('shareScreen');
+            self.webrtc.peers.forEach(function (existingPeer) {
+                var peer;
+                if (existingPeer.type === 'video') {
+                    peer = self.webrtc.createPeer({
+                        id: existingPeer.id,
+                        type: 'screen',
+                        sharemyscreen: true,
+                        broadcaster: self.connection.socket.sessionid
+                    });
+                    peer.start();
+                }
+            });
+        } else {
+            self.emit(err);
+        }
+
+        // enable the callback
+        if (cb) cb(err, stream);
+    });
 };
 
 SimpleWebRTC.prototype.getLocalScreen = function () {
@@ -297,75 +297,7 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":2,"getscreenmedia":6,"webrtc":3,"webrtcsupport":5,"wildemitter":4}],2:[function(require,module,exports){
-module.exports = function (stream, el, options) {
-    var URL = window.URL;
-    var opts = {
-        autoplay: true,
-        mirror: false,
-        muted: false
-    };
-    var element = el || document.createElement('video');
-    var item;
-
-    if (options) {
-        for (item in options) {
-            opts[item] = options[item];
-        }
-    }
-
-    if (opts.autoplay) element.autoplay = 'autoplay';
-    if (opts.muted) element.muted = true;
-    if (opts.mirror) {
-        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
-            var styleName = prefix ? prefix + 'Transform' : 'transform';
-            element.style[styleName] = 'scaleX(-1)';
-        });
-    }
-
-    // this first one should work most everywhere now
-    // but we have a few fallbacks just in case.
-    if (URL && URL.createObjectURL) {
-        element.src = URL.createObjectURL(stream);
-    } else if (element.srcObject) {
-        element.srcObject = stream;
-    } else if (element.mozSrcObject) {
-        element.mozSrcObject = stream;
-    } else {
-        return false;
-    }
-
-    return element;
-};
-
-},{}],5:[function(require,module,exports){
-// created by @HenrikJoreteg
-var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
-var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-var prefix = function () {
-    if (window.mozRTCPeerConnection) {
-        return 'moz';
-    } else if (window.webkitRTCPeerConnection) {
-        return 'webkit';
-    }
-}();
-var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
-var webAudio = !!window.webkitAudioContext;
-
-// export support flags and constructors.prototype && PC
-module.exports = {
-    support: !!PC,
-    dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
-    prefix: prefix,
-    webAudio: webAudio,
-    screenSharing: screenSharing,
-    PeerConnection: PC,
-    SessionDescription: SessionDescription,
-    IceCandidate: IceCandidate
-};
-
-},{}],4:[function(require,module,exports){
+},{"attachmediastream":5,"getscreenmedia":6,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -502,7 +434,226 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
+// created by @HenrikJoreteg
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var prefix = function () {
+    if (window.mozRTCPeerConnection) {
+        return 'moz';
+    } else if (window.webkitRTCPeerConnection) {
+        return 'webkit';
+    }
+}();
+var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
+var webAudio = !!window.webkitAudioContext;
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: webAudio,
+    screenSharing: screenSharing,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate
+};
+
+},{}],5:[function(require,module,exports){
+module.exports = function (stream, el, options) {
+    var URL = window.URL;
+    var opts = {
+        autoplay: true,
+        mirror: false,
+        muted: false
+    };
+    var element = el || document.createElement('video');
+    var item;
+
+    if (options) {
+        for (item in options) {
+            opts[item] = options[item];
+        }
+    }
+
+    if (opts.autoplay) element.autoplay = 'autoplay';
+    if (opts.muted) element.muted = true;
+    if (opts.mirror) {
+        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
+            var styleName = prefix ? prefix + 'Transform' : 'transform';
+            element.style[styleName] = 'scaleX(-1)';
+        });
+    }
+
+    // this first one should work most everywhere now
+    // but we have a few fallbacks just in case.
+    if (URL && URL.createObjectURL) {
+        element.src = URL.createObjectURL(stream);
+    } else if (element.srcObject) {
+        element.srcObject = stream;
+    } else if (element.mozSrcObject) {
+        element.mozSrcObject = stream;
+    } else {
+        return false;
+    }
+
+    return element;
+};
+
+},{}],6:[function(require,module,exports){
+// getScreenMedia helper by @HenrikJoreteg
+var getUserMedia = require('getusermedia');
+
+module.exports = function (cb) {
+    var constraints = {
+            video: {
+                mandatory: {
+                    chromeMediaSource: 'screen'
+                }
+            }
+        };
+    var error;
+
+    if (window.location.protocol === 'http:') {
+        error = new Error('NavigatorUserMediaError');
+        error.name = 'HTTPS_REQUIRED';
+        return cb(error);
+    }
+
+    getUserMedia(constraints, cb);
+};
+
+},{"getusermedia":7}],8:[function(require,module,exports){
+// getUserMedia helper by @HenrikJoreteg
+var func = (navigator.getUserMedia ||
+            navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia ||
+            navigator.msGetUserMedia);
+
+
+module.exports = function (constraints, cb) {
+    var options;
+    var haveOpts = arguments.length === 2;
+    var defaultOpts = {video: true, audio: true};
+    var error;
+    var denied = 'PERMISSION_DENIED';
+    var notSatified = 'CONSTRAINT_NOT_SATISFIED';
+
+    // make constraints optional
+    if (!haveOpts) {
+        cb = constraints;
+        constraints = defaultOpts;
+    }
+
+    // treat lack of browser support like an error
+    if (!func) {
+        // throw proper error per spec
+        error = new Error('NavigatorUserMediaError');
+        error.name = 'NOT_SUPPORTED_ERROR';
+        return cb(error);
+    }
+
+    func.call(navigator, constraints, function (stream) {
+        cb(null, stream);
+    }, function (err) {
+        var error;
+        // coerce into an error object since FF gives us a string
+        // there are only two valid names according to the spec
+        // we coerce all non-denied to "constraint not satisfied".
+        if (typeof err === 'string') {
+            error = new Error('NavigatorUserMediaError');
+            if (err === denied) {
+                error.name = denied;
+            } else {
+                error.name = notSatified;
+            }
+        } else {
+            // if we get an error object make sure '.name' property is set
+            // according to spec: http://dev.w3.org/2011/webrtc/editor/getusermedia.html#navigatorusermediaerror-and-navigatorusermediaerrorcallback
+            error = err;
+            if (!error.name) {
+                // this is likely chrome which
+                // sets a property called "ERROR_DENIED" on the error object
+                // if so we make sure to set a name
+                if (error[denied]) {
+                    err.name = denied;
+                } else {
+                    err.name = notSatified;
+                }
+            }
+        }
+
+        cb(error);
+    });
+};
+
+},{}],7:[function(require,module,exports){
+// getUserMedia helper by @HenrikJoreteg
+var func = (navigator.getUserMedia ||
+            navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia ||
+            navigator.msGetUserMedia);
+
+
+module.exports = function (constraints, cb) {
+    var options;
+    var haveOpts = arguments.length === 2;
+    var defaultOpts = {video: true, audio: true};
+    var error;
+    var denied = 'PERMISSION_DENIED';
+    var notSatified = 'CONSTRAINT_NOT_SATISFIED';
+
+    // make constraints optional
+    if (!haveOpts) {
+        cb = constraints;
+        constraints = defaultOpts;
+    }
+
+    // treat lack of browser support like an error
+    if (!func) {
+        // throw proper error per spec
+        error = new Error('NavigatorUserMediaError');
+        error.name = 'NOT_SUPPORTED_ERROR';
+        return cb(error);
+    }
+
+    func.call(navigator, constraints, function (stream) {
+        cb(null, stream);
+    }, function (err) {
+        var error;
+        // coerce into an error object since FF gives us a string
+        // there are only two valid names according to the spec
+        // we coerce all non-denied to "constraint not satisfied".
+        if (typeof err === 'string') {
+            error = new Error('NavigatorUserMediaError');
+            if (err === denied) {
+                error.name = denied;
+            } else {
+                error.name = notSatified;
+            }
+        } else {
+            // if we get an error object make sure '.name' property is set
+            // according to spec: http://dev.w3.org/2011/webrtc/editor/getusermedia.html#navigatorusermediaerror-and-navigatorusermediaerrorcallback
+            error = err;
+            if (!error.name) {
+                // this is likely chrome which
+                // sets a property called "ERROR_DENIED" on the error object
+                // if so we make sure to set a name
+                if (error[denied]) {
+                    err.name = denied;
+                } else {
+                    err.name = notSatified;
+                }
+            }
+        }
+
+        cb(error);
+    });
+};
+
+},{}],2:[function(require,module,exports){
 var webrtc = require('webrtcsupport');
 var getUserMedia = require('getusermedia');
 var PeerConnection = require('rtcpeerconnection');
@@ -584,9 +735,7 @@ WebRTC.prototype.startLocalMedia = function (mediaConstraints, cb) {
     var constraints = mediaConstraints || {video: true, audio: true};
 
     getUserMedia(constraints, function (err, stream) {
-        if (err) {
-            throw new Error('Failed to get access to local media.');
-        } else {
+        if (!err) {
             if (constraints.audio) {
                 self.setupAudioMonitor(stream);
             }
@@ -596,8 +745,8 @@ WebRTC.prototype.startLocalMedia = function (mediaConstraints, cb) {
             self.setMicVolume(0.5);
 
             self.emit('localStream', stream);
-            if (cb) cb(stream);
         }
+        if (cb) cb(err, stream);
     });
 };
 
@@ -829,60 +978,7 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"getusermedia":7,"hark":9,"rtcpeerconnection":8,"webrtcsupport":5,"wildemitter":4}],6:[function(require,module,exports){
-// getScreenMedia helper by @HenrikJoreteg
-var getUserMedia = require('getusermedia');
-
-module.exports = function (cb) {
-    var constraints = {
-            video: {
-                mandatory: {
-                    chromeMediaSource: 'screen'
-                }
-            }
-        };
-
-    if (window.location.protocol === 'http:') {
-        return cb(new Error('HttpsRequired'));
-    }
-
-    if (!navigator.webkitGetUserMedia) {
-        return cb(new Error('NotSupported'));
-    }
-
-    getUserMedia(constraints, cb);
-};
-
-},{"getusermedia":7}],7:[function(require,module,exports){
-// getUserMedia helper by @HenrikJoreteg
-var func = (navigator.getUserMedia ||
-            navigator.webkitGetUserMedia ||
-            navigator.mozGetUserMedia ||
-            navigator.msGetUserMedia);
-
-
-module.exports = function (contstraints, cb) {
-    var options;
-    var haveOpts = arguments.length === 2;
-    var defaultOpts = {video: true, audio: true};
-
-    // make contstraints optional
-    if (!haveOpts) {
-        cb = contstraints;
-        contstraints = defaultOpts;
-    }
-
-    // treat lack of browser support like an error
-    if (!func) return cb(new Error('notSupported'));
-
-    func.call(navigator, contstraints, function (stream) {
-        cb(null, stream);
-    }, function (err) {
-        cb(err);
-    });
-};
-
-},{}],8:[function(require,module,exports){
+},{"getusermedia":8,"hark":10,"rtcpeerconnection":9,"webrtcsupport":4,"wildemitter":3}],9:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -1020,7 +1116,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"webrtcsupport":5,"wildemitter":4}],9:[function(require,module,exports){
+},{"webrtcsupport":4,"wildemitter":3}],10:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -1113,6 +1209,6 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":4}]},{},[1])(1)
+},{"wildemitter":3}]},{},[1])(1)
 });
 ;

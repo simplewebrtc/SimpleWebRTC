@@ -11,7 +11,7 @@ function SimpleWebRTC(opts) {
     var options = opts || {};
     var config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
-            log: false,
+            log: options.log,
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
@@ -173,8 +173,13 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
-    this.webrtc.startLocalMedia(null, function (stream) {
-        attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
+    this.webrtc.startLocalMedia(null, function (err, stream) {
+        console.log('starting local media', err, stream);
+        if (err) {
+            self.emit(err);
+        } else {
+            attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
+        }
     });
 };
 
@@ -201,50 +206,45 @@ SimpleWebRTC.prototype.getRemoteVideoContainer = function () {
 SimpleWebRTC.prototype.shareScreen = function (cb) {
     var self = this,
         peer;
-    if (webrtcSupport.screenSharing) {
-        getScreenMedia(function (err, stream) {
-            var item,
-                el = document.createElement('video'),
-                container = self.getRemoteVideoContainer();
+    getScreenMedia(function (err, stream) {
+        var item,
+            el = document.createElement('video'),
+            container = self.getRemoteVideoContainer();
 
-            if (err) {
-                if (cb) cb('Screen sharing failed');
-                self.emit('error', new Error('Failed to access to screen media.'));
-            } else {
-                self.webrtc.localScreen = stream;
-                el.id = 'localScreen';
-                attachMediaStream(stream, el);
-                if (container) {
-                    container.appendChild(el);
-                }
-
-                // TODO: Once this chrome bug is fixed:
-                // https://code.google.com/p/chromium/issues/detail?id=227485
-                // we need to listen for the screenshare stream ending and call
-                // the "stopScreenShare" method to clean things up.
-
-                self.emit('localScreenAdded', el);
-                self.connection.emit('shareScreen');
-                self.webrtc.peers.forEach(function (existingPeer) {
-                    var peer;
-                    if (existingPeer.type === 'video') {
-                        console.log('creating peer');
-                        peer = self.webrtc.createPeer({
-                            id: existingPeer.id,
-                            type: 'screen',
-                            sharemyscreen: true,
-                            broadcaster: self.connection.socket.sessionid
-                        });
-                        peer.start();
-                    }
-                });
-
-                if (cb) cb();
+        if (!err) {
+            self.webrtc.localScreen = stream;
+            el.id = 'localScreen';
+            attachMediaStream(stream, el);
+            if (container) {
+                container.appendChild(el);
             }
-        });
-    } else {
-        if (cb) cb('Screen sharing not supported');
-    }
+
+            // TODO: Once this chrome bug is fixed:
+            // https://code.google.com/p/chromium/issues/detail?id=227485
+            // we need to listen for the screenshare stream ending and call
+            // the "stopScreenShare" method to clean things up.
+
+            self.emit('localScreenAdded', el);
+            self.connection.emit('shareScreen');
+            self.webrtc.peers.forEach(function (existingPeer) {
+                var peer;
+                if (existingPeer.type === 'video') {
+                    peer = self.webrtc.createPeer({
+                        id: existingPeer.id,
+                        type: 'screen',
+                        sharemyscreen: true,
+                        broadcaster: self.connection.socket.sessionid
+                    });
+                    peer.start();
+                }
+            });
+        } else {
+            self.emit(err);
+        }
+
+        // enable the callback
+        if (cb) cb(err, stream);
+    });
 };
 
 SimpleWebRTC.prototype.getLocalScreen = function () {

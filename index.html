@@ -73,19 +73,22 @@
 
             setButton(true);
 
-            if (!webrtc.capabilities.screenSharing) {
-                button[0].disabled = true;
-            } else {
-                button.click(function () {
-                    if (webrtc.getLocalScreen()) {
-                        webrtc.stopScreenShare();
-                        setButton(true);
-                    } else {
-                        webrtc.shareScreen();
-                        setButton(false);
-                    }
-                });
-            }
+            button.click(function () {
+                if (webrtc.getLocalScreen()) {
+                    webrtc.stopScreenShare();
+                    setButton(true);
+                } else {
+                    webrtc.shareScreen(function (err) {
+                        if (err) {
+                            console.log(err);
+                            setButton(true);
+                        } else {
+                            setButton(false);
+                        }
+                    });
+                    
+                }
+            });
         </script>
     </body>
 </html>

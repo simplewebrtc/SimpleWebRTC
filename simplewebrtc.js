@@ -110,7 +110,7 @@ SimpleWebRTC.prototype = Object.create(WildEmitter.prototype, {
 SimpleWebRTC.prototype.leaveRoom = function () {
     if (this.roomName) {
         this.connection.emit('leave', this.roomName);
-        this.peers.forEach(function (peer) {
+        this.webrtc.peers.forEach(function (peer) {
             peer.end();
         });
     }

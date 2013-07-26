@@ -15,7 +15,9 @@ function SimpleWebRTC(opts) {
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
-            autoRemoveVideos: true
+            autoRemoveVideos: true,
+            adjustPeerVolume: true,
+            peerVolumeWhenSpeaking: .25
         };
     var item, connection;
 
@@ -89,6 +91,12 @@ function SimpleWebRTC(opts) {
     this.webrtc.on('peerStreamAdded', this.handlePeerStreamAdded.bind(this));
     this.webrtc.on('peerStreamRemoved', this.handlePeerStreamRemoved.bind(this));
 
+    // echo cancellation attempts
+    if (this.config.adjustPeerVolume) {
+        this.webrtc.on('speaking', this.setVolumeForAll.bind(this, this.config.peerVolumeWhenSpeaking));
+        this.webrtc.on('stoppedSpeaking', this.setVolumeForAll.bind(this, 1));
+    }
+
     if (this.config.autoRequestMedia) this.startLocalVideo();
 }
 
@@ -132,6 +140,13 @@ SimpleWebRTC.prototype.handlePeerStreamRemoved = function (peer) {
 
 SimpleWebRTC.prototype.getDomId = function (peer) {
     return [peer.id, peer.type, peer.broadcaster ? 'broadcasting' : 'incoming'].join('_');
+};
+
+// set volume on video tag for all peers takse a value between 0 and 1
+SimpleWebRTC.prototype.setVolumeForAll = function (volume) {
+    this.webrtc.peers.forEach(function (peer) {
+        if (peer.videoEl) peer.videoEl.volume = volume;
+    });
 };
 
 SimpleWebRTC.prototype.joinRoom = function (name, cb) {

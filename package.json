@@ -15,7 +15,7 @@
     "socket.io-client": "0.9.16",
     "attachmediastream": "1.0.0",
     "hark": "0.1.1",
-    "webrtc": "0.3.0"
+    "webrtc": "0.4.0"
   },
   "devDependencies": {
     "express": "3.x.x",

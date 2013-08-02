@@ -8,14 +8,14 @@
   "main": "./simplewebrtc.js",
   "description": "World's easiest webrtc",
   "dependencies": {
-    "webrtcsupport": "0.3.2",
+    "webrtcsupport": "0.4.0",
     "wildemitter": "0.0.5",
     "rtcpeerconnection": "0.2.0",
-    "getscreenmedia": "0.2.0",
+    "getscreenmedia": "0.2.1",
     "socket.io-client": "0.9.16",
-    "attachmediastream": "1.0.0",
+    "attachmediastream": "1.0.1",
     "hark": "0.1.1",
-    "webrtc": "0.4.0"
+    "webrtc": "0.4.1"
   },
   "devDependencies": {
     "express": "3.x.x",

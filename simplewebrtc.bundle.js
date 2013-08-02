@@ -462,15 +462,16 @@ var prefix = function () {
     }
 }();
 var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
-var webAudio = !!window.webkitAudioContext;
+var AudioContext = window.webkitAudioContext || window.AudioContext;
 
 // export support flags and constructors.prototype && PC
 module.exports = {
     support: !!PC,
     dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
     prefix: prefix,
-    webAudio: webAudio,
+    webAudio: !!AudioContext.prototype.createMediaStreamSource,
     screenSharing: screenSharing,
+    AudioContext: AudioContext,
     PeerConnection: PC,
     SessionDescription: SessionDescription,
     IceCandidate: IceCandidate
@@ -674,6 +675,7 @@ var getUserMedia = require('getusermedia');
 var PeerConnection = require('rtcpeerconnection');
 var WildEmitter = require('wildemitter');
 var hark = require('hark');
+var GainController = require('mediastream-gain');
 var log;
 
 
@@ -755,7 +757,9 @@ WebRTC.prototype.startLocalMedia = function (mediaConstraints, cb) {
             if (constraints.audio) {
                 self.setupAudioMonitor(stream);
             }
-            self.localStream = self.setupMicVolumeControl(stream);
+            self.localStream = stream;
+
+            self.gainController = new GainController(stream);
 
             // start out somewhat muted if we can track audio
             self.setMicIfEnabled(0.5);
@@ -804,37 +808,12 @@ WebRTC.prototype.setupAudioMonitor = function (stream) {
     });
 };
 
-WebRTC.prototype.setupMicVolumeControl = function (stream) {
-    if (!webrtc.webAudio || !this.config.autoAdjustMic) return stream;
-
-    var context = new webkitAudioContext();
-    var microphone = context.createMediaStreamSource(stream);
-    var gainFilter = this.gainFilter = context.createGainNode();
-    var destination = context.createMediaStreamDestination();
-    var outputStream = destination.stream;
-
-    microphone.connect(gainFilter);
-    gainFilter.connect(destination);
-
-    stream.removeTrack(stream.getAudioTracks()[0]);
-    stream.addTrack(outputStream.getAudioTracks()[0]);
-
-    return stream;
-};
-
-// sets the gain input on the microphone if web audio
-// is available.
-WebRTC.prototype.setMicVolume = function (volume) {
-    if (!webrtc.webAudio) return;
-    this.gainFilter.gain.value = volume;
-};
-
 // We do this as a seperate method in order to
 // still leave the "setMicVolume" as a working
 // method.
 WebRTC.prototype.setMicIfEnabled = function (volume) {
     if (!this.config.autoAdjustMic) return;
-    this.setMicVolume(volume);
+    this.gainController.setGain(volume);
 };
 
 // Video controls
@@ -1005,7 +984,34 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"getusermedia":8,"hark":10,"rtcpeerconnection":9,"webrtcsupport":4,"wildemitter":3}],9:[function(require,module,exports){
+},{"getusermedia":8,"hark":11,"mediastream-gain":9,"rtcpeerconnection":10,"webrtcsupport":4,"wildemitter":3}],12:[function(require,module,exports){
+// created by @HenrikJoreteg
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var prefix = function () {
+    if (window.mozRTCPeerConnection) {
+        return 'moz';
+    } else if (window.webkitRTCPeerConnection) {
+        return 'webkit';
+    }
+}();
+var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
+var webAudio = !!window.webkitAudioContext;
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: !!(PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: webAudio,
+    screenSharing: screenSharing,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate
+};
+
+},{}],10:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -1143,7 +1149,54 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"webrtcsupport":4,"wildemitter":3}],10:[function(require,module,exports){
+},{"webrtcsupport":12,"wildemitter":3}],9:[function(require,module,exports){
+var support = require('webrtcsupport');
+
+
+function GainController(stream) {
+    this.support = support.webAudio;
+
+    // set our starting value
+    this.gain = 1;
+
+    if (this.support) {
+        var context = this.context = new support.AudioContext();
+        this.microphone = context.createMediaStreamSource(stream);
+        this.gainFilter = context.createGain();
+        this.destination = context.createMediaStreamDestination();
+        this.outputStream = this.destination.stream;
+        this.microphone.connect(this.gainFilter);
+        this.gainFilter.connect(this.destination);
+        stream.removeTrack(stream.getAudioTracks()[0]);
+        stream.addTrack(this.outputStream.getAudioTracks()[0]);
+    }
+    this.stream = stream;
+}
+
+// setting
+GainController.prototype.setGain = function (val) {
+    // check for support
+    if (!this.support) return;
+    this.gainFilter.gain.value = val;
+    this.gain = val;
+};
+
+GainController.prototype.getGain = function () {
+    return this.gain;
+};
+
+GainController.prototype.off = function () {
+    return this.setGain(0);
+};
+
+GainController.prototype.on = function () {
+    this.setGain(1);
+};
+
+
+module.exports = GainController;
+
+},{"webrtcsupport":4}],11:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {

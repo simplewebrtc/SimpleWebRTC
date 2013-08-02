@@ -22,5 +22,8 @@
     "browserify": "2.22.0",
     "request": "",
     "uglify-js": "2.3.6"
+  },
+  "scripts": {
+    "updateLatest": "./scripts/updateLatest.sh"
   }
 }

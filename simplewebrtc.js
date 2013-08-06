@@ -227,7 +227,7 @@ SimpleWebRTC.prototype.startLocalVideo = function () {
 };
 
 SimpleWebRTC.prototype.stopLocalVideo = function () {
-    this.webrtc.stopLocalVideo();
+    this.webrtc.stopLocalMedia();
 };
 
 // this accepts either element ID or element

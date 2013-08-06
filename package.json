@@ -15,7 +15,8 @@
     "socket.io-client": "0.9.16",
     "attachmediastream": "1.0.1",
     "hark": "0.1.1",
-    "webrtc": "0.4.3"
+    "webrtc": "0.5.0",
+    "mockconsole": "0.0.1"
   },
   "devDependencies": {
     "express": "3.x.x",

@@ -5,7 +5,7 @@ var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');
 var getScreenMedia = require('getscreenmedia');
-
+var mockconsole = require('mockconsole');
 
 
 function SimpleWebRTC(opts) {
@@ -13,17 +13,34 @@ function SimpleWebRTC(opts) {
     var options = opts || {};
     var config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
-            log: options.log,
+            debug: false,
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
             autoRemoveVideos: true,
             adjustPeerVolume: true,
-            peerVolumeWhenSpeaking: .25
+            peerVolumeWhenSpeaking: 0.25
         };
     var item, connection;
 
-    // set options
+    // We also allow a 'logger' option. It can be any object that implements
+    // log, warn, and error methods.
+    // We log nothing by default, following "the rule of silence":
+    // http://www.linfo.org/rule_of_silence.html
+    this.logger = function () {
+        // we assume that if you're in debug mode and you didn't
+        // pass in a logger, you actually want to log as much as
+        // possible.
+        if (opts.debug) {
+            return opts.logger || console;
+        } else {
+        // or we'll use your logger which should have its own logic
+        // for output. Or we'll return the no-op.
+            return opts.logger || mockconsole;
+        }
+    }();
+
+    // set our config from options
     for (item in options) {
         this.config[item] = options[item];
     }
@@ -34,11 +51,11 @@ function SimpleWebRTC(opts) {
     // call WildEmitter constructor
     WildEmitter.call(this);
 
-       // our socket.io connection
+    // our socket.io connection
     connection = this.connection = io.connect(this.config.url);
 
     connection.on('connect', function () {
-        self.emit('ready', connection.socket.sessionid);
+        self.emit('connectionReady', connection.socket.sessionid);
         self.sessionReady = true;
         self.testReadiness();
     });
@@ -68,6 +85,9 @@ function SimpleWebRTC(opts) {
     });
 
     // instantiate our main WebRTC helper
+    // using same logger from logic here
+    opts.logger = this.logger;
+    opts.debug = false;
     this.webrtc = new WebRTC(opts);
 
     // attach a few methods from underlying lib to simple.
@@ -76,13 +96,13 @@ function SimpleWebRTC(opts) {
     });
 
     // proxy events from WebRTC
-    this.webrtc.on('*', function (eventname, event) {
-       var args = [].splice.call(arguments, 0, 0, eventname);
-       //self.emit.apply(self, args);
+    this.webrtc.on('*', function () {
+       self.emit.apply(self, arguments);
     });
 
-    if (config.log) {
-        this.on('*', console.log.bind(console));
+    // log all events in debug mode
+    if (config.debug) {
+        this.on('*', this.logger.log.bind(this.logger, 'SimpleWebRTC event:'));
     }
 
     // check for readiness
@@ -200,13 +220,16 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
     this.webrtc.startLocalMedia(null, function (err, stream) {
-        console.log('starting local media', err, stream);
         if (err) {
             self.emit(err);
         } else {
             attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
         }
     });
+};
+
+SimpleWebRTC.prototype.stopLocalVideo = function () {
+    this.webrtc.stopLocalVideo();
 };
 
 // this accepts either element ID or element
@@ -321,7 +344,7 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":5,"getscreenmedia":6,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
+},{"attachmediastream":5,"getscreenmedia":6,"mockconsole":7,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -527,6 +550,18 @@ module.exports = function (stream, el, options) {
     return element;
 };
 
+},{}],7:[function(require,module,exports){
+var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
+var l = methods.length;
+var fn = function () {};
+var mockconsole = {};
+
+while (l--) {
+    mockconsole[methods[l]] = fn;
+}
+
+module.exports = mockconsole;
+
 },{}],6:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
@@ -550,7 +585,7 @@ module.exports = function (cb) {
     getUserMedia(constraints, cb);
 };
 
-},{"getusermedia":7}],8:[function(require,module,exports){
+},{"getusermedia":8}],9:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -614,7 +649,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -685,14 +720,14 @@ var PeerConnection = require('rtcpeerconnection');
 var WildEmitter = require('wildemitter');
 var hark = require('hark');
 var GainController = require('mediastream-gain');
-var log;
+var mockconsole = require('mockconsole');
 
 
 function WebRTC(opts) {
     var self = this;
     var options = opts || {};
     var config = this.config = {
-            log: false,
+            debug: false,
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
@@ -714,31 +749,53 @@ function WebRTC(opts) {
         };
     var item, connection;
 
-    // check for support
-    if (!webrtc.support) {
-        console.error('Your browser doesn\'t seem to support WebRTC');
-    }
-
     // expose screensharing check
     this.screenSharingSupport = webrtc.screenSharing;
+
+    // We also allow a 'logger' option. It can be any object that implements
+    // log, warn, and error methods.
+    // We log nothing by default, following "the rule of silence":
+    // http://www.linfo.org/rule_of_silence.html
+    this.logger = function () {
+        // we assume that if you're in debug mode and you didn't
+        // pass in a logger, you actually want to log as much as
+        // possible.
+        if (opts.debug) {
+            return opts.logger || console;
+        } else {
+        // or we'll use your logger which should have its own logic
+        // for output. Or we'll return the no-op.
+            return opts.logger || mockconsole;
+        }
+    }();
 
     // set options
     for (item in options) {
         this.config[item] = options[item];
     }
 
-    // log if configured to
-    log = (this.config.log) ? console.log.bind(console) : function () {};
+    // check for support
+    if (!webrtc.support) {
+        this.logger.error('Your browser doesn\'t seem to support WebRTC');
+    }
 
     // where we'll store our peer connections
     this.peers = [];
 
     WildEmitter.call(this);
 
-    // log events
-    if (this.config.log) {
+    // log events in debug mode
+    if (this.config.debug) {
         this.on('*', function (event, val1, val2) {
-            log('event:', event, val1, val2);
+            var logger;
+            // if you didn't pass in a logger and you explicitly turning on debug
+            // we're just going to assume you're wanting log output with console
+            if (self.config.logger === mockconsole) {
+                logger = console;
+            } else {
+                logger = self.logger;
+            }
+            logger.log('event:', event, val1, val2);
         });
     }
 }
@@ -779,6 +836,13 @@ WebRTC.prototype.startLocalMedia = function (mediaConstraints, cb) {
     });
 };
 
+WebRTC.prototype.stopLocalMedia = function () {
+    if (this.localStream) {
+        this.localStream.stop();
+        this.emit('localStreamStopped');
+    }
+};
+
 // Audio controls
 WebRTC.prototype.mute = function () {
     this._audioEnabled(false);
@@ -793,7 +857,7 @@ WebRTC.prototype.unmute = function () {
 
 // Audio monitor
 WebRTC.prototype.setupAudioMonitor = function (stream) {
-    log('Setup audio');
+    this.logger.log('Setup audio');
     var audio = hark(stream);
     var self = this;
     var timeout;
@@ -897,11 +961,12 @@ function Peer(options) {
     this.pc.on('ice', this.onIceCandidate.bind(this));
     this.pc.on('addStream', this.handleRemoteStreamAdded.bind(this));
     this.pc.on('removeStream', this.handleStreamRemoved.bind(this));
+    this.logger = this.parent.logger;
 
     // handle screensharing/broadcast mode
     if (options.type === 'screen') {
         if (this.parent.localScreen && this.sharemyscreen) {
-            log('adding local screen stream to peer connection');
+            this.logger.log('adding local screen stream to peer connection');
             this.pc.addStream(this.parent.localScreen);
             this.broadcaster = options.broadcaster;
         }
@@ -927,7 +992,7 @@ Peer.prototype = Object.create(WildEmitter.prototype, {
 Peer.prototype.handleMessage = function (message) {
     var self = this;
 
-    log('getting', message.type, message);
+    this.logger.log('getting', message.type, message);
 
     if (message.prefix) this.browserPrefix = message.prefix;
 
@@ -955,7 +1020,7 @@ Peer.prototype.send = function (messageType, payload) {
         payload: payload,
         prefix: webrtc.prefix
     };
-    log('sending', messageType, message);
+    this.logger.log('sending', messageType, message);
     this.parent.emit('message', message);
 };
 
@@ -964,7 +1029,7 @@ Peer.prototype.onIceCandidate = function (candidate) {
     if (candidate) {
         this.send('candidate', candidate);
     } else {
-        log("End of candidates.");
+        this.logger.log("End of candidates.");
     }
 };
 
@@ -993,7 +1058,7 @@ Peer.prototype.handleStreamRemoved = function () {
 
 module.exports = WebRTC;
 
-},{"getusermedia":8,"hark":11,"mediastream-gain":10,"rtcpeerconnection":9,"webrtcsupport":4,"wildemitter":3}],12:[function(require,module,exports){
+},{"getusermedia":9,"hark":12,"mediastream-gain":11,"mockconsole":7,"rtcpeerconnection":10,"webrtcsupport":4,"wildemitter":3}],13:[function(require,module,exports){
 // created by @HenrikJoreteg
 var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection || window.RTCPeerConnection;
 var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
@@ -1020,7 +1085,7 @@ module.exports = {
     IceCandidate: IceCandidate
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -1158,54 +1223,7 @@ PeerConnection.prototype.close = function () {
 
 module.exports = PeerConnection;
 
-},{"webrtcsupport":12,"wildemitter":3}],10:[function(require,module,exports){
-var support = require('webrtcsupport');
-
-
-function GainController(stream) {
-    this.support = support.webAudio;
-
-    // set our starting value
-    this.gain = 1;
-
-    if (this.support) {
-        var context = this.context = new support.AudioContext();
-        this.microphone = context.createMediaStreamSource(stream);
-        this.gainFilter = context.createGain();
-        this.destination = context.createMediaStreamDestination();
-        this.outputStream = this.destination.stream;
-        this.microphone.connect(this.gainFilter);
-        this.gainFilter.connect(this.destination);
-        stream.removeTrack(stream.getAudioTracks()[0]);
-        stream.addTrack(this.outputStream.getAudioTracks()[0]);
-    }
-    this.stream = stream;
-}
-
-// setting
-GainController.prototype.setGain = function (val) {
-    // check for support
-    if (!this.support) return;
-    this.gainFilter.gain.value = val;
-    this.gain = val;
-};
-
-GainController.prototype.getGain = function () {
-    return this.gain;
-};
-
-GainController.prototype.off = function () {
-    return this.setGain(0);
-};
-
-GainController.prototype.on = function () {
-    this.setGain(1);
-};
-
-
-module.exports = GainController;
-
-},{"webrtcsupport":4}],11:[function(require,module,exports){
+},{"webrtcsupport":13,"wildemitter":3}],12:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -1298,6 +1316,53 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":3}]},{},[1])(1)
+},{"wildemitter":3}],11:[function(require,module,exports){
+var support = require('webrtcsupport');
+
+
+function GainController(stream) {
+    this.support = support.webAudio;
+
+    // set our starting value
+    this.gain = 1;
+
+    if (this.support) {
+        var context = this.context = new support.AudioContext();
+        this.microphone = context.createMediaStreamSource(stream);
+        this.gainFilter = context.createGain();
+        this.destination = context.createMediaStreamDestination();
+        this.outputStream = this.destination.stream;
+        this.microphone.connect(this.gainFilter);
+        this.gainFilter.connect(this.destination);
+        stream.removeTrack(stream.getAudioTracks()[0]);
+        stream.addTrack(this.outputStream.getAudioTracks()[0]);
+    }
+    this.stream = stream;
+}
+
+// setting
+GainController.prototype.setGain = function (val) {
+    // check for support
+    if (!this.support) return;
+    this.gainFilter.gain.value = val;
+    this.gain = val;
+};
+
+GainController.prototype.getGain = function () {
+    return this.gain;
+};
+
+GainController.prototype.off = function () {
+    return this.setGain(0);
+};
+
+GainController.prototype.on = function () {
+    this.setGain(1);
+};
+
+
+module.exports = GainController;
+
+},{"webrtcsupport":4}]},{},[1])(1)
 });
 ;

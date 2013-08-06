@@ -33,7 +33,7 @@
                 remoteVideosEl: 'remotes',
                 // immediately ask for camera access
                 autoRequestMedia: true,
-                log: true
+                debug: true
             });
 
             // when it's ready, join if we got a room from the URL
@@ -80,7 +80,6 @@
                 } else {
                     webrtc.shareScreen(function (err) {
                         if (err) {
-                            console.log(err);
                             setButton(true);
                         } else {
                             setButton(false);

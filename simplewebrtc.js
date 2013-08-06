@@ -3,7 +3,7 @@ var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');
 var getScreenMedia = require('getscreenmedia');
-
+var mockconsole = require('mockconsole');
 
 
 function SimpleWebRTC(opts) {
@@ -11,17 +11,34 @@ function SimpleWebRTC(opts) {
     var options = opts || {};
     var config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
-            log: options.log,
+            debug: false,
             localVideoEl: '',
             remoteVideosEl: '',
             autoRequestMedia: false,
             autoRemoveVideos: true,
             adjustPeerVolume: true,
-            peerVolumeWhenSpeaking: .25
+            peerVolumeWhenSpeaking: 0.25
         };
     var item, connection;
 
-    // set options
+    // We also allow a 'logger' option. It can be any object that implements
+    // log, warn, and error methods.
+    // We log nothing by default, following "the rule of silence":
+    // http://www.linfo.org/rule_of_silence.html
+    this.logger = function () {
+        // we assume that if you're in debug mode and you didn't
+        // pass in a logger, you actually want to log as much as
+        // possible.
+        if (opts.debug) {
+            return opts.logger || console;
+        } else {
+        // or we'll use your logger which should have its own logic
+        // for output. Or we'll return the no-op.
+            return opts.logger || mockconsole;
+        }
+    }();
+
+    // set our config from options
     for (item in options) {
         this.config[item] = options[item];
     }
@@ -32,11 +49,11 @@ function SimpleWebRTC(opts) {
     // call WildEmitter constructor
     WildEmitter.call(this);
 
-       // our socket.io connection
+    // our socket.io connection
     connection = this.connection = io.connect(this.config.url);
 
     connection.on('connect', function () {
-        self.emit('ready', connection.socket.sessionid);
+        self.emit('connectionReady', connection.socket.sessionid);
         self.sessionReady = true;
         self.testReadiness();
     });
@@ -66,6 +83,9 @@ function SimpleWebRTC(opts) {
     });
 
     // instantiate our main WebRTC helper
+    // using same logger from logic here
+    opts.logger = this.logger;
+    opts.debug = false;
     this.webrtc = new WebRTC(opts);
 
     // attach a few methods from underlying lib to simple.
@@ -74,13 +94,13 @@ function SimpleWebRTC(opts) {
     });
 
     // proxy events from WebRTC
-    this.webrtc.on('*', function (eventname, event) {
-       var args = [].splice.call(arguments, 0, 0, eventname);
-       //self.emit.apply(self, args);
+    this.webrtc.on('*', function () {
+       self.emit.apply(self, arguments);
     });
 
-    if (config.log) {
-        this.on('*', console.log.bind(console));
+    // log all events in debug mode
+    if (config.debug) {
+        this.on('*', this.logger.log.bind(this.logger, 'SimpleWebRTC event:'));
     }
 
     // check for readiness
@@ -198,13 +218,16 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
     this.webrtc.startLocalMedia(null, function (err, stream) {
-        console.log('starting local media', err, stream);
         if (err) {
             self.emit(err);
         } else {
             attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
         }
     });
+};
+
+SimpleWebRTC.prototype.stopLocalVideo = function () {
+    this.webrtc.stopLocalVideo();
 };
 
 // this accepts either element ID or element

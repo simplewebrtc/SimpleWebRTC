@@ -24,7 +24,7 @@ Check out the demo: https://talky.io
 ### 1. Create our WebRTC object
 
 ```js
-var webrtc = new WebRTC({
+var webrtc = new SimpleWebRTC({
     // the id/element dom element that will hold "our" video
     localVideoEl: 'localVideo',
     // the id/element dom element that will hold remote videos

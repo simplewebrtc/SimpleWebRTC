@@ -26,7 +26,7 @@
         &lt;script src=&quot;http://simplewebrtc.com/latest.js&quot;&gt;&lt;/script&gt; 
     &lt;/head&gt;
     &lt;body&gt;
-        &lt;div id=&quot;localVideo&quot;&gt;&lt;/div&gt;
+        &lt;video height=&quot;300&quot; id=&quot;localVideo&quot;&gt;&lt;/div&gt;
         &lt;div id=&quot;remotesVideos&quot;&gt;&lt;/div&gt;
     &lt;/body&gt;
 &lt;/html&gt;
@@ -34,7 +34,7 @@
 </pre>
 
 <h3>Stir in the WebRTC object</h3>
-<pre class="prettyprint.lang-js"><code>var webrtc = new WebRTC({
+<pre class="prettyprint.lang-js"><code>var webrtc = new SimpleWebRTC({
     // the id/element dom element that will hold "our" video
     localVideoEl: 'localVideo',
     // the id/element dom element that will hold remote videos

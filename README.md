@@ -12,10 +12,18 @@ Check out the demo: https://talky.io
 <html>
     <head>
         <script src="http://simplewebrtc.com/latest.js"></script> 
+        <style>
+            #remoteVideos video {
+                height: 150px;
+            }
+            #localVideo {
+                height: 150px;
+            }
+        </style>
     </head>
     <body>
-        <div id="localVideo"></div>
-        <div id="remotesVideos"></div>
+        <vide id="localVideo"></div>
+        <div id="remoteVideos"></div>
     </body>
 </html>
 
@@ -28,7 +36,7 @@ var webrtc = new SimpleWebRTC({
     // the id/element dom element that will hold "our" video
     localVideoEl: 'localVideo',
     // the id/element dom element that will hold remote videos
-    remoteVideosEl: 'remotesVideos',
+    remoteVideosEl: 'remoteVideos',
     // immediately ask for camera access
     autoRequestMedia: true
 });

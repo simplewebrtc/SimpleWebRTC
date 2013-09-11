@@ -14,6 +14,7 @@ function SimpleWebRTC(opts) {
             debug: false,
             localVideoEl: '',
             remoteVideosEl: '',
+            enableDataChannels: true,
             autoRequestMedia: false,
             autoRemoveVideos: true,
             adjustPeerVolume: true,
@@ -63,11 +64,15 @@ function SimpleWebRTC(opts) {
         var peer;
 
         if (message.type === 'offer') {
-            peer = self.webrtc.createPeer({
-                id: message.from,
-                type: message.roomType,
-                sharemyscreen: message.roomType === 'screen' && !message.broadcaster
-            });
+            if (peers.length) {
+                peer = peers[0];
+            } else {
+                peer = self.webrtc.createPeer({
+                    id: message.from,
+                    type: message.roomType,
+                    sharemyscreen: message.roomType === 'screen' && !message.broadcaster
+                });
+            }
             peer.handleMessage(message);
         } else if (peers.length) {
             peers.forEach(function (peer) {
@@ -338,6 +343,13 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
     } else {
         this.connection.emit('create', name);
     }
+};
+
+SimpleWebRTC.prototype.sendFile = function () {
+    if (!webrtcSupport.dataChannel) {
+        return this.emit('error', new Error('DataChannelNotSupported'));
+    }
+
 };
 
 module.exports = SimpleWebRTC;

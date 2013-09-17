@@ -1010,10 +1010,21 @@ function Peer(options) {
         // we may not have reliable channels
         try {
             this.reliableChannel = this.getDataChannel('reliable', {reliable: true});
+            if (!this.reliableChannel.reliable) throw Error('Failed to make reliable channel');
         } catch (e) {
+            this.logger.warn('Failed to create reliable data channel.')
             this.reliableChannel = false;
+            delete this.channels.reliable;
         }
-        this.unreliableChannel = this.getDataChannel('unreliable', {reliable: false});
+        // in FF I can't seem to create unreliable channels now
+        try {
+            this.unreliableChannel = this.getDataChannel('unreliable', {reliable: false, preset: true});
+            if (this.unreliableChannel.unreliable !== false) throw Error('Failed to make unreliable channel');
+        } catch (e) {
+            this.logger.warn('Failed to create unreliable data channel.')
+            this.unreliableChannel = false;
+            delete this.channels.unreliableChannel;
+        }
     }
 
     // call emitter constructor
@@ -1081,10 +1092,10 @@ Peer.prototype._observeDataChannel = function (channel) {
 Peer.prototype.getDataChannel = function (name, opts) {
     if (!webrtc.dataChannel) return this.emit('error', new Error('createDataChannel not supported'));
     var channel = this.channels[name];
-    opts || (opts = {reliable: false});
+    opts || (opts = {});
     if (channel) return channel;
     // if we don't have one by this label, create it
-    channel = this.channels[name] = this.pc.pc.createDataChannel(name, opts);
+    channel = this.channels[name] = this.pc.createDataChannel(name, opts);
     this._observeDataChannel(channel);
     return channel;
 };
@@ -1214,6 +1225,7 @@ var webrtc = require('webrtcsupport');
 
 
 function PeerConnection(config, constraints) {
+    var item;
     this.pc = new webrtc.PeerConnection(config, constraints);
     WildEmitter.call(this);
 
@@ -1228,7 +1240,18 @@ function PeerConnection(config, constraints) {
     this.pc.onicecandidate = this._onIce.bind(this);
     this.pc.ondatachannel = this._onDataChannel.bind(this);
 
-    if (config.debug) {
+    // whether to use SDP hack for faster data transfer
+    this.config = {
+        debug: false,
+        sdpHack: true
+    };
+
+    // apply our config
+    for (item in config) {
+        this.config[item] = config[item];
+    }
+
+    if (this.config.debug) {
         this.on('*', function (eventName, event) {
             var logger = config.logger || console;
             logger.log('PeerConnection event:', arguments);
@@ -1268,10 +1291,11 @@ PeerConnection.prototype.offer = function (constraints, cb) {
 
     // Actually generate the offer
     this.pc.createOffer(
-        function (sessionDescription) {
-            self.pc.setLocalDescription(sessionDescription);
-            self.emit('offer', sessionDescription);
-            if (callback) callback(null, sessionDescription);
+        function (offer) {
+            offer.sdp = self._applySdpHack(offer.sdp);
+            self.pc.setLocalDescription(offer);
+            self.emit('offer', offer);
+            if (callback) callback(null, offer);
         },
         function (err) {
             self.emit('error', err);
@@ -1334,10 +1358,11 @@ PeerConnection.prototype._answer = function (offer, constraints, cb) {
     var self = this;
     this.pc.setRemoteDescription(new webrtc.SessionDescription(offer));
     this.pc.createAnswer(
-        function (sessionDescription) {
-            self.pc.setLocalDescription(sessionDescription);
-            self.emit('answer', sessionDescription);
-            if (cb) cb(null, sessionDescription);
+        function (answer) {
+            answer.sdp = self._applySdpHack(answer.sdp);
+            self.pc.setLocalDescription(answer);
+            self.emit('answer', answer);
+            if (cb) cb(null, answer);
         }, function (err) {
             self.emit('error', err);
             if (cb) cb(err);
@@ -1365,6 +1390,53 @@ PeerConnection.prototype._onDataChannel = function (event) {
 PeerConnection.prototype._onAddStream = function (event) {
     this.remoteStream = event.stream;
     this.emit('addStream', event);
+};
+
+// SDP hack for increasing AS (application specific) data transfer speed allowed in chrome
+PeerConnection.prototype._applySdpHack = function (sdp) {
+    if (!this.config.sdpHack) return sdp;
+    var parts = sdp.split('b=AS:30');
+    if (parts.length === 2) {
+        // increase max data transfer bandwidth to 100 Mbps
+        return parts[0] + 'b=AS:102400' + parts[1];
+    } else {
+        return sdp;
+    }
+};
+
+// Create a data channel spec reference:
+// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCDataChannelInit
+PeerConnection.prototype.createDataChannel = function (name, opts) {
+    opts || (opts = {});
+    var reliable = !!opts.reliable;
+    var protocol = opts.protocol || 'text/plain';
+    var negotiated = !!(opts.negotiated || opts.preset);
+    var settings;
+    var channel;
+    // firefox is a bit more finnicky
+    if (webrtc.prefix === 'moz') {
+        if (reliable) {
+            settings = {
+                protocol: protocol,
+                preset: negotiated,
+                stream: name
+            };
+        } else {
+            settings = {};
+        }
+        channel = this.pc.createDataChannel(name, settings);
+        channel.binaryType = 'blob';
+    } else {
+        if (reliable) {
+            settings = {
+                reliable: true
+            };
+        } else {
+            settings = {reliable: false};
+        }
+        channel = this.pc.createDataChannel(name, settings);
+    }
+    return channel;
 };
 
 module.exports = PeerConnection;

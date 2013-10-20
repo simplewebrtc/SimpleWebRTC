@@ -4,6 +4,7 @@ var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');
 var getScreenMedia = require('getscreenmedia');
 var mockconsole = require('mockconsole');
+var io = require('socket.io-client');
 
 
 function SimpleWebRTC(opts) {

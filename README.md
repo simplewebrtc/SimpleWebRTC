@@ -22,7 +22,7 @@ Check out the demo: https://talky.io
         </style>
     </head>
     <body>
-        <vide id="localVideo"></div>
+        <video id="localVideo"></video>
         <div id="remoteVideos"></div>
     </body>
 </html>

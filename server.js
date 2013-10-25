@@ -1,3 +1,5 @@
+/*global require, console, __dirname */
+
 // silly chrome wants SSL to do screensharing
 var fs = require('fs'),
     express = require('express'),

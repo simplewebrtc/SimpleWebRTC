@@ -1,3 +1,4 @@
+/*global require, console, io, module */
 var WebRTC = require('webrtc');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
@@ -8,6 +9,7 @@ var io = require('socket.io-client');
 
 
 function SimpleWebRTC(opts) {
+    'use strict';
     var self = this;
     var options = opts || {};
     var config = this.config = {
@@ -27,7 +29,7 @@ function SimpleWebRTC(opts) {
     // log, warn, and error methods.
     // We log nothing by default, following "the rule of silence":
     // http://www.linfo.org/rule_of_silence.html
-    this.logger = function () {
+    this.logger = (function () {
         // we assume that if you're in debug mode and you didn't
         // pass in a logger, you actually want to log as much as
         // possible.
@@ -38,11 +40,13 @@ function SimpleWebRTC(opts) {
         // for output. Or we'll return the no-op.
             return opts.logger || mockconsole;
         }
-    }();
+    }());
 
     // set our config from options
     for (item in options) {
-        this.config[item] = options[item];
+        if (options.hasOwnProperty(item)) {
+            this.config[item] = options[item];
+        }
     }
 
     // attach detected support for convenience
@@ -101,7 +105,7 @@ function SimpleWebRTC(opts) {
 
     // proxy events from WebRTC
     this.webrtc.on('*', function () {
-       self.emit.apply(self, arguments);
+        self.emit.apply(self, arguments);
     });
 
     // log all events in debug mode
@@ -111,11 +115,11 @@ function SimpleWebRTC(opts) {
 
     // check for readiness
     this.webrtc.on('localStream', function () {
-       self.testReadiness();
+        self.testReadiness();
     });
 
     this.webrtc.on('message', function (payload) {
-       self.connection.emit('message', payload);
+        self.connection.emit('message', payload);
     });
 
     this.webrtc.on('peerStreamAdded', this.handlePeerStreamAdded.bind(this));
@@ -127,7 +131,9 @@ function SimpleWebRTC(opts) {
         this.webrtc.on('stoppedSpeaking', this.setVolumeForAll.bind(this, 1));
     }
 
-    if (this.config.autoRequestMedia) this.startLocalVideo();
+    if (this.config.autoRequestMedia) {
+        this.startLocalVideo();
+    }
 }
 
 
@@ -138,6 +144,7 @@ SimpleWebRTC.prototype = Object.create(WildEmitter.prototype, {
 });
 
 SimpleWebRTC.prototype.leaveRoom = function () {
+    'use strict';
     if (this.roomName) {
         this.connection.emit('leave', this.roomName);
         this.webrtc.peers.forEach(function (peer) {
@@ -151,6 +158,7 @@ SimpleWebRTC.prototype.leaveRoom = function () {
 };
 
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
+    'use strict';
     var container = this.getRemoteVideoContainer();
     var video = attachMediaStream(peer.stream);
 
@@ -158,32 +166,42 @@ SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
     peer.videoEl = video;
     video.id = this.getDomId(peer);
 
-    if (container) container.appendChild(video);
+    if (container) {
+        container.appendChild(video);
+    }
 
     this.emit('videoAdded', video, peer);
 };
 
 SimpleWebRTC.prototype.handlePeerStreamRemoved = function (peer) {
+    'use strict';
     var container = this.getRemoteVideoContainer();
     var videoEl = peer.videoEl;
     if (this.config.autoRemoveVideos && container && videoEl) {
         container.removeChild(videoEl);
     }
-    if (videoEl) this.emit('videoRemoved', videoEl, peer);
+    if (videoEl) {
+        this.emit('videoRemoved', videoEl, peer);
+    }
 };
 
 SimpleWebRTC.prototype.getDomId = function (peer) {
+    'use strict';
     return [peer.id, peer.type, peer.broadcaster ? 'broadcasting' : 'incoming'].join('_');
 };
 
 // set volume on video tag for all peers takse a value between 0 and 1
 SimpleWebRTC.prototype.setVolumeForAll = function (volume) {
+    'use strict';
     this.webrtc.peers.forEach(function (peer) {
-        if (peer.videoEl) peer.videoEl.volume = volume;
+        if (peer.videoEl) {
+            peer.videoEl.volume = volume;
+        }
     });
 };
 
 SimpleWebRTC.prototype.joinRoom = function (name, cb) {
+    'use strict';
     var self = this;
     this.roomName = name;
     this.connection.emit('join', name, function (err, roomDescription) {
@@ -195,25 +213,30 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
                 type,
                 peer;
             for (id in roomDescription.clients) {
-                client = roomDescription.clients[id];
-                for (type in client) {
-                    if (client[type]) {
-                        peer = self.webrtc.createPeer({
-                            id: id,
-                            type: type
-                        });
-                        peer.start();
+                if (roomDescription.clients.hasOwnProperty(id)) {
+                    client = roomDescription.clients[id];
+                    for (type in client) {
+                        if (client.hasOwnProperty(type) && client[type]) {
+                            peer = self.webrtc.createPeer({
+                                id: id,
+                                type: type
+                            });
+                            peer.start();
+                        }
                     }
                 }
             }
         }
 
-        if (cb) cb(err, roomDescription);
+        if (cb) {
+            cb(err, roomDescription);
+        }
         self.emit('joinedRoom', name);
     });
 };
 
 SimpleWebRTC.prototype.getEl = function (idOrEl) {
+    'use strict';
     if (typeof idOrEl === 'string') {
         return document.getElementById(idOrEl);
     } else {
@@ -222,6 +245,7 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 };
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
+    'use strict';
     var self = this;
     this.webrtc.startLocalMedia(null, function (err, stream) {
         if (err) {
@@ -233,6 +257,7 @@ SimpleWebRTC.prototype.startLocalVideo = function () {
 };
 
 SimpleWebRTC.prototype.stopLocalVideo = function () {
+    'use strict';
     this.webrtc.stopLocalMedia();
 };
 
@@ -240,6 +265,7 @@ SimpleWebRTC.prototype.stopLocalVideo = function () {
 // and either the video tag itself or a container
 // that will be used to put the video tag into.
 SimpleWebRTC.prototype.getLocalVideoContainer = function () {
+    'use strict';
     var el = this.getEl(this.config.localVideoEl);
     if (el && el.tagName === 'VIDEO') {
         return el;
@@ -253,15 +279,16 @@ SimpleWebRTC.prototype.getLocalVideoContainer = function () {
 };
 
 SimpleWebRTC.prototype.getRemoteVideoContainer = function () {
+    'use strict';
     return this.getEl(this.config.remoteVideosEl);
 };
 
 SimpleWebRTC.prototype.shareScreen = function (cb) {
+    'use strict';
     var self = this,
         peer;
     getScreenMedia(function (err, stream) {
-        var item,
-            el = document.createElement('video'),
+        var el = document.createElement('video'),
             container = self.getRemoteVideoContainer();
 
         if (!err) {
@@ -296,15 +323,19 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
         }
 
         // enable the callback
-        if (cb) cb(err, stream);
+        if (cb) {
+            cb(err, stream);
+        }
     });
 };
 
 SimpleWebRTC.prototype.getLocalScreen = function () {
+    'use strict';
     return this.webrtc.localScreen;
 };
 
 SimpleWebRTC.prototype.stopScreenShare = function () {
+    'use strict';
     this.connection.emit('unshareScreen');
     var videoEl = document.getElementById('localScreen');
     var container = this.getRemoteVideoContainer();
@@ -316,8 +347,12 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
 
     // a hack to emit the event the removes the video
     // element that we want
-    if (videoEl) this.emit('videoRemoved', videoEl);
-    if (stream) stream.stop();
+    if (videoEl) {
+        this.emit('videoRemoved', videoEl);
+    }
+    if (stream) {
+        stream.stop();
+    }
     this.webrtc.peers.forEach(function (peer) {
         if (peer.broadcaster) {
             peer.end();
@@ -327,6 +362,7 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
 };
 
 SimpleWebRTC.prototype.testReadiness = function () {
+    'use strict';
     var self = this;
     if (this.webrtc.localStream && this.sessionReady) {
         // This timeout is a workaround for the strange no-audio bug
@@ -339,6 +375,7 @@ SimpleWebRTC.prototype.testReadiness = function () {
 };
 
 SimpleWebRTC.prototype.createRoom = function (name, cb) {
+    'use strict';
     if (arguments.length === 2) {
         this.connection.emit('create', name, cb);
     } else {
@@ -347,6 +384,7 @@ SimpleWebRTC.prototype.createRoom = function (name, cb) {
 };
 
 SimpleWebRTC.prototype.sendFile = function () {
+    'use strict';
     if (!webrtcSupport.dataChannel) {
         return this.emit('error', new Error('DataChannelNotSupported'));
     }

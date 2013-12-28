@@ -19,7 +19,11 @@ function SimpleWebRTC(opts) {
             autoRequestMedia: false,
             autoRemoveVideos: true,
             adjustPeerVolume: true,
-            peerVolumeWhenSpeaking: 0.25
+            peerVolumeWhenSpeaking: 0.25,
+            mediaConstraints: {
+                video: true,
+                audio: true
+            }
         };
     var item, connection;
 
@@ -246,7 +250,8 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
-    this.webrtc.startLocalMedia(null, function (err, stream) {
+    console.log(this.config.mediaConstraints);
+    this.webrtc.startLocalMedia(this.config.mediaConstraints, function (err, stream) {
         if (err) {
             self.emit(err);
         } else {

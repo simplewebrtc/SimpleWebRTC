@@ -33,6 +33,8 @@ Check out the demo: https://talky.io
 
 ```js
 var webrtc = new SimpleWebRTC({
+    // the url of your signaling server
+    url: 'http://signaling.simplewebrtc.com:8888',
     // the id/element dom element that will hold "our" video
     localVideoEl: 'localVideo',
     // the id/element dom element that will hold remote videos

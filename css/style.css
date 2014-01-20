@@ -28,6 +28,7 @@ html {
   font-size: 100%;
 }
 body {
+  overflow-x: hidden;
   font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 400;
   font-size: 1em;
@@ -49,20 +50,24 @@ h3 {
   color: #000;
 }
 h1 {
+  margin: 0;
   font-size: 3em;
 }
 h2 {
-  margin: 1.875em;
+  margin: 1.875em 0;
   font-size: 1.75em;
   text-align: center;
 }
 h3 {
-  margin: 1.25em 0;
+  margin: 1.5em 0;
   font-size: 1.25em;
 }
 h2,
 h3 {
   line-height: 1.2;
+}
+p {
+  margin-bottom: 1.25em;
 }
 a {
   color: #12acef;
@@ -81,12 +86,15 @@ a:hover {
   clear: both;
 }
 ul {
-  margin: 1.875em 0 1.875em 1.875em;
+  margin: 0 0 0 1.875em;
   padding: 0;
 }
 ul li {
   list-style-type: disc;
-  padding: 5px 0;
+  padding: 0.625em 0;
+}
+ul li:last-child {
+  padding-bottom: 0;
 }
 .logo {
   font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -101,33 +109,10 @@ ul li {
 .content {
   margin: 10em auto 0;
 }
-.button.github-fork {
-  display: block;
-  border-radius: 0;
-  position: absolute;
-  top: -3.5em;
-  right: -10em;
-  padding: 0 6em;
-  height: 2.5em;
-  line-height: 2.5em;
-  -webkit-transform: rotate(45deg);
-  transform: rotate(45deg);
-  -webkit-transform-origin: top left;
-  transform-origin: top left;
-  z-index: 2;
-}
-.button.github-fork:hover {
-  background-color: #59c5f4;
-}
-@media screen and (max-width: 48em) {
-  .content {
-    width: 90%;
-  }
-}
-@media screen and (min-width: 48.0625em) {
-  .content {
-    width: 55%;
-  }
+section {
+  padding-bottom: 1.875em;
+  margin-bottom: 1.875em;
+  border-bottom: 1px solid #e6eaed;
 }
 pre {
   background-color: #333;
@@ -138,6 +123,16 @@ pre {
   border-top: 1px solid #333;
   border-bottom: 1px solid #ccc;
   line-height: 140%;
+}
+@media screen and (max-width: 48em) {
+  .content {
+    width: 90%;
+  }
+}
+@media screen and (min-width: 48.0625em) {
+  .content {
+    width: 55%;
+  }
 }
 /*
 * Buttons
@@ -167,4 +162,19 @@ a.button:hover {
 }
 a.button:focus {
   outline: none;
+}
+.button.github-fork {
+  display: block;
+  border-radius: 0;
+  position: absolute;
+  top: -3.5em;
+  right: -10em;
+  padding: 0 6em;
+  height: 2.5em;
+  line-height: 2.5em;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+  -webkit-transform-origin: top left;
+  transform-origin: top left;
+  z-index: 2;
 }

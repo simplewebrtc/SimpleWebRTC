@@ -65,27 +65,29 @@
         </code>
         </pre>
 
-        <h3 id="modules">Need More Control?</h3>
+      </section>
+      <section>
+        <h3>Need More Control?</h3>
 
         <p>In order to make WebRTC as approachable as possible, SimpleWebRTC assumes a lot about the type of app you want to build.</p>
 
         <p>It's unlikely that if you're going to ship an app that uses WebRTC SimpleWebRTC will have <em>the exact</em> features you want. Likely you'll want to use bits and pieces of it. Well, you're in luck! SimpleWebRTC is actually comprised of a whole bunch of independent little modules to help you:</p>
 
-        <p>
-          <ul>
-            <li><a href="https://github.com/andyet/signalmaster">Signalmaster</a> &mdash; Simple node.js/socket.io powered signaling server.</li>
-            <li><a href="https://github.com/henrikjoreteg/webrtc.js">webrtc.js</a> &mdash; Wraps/normalizes webrtc between browsers and manages multiple peer connections. It's completely signaling agnostic, so it's much more customizable than using SimpleWebRTC directly.</li>
-            <li><a href="https://github.com/henrikjoreteg/rtcpeerconnection">RTCPeerConnection</a> - Wraps/normalizes peer connections.</li>
-            <li><a href="https://github.com/HenrikJoreteg/getUserMedia">getUserMedia</a> &mdash; Wraps/normalizes getting access to user's camera/mic.</li>
-            <li><a href="https://github.com/HenrikJoreteg/attachMediaStream">attachMediaStream</a> - Normalizes adding streams to video tags and handles muting/mirroring in one simple API.</li>
-            <li><a href="https://github.com/HenrikJoreteg/webrtcsupport">webrtcsupport</a> - For checking browser capability and grabbing appropriate constructors for stuff like RTCPeerConnection and RTCSessionDescription as well as checking support for data channels, etc.</li>
-            <li><a href="https://github.com/HenrikJoreteg/getScreenMedia">getScreenMedia</a> &mdash; Extends getUserMedia but for getting access to screen media for screensharing.</li>
-            <li><a href="https://github.com/HenrikJoreteg/mediastream-gain">mediastream-gain</a> - Gives you a simple audio input volume controller.</li>
-            <li><a href="https://github.com/latentflip/hark">hark</a> &mdash; Detect who's speaking using the Web Audio API.</li>
-            <li><a href="https://github.com/HenrikJoreteg/wildemitter">WildEmitter</a> &mdash; Slick, minimalist EventEmitter with support for wildcards.</li>
-          </ul>
-        </p>
-
+        <ul>
+          <li><a href="https://github.com/andyet/signalmaster">Signalmaster</a> &mdash; Simple node.js/socket.io powered signaling server.</li>
+          <li><a href="https://github.com/henrikjoreteg/webrtc.js">webrtc.js</a> &mdash; Wraps/normalizes webrtc between browsers and manages multiple peer connections. It's completely signaling agnostic, so it's much more customizable than using SimpleWebRTC directly.</li>
+          <li><a href="https://github.com/henrikjoreteg/rtcpeerconnection">RTCPeerConnection</a> &mdash; Wraps/normalizes peer connections.</li>
+          <li><a href="https://github.com/HenrikJoreteg/getUserMedia">getUserMedia</a> &mdash; Wraps/normalizes getting access to user's camera/mic.</li>
+          <li><a href="https://github.com/HenrikJoreteg/attachMediaStream">attachMediaStream</a> &mdash; Normalizes adding streams to video tags and handles muting/mirroring in one simple API.</li>
+          <li><a href="https://github.com/HenrikJoreteg/webrtcsupport">webrtcsupport</a> &mdash; For checking browser capability and grabbing appropriate constructors for stuff like RTCPeerConnection and RTCSessionDescription as well as checking support for data channels, etc.</li>
+          <li><a href="https://github.com/HenrikJoreteg/getScreenMedia">getScreenMedia</a> &mdash; Extends getUserMedia but for getting access to screen media for screensharing.</li>
+          <li><a href="https://github.com/HenrikJoreteg/mediastream-gain">mediastream-gain</a> &mdash; Gives you a simple audio input volume controller.</li>
+          <li><a href="https://github.com/latentflip/hark">hark</a> &mdash; Detect who's speaking using the Web Audio API.</li>
+          <li><a href="https://github.com/HenrikJoreteg/wildemitter">WildEmitter</a> &mdash; Slick, minimalist EventEmitter with support for wildcards.</li>
+        </ul>
+          
+      </section> 
+      <section>
 
         <h3>More Info</h3>
 
@@ -101,15 +103,15 @@
 
         <p>The signaling server is open source (MIT) licensed as well. You can find it here: <a href="https://github.com/andyet/signalmaster">https://github.com/andyet/signalmaster</a></p>
 
-        <div class="plans">
+      </section>
+      <section>
 
-          <h3>Need Help?</h3>
+        <h3>Need Help?</h3>
 
-          <p>Have a look around in the <a href="https://github.com/HenrikJoreteg/SimpleWebRTC/issues">issues</a> to see if your question has been answered. Also, at <a href="http://andyet.com">&amp;yet</a> we offer WebRTC consulting to help you build awesome apps with WebRTC.</p>
+        <p>Have a look around in the <a href="https://github.com/HenrikJoreteg/SimpleWebRTC/issues">issues</a> to see if your question has been answered. Also, at <a href="http://andyet.com">&amp;yet</a> we offer WebRTC consulting to help you build awesome apps with WebRTC.</p>
 
-          <a href="mailto:contact@andyet.net" class="button">Contact us for help with your project!</a>
+        <a href="mailto:contact@andyet.net" class="button">Contact us for help with your project!</a>
 
-      </div>
     </section>
 
     <footer role="contentinfo">

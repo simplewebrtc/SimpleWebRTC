@@ -22,19 +22,13 @@ body {
   font-size: 1em;
   color: #272b2d;
   line-height: 1.5;
-  background: url("http://andyet.com/images/header.png");
-  background-position: top center;
-  background-repeat: no-repeat;
+  background: url("http://andyet.com/images/header.png") top center no-repeat;
 }
 h1,
 h2,
 h3,
 strong {
   font-weight: 700;
-}
-.wrap {
-  width: 700px;
-  margin: 150px auto;
 }
 .logo {
   font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -48,155 +42,6 @@ strong {
 }
 h1 {
   font-size: 3em;
-}
-h2 {
-  font-weight: 200;
-  color: #333;
-  font-size: 30px;
-  text-align: center;
-  margin: 20px 0 40px 0;
-}
-h2 svg {
-  position: relative;
-  top: 12px;
-  margin-right: 5px;
-  fill: #aaa;
-}
-h4 {
-  font-size: 20px;
-  margin: 0px 0 40px 0;
-  font-weight: normal;
-}
-h3 {
-  font-size: 20px;
-  margin: 0px 0 10px 0;
-}
-.active {
-  background: none;
-}
-.active .wrap {
-  position: static;
-  top: auto;
-}
-.active .desc {
-  display: none;
-}
-.active h2 {
-  margin: 0;
-  line-height: 1;
-}
-.active h2 svg {
-  fill: #12acef;
-}
-.active #logo {
-  width: 76px;
-  margin: 0 auto;
-  position: fixed;
-  left: 20px;
-  top: 20px;
-}
-.active section {
-  padding: 0;
-}
-.active h3 {
-  display: block;
-  font-size: 13px;
-  font-weight: normal;
-  margin: 10px 0 0 0;
-  text-align: center;
-  color: #aaa;
-}
-.active h3 svg {
-  position: relative;
-  top: 3px;
-  fill: #aaa;
-}
-a:link,
-a:visited {
-  color: #12acef;
-}
-.desc {
-  text-align: center;
-  font-size: 18px;
-  margin-top: 0;
-  margin-bottom: 40px;
-  color: #aaa;
-  font-weight: 200;
-}
-footer {
-  text-align: center;
-  color: #777;
-  font-size: 14px;
-  position: fixed;
-  bottom: 10px;
-  margin: 0;
-  left: 50%;
-  width: 500px;
-  margin-left: -250px;
-}
-section {
-  margin: 0 auto;
-}
-button {
-  display: inline-block;
-  width: auto;
-  padding: 10px;
-  background-image: #efefef;
-  background-image: -moz-linear-gradient(top, #efefef, #eee);
-  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #efefef), color-stop(1, #eee));
-  min-width: 100px;
-  padding: 10px 15px 8px 15px;
-  font-weight: bold;
-  -moz-border-radius: 50px;
-  -webkit-border-radius: 50px;
-  -khtml-border-radius: 50px;
-  -o-border-radius: 50px;
-  -border-radius: 50px;
-  border-radius: 50px;
-  border: 2px solid #f7f7f7;
-  color: #777;
-  text-shadow: #fff 0 1px 0;
-  -webkit-box-shadow: color 0 1px 2px;
-  -moz-box-shadow: rgba(0,0,0,0.3) 0 1px 2px;
-  box-shadow: rgba(0,0,0,0.3) 0 1px 2px;
-  position: relative;
-  top: -2px;
-}
-a#ad:link,
-a#ad:visited {
-  color: #555;
-  text-decoration: none;
-  font-weight: 300;
-  font-size: 16px;
-  border-top: 1px solid #f0f0f0;
-  background-color: #fafafa;
-  width: 100%;
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 0px;
-  line-height: 2.5;
-  text-align: left;
-  height: 40px;
-}
-a#ad:link:before,
-a#ad:visited:before {
-  content: "";
-  display: inline-block;
-  float: left;
-  background-image: url("https://next.andbang.com/images/AndBangHeader.png");
-  width: 35px;
-  height: 35px;
-  background-size: 40px;
-  background-repeat: no-repeat;
-  margin-right: 10px;
-}
-#andyet {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  z-index: 100;
 }
 pre {
   background-color: #333;

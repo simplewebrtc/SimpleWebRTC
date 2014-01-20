@@ -130,7 +130,12 @@ footer a {
 }
 @media screen and (min-width: 48.0625em) {
   .content {
-    width: 55%;
+    width: 60%;
+  }
+}
+@media screen and (min-width: 68.75em) {
+  .content {
+    width: 45%;
   }
 }
 /*

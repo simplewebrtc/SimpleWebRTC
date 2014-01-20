@@ -14,6 +14,9 @@
   color: #aaa;
   font-weight: 200;
 }
+html {
+  font-size: 100%;
+}
 body {
   font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 400;
@@ -31,13 +34,18 @@ strong {
   width: 700px;
   margin: 150px auto;
 }
-#logo {
-  width: 436px;
-  height: 71px;
-  text-indent: -9999em;
-  display: block;
-  margin: 0 auto;
-  background: url("/img/simplewebrtc.png");
+.logo {
+  font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  text-align: center;
+}
+.logo span:first-of-type {
+  color: #ec008c;
+}
+.logo span:last-of-type {
+  color: #12acef;
+}
+h1 {
+  font-size: 3em;
 }
 h2 {
   font-weight: 200;

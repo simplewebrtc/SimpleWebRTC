@@ -1,4 +1,5 @@
 @import _define
+@import colors
 
 *
   -webkit-box-sizing: border-box
@@ -15,6 +16,9 @@
 ::-moz-placeholder 
   color: #aaa
   font-weight: 200
+
+html
+  font-size: 100%
 
 body
   font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif
@@ -37,13 +41,18 @@ h1, h2, h3, strong
 // .intro
 //   margin-right: 40px
 
-#logo
-  width: 436px
-  height: 71px
-  text-indent: -9999em
-  display: block
-  margin: 0 auto
-  background: url(/img/simplewebrtc.png)
+.logo
+  font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif
+  text-align: center
+
+  span
+    &:first-of-type
+      color: $pink
+    &:last-of-type
+      color: $blue
+
+h1
+  font-size: 3em
 
 h2
   font-weight: 200

@@ -52,9 +52,12 @@ h1 {
   font-size: 3em;
 }
 h2 {
+  margin: 1.875em;
   font-size: 1.75em;
+  text-align: center;
 }
 h3 {
+  margin: 1.25em 0;
   font-size: 1.25em;
 }
 h2,
@@ -78,7 +81,7 @@ a:hover {
   clear: both;
 }
 ul {
-  margin: 0 0 20px 20px;
+  margin: 1.875em 0 1.875em 1.875em;
   padding: 0;
 }
 ul li {
@@ -96,7 +99,7 @@ ul li {
   color: #12acef;
 }
 .content {
-  margin: 0 auto;
+  margin: 10em auto 0;
 }
 @media screen and (max-width: 48em) {
   .content {

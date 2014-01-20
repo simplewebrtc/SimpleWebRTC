@@ -8,14 +8,6 @@
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-::-webkit-input-placeholder {
-  color: #b7c0c3;
-  font-weight: 200;
-}
-:-moz-placeholder {
-  color: #b7c0c3;
-  font-weight: 200;
-}
 ::-moz-selection {
   background-color: #88d5f7;
   color: #fff;
@@ -114,16 +106,6 @@ section {
   margin-bottom: 1.875em;
   border-bottom: 1px solid #e6eaed;
 }
-pre {
-  background-color: #333;
-  color: #fff;
-  padding: 15px;
-  font-size: 12px;
-  margin: 5px 0 40px 0;
-  border-top: 1px solid #333;
-  border-bottom: 1px solid #ccc;
-  line-height: 140%;
-}
 @media screen and (max-width: 48em) {
   .content {
     width: 90%;
@@ -177,4 +159,86 @@ a.button:focus {
   -webkit-transform-origin: top left;
   transform-origin: top left;
   z-index: 2;
+}
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+}
+pre code {
+  border-radius: 3px;
+  padding: 1.25em;
+  overflow: hidden;
+  display: block;
+  font-size: 0.875em;
+  color: #b7c0c3;
+  background: #002531;
+  font-family: Menlo, Monaco, Consolas, monospace;
+}
+.hljs-comment,
+.hljs-template_comment,
+.hljs-diff .header,
+.hljs-javadoc {
+  color: #67777c;
+}
+.hljs-keyword,
+.hljs-css .rule .keyword,
+.hljs-at_rule,
+.hljs-winutils,
+.hljs-javascript .title,
+.hljs-nginx .title,
+.hljs-subst,
+.hljs-request,
+.hljs-status {
+  color: #438193;
+}
+.hljs-string,
+.hljs-tag .value,
+.hljs-phpdoc,
+.hljs-tex .formula {
+  color: #d4007e;
+}
+.hljs-title,
+.hljs-coffeescript .params,
+.hljs-scss .preprocessor {
+  color: #71adbe;
+  font-weight: bold;
+}
+.hljs-class .title,
+.hljs-haskell .type,
+.vhdl .literal,
+.hljs-tex .command,
+.hljs-tag,
+.hljs-tag .title,
+.hljs-rules .property,
+.hljs-django .tag .keyword,
+.hljs-built_in,
+.hljs-lisp .title,
+.hljs-clojure .built_in {
+  color: #fff;
+}
+.hljs-attribute,
+.hljs-variable,
+.hljs-lisp .body,
+.hljs-preprocessor,
+.hljs-pragma,
+.hljs-pi,
+.hljs-doctype,
+.hljs-shebang,
+.hljs-cdata {
+  color: #bec6c9;
+}
+.hljs-regexp,
+.hljs-addition {
+  color: $green;
+}
+.hljs-symbol,
+.hljs-ruby .symbol .string,
+.hljs-lisp .keyword,
+.hljs-tex .special,
+.hljs-prompt,
+.hljs-deletion {
+  color: #a50062;
+}
+.hljs-diff .change {
+  background: $orange;
 }

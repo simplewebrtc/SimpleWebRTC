@@ -1,0 +1,51 @@
+@import colors
+
+pre
+  margin: 0
+  white-space: pre-wrap
+
+  code
+    border-radius: 3px
+    padding: 1.25em
+    overflow: hidden
+    display: block
+    font-size: .875em
+    color: $gray-light
+    background: $blue-saturated-dark
+    font-family: Menlo, Monaco, Consolas, monospace
+
+// &yet dark
+
+.hljs-comment,
+.hljs-template_comment,
+.hljs-diff .header,
+.hljs-javadoc
+  color: darken($gray-light, 40%)
+
+.hljs-keyword, .hljs-css .rule .keyword, .hljs-at_rule, .hljs-winutils, .hljs-javascript .title,
+.hljs-nginx .title, .hljs-subst, .hljs-request, .hljs-status
+  color: $blue-saturated-lighter
+
+.hljs-string, .hljs-tag .value, .hljs-phpdoc, .hljs-tex .formula
+  color: darken($pink, 10%)
+
+.hljs-title, .hljs-coffeescript .params, .hljs-scss .preprocessor
+  color: lighten($blue-saturated-lighter, 30%)
+  font-weight: bold
+
+.hljs-class .title, .hljs-haskell .type, .vhdl .literal, .hljs-tex .command,
+.hljs-tag, .hljs-tag .title, .hljs-rules .property, .hljs-django .tag .keyword,
+.hljs-built_in, .hljs-lisp .title, .hljs-clojure .built_in
+  color: white
+
+.hljs-attribute, .hljs-variable, .hljs-lisp .body, .hljs-preprocessor, .hljs-pragma, .hljs-pi, .hljs-doctype, .hljs-shebang, .hljs-cdata
+  color: lighten($gray-light, 10%)
+
+.hljs-regexp, .hljs-addition
+  color: $green
+
+.hljs-symbol, .hljs-ruby .symbol .string, .hljs-lisp .keyword, .hljs-tex .special, .hljs-prompt, .hljs-deletion
+  color: darken($pink, 30%)
+
+.hljs-diff .change
+  background: $orange

@@ -1,0 +1,44 @@
+/*!
+* Buttons
+*/
+
+a.button
+  border: none
+  display: inline-block
+  border-radius: 3px
+  padding: 10px 15px
+  background-color: $blue
+  font-size: inherit
+  font-weight: 700
+  text-align: center
+  color: white
+  -webkit-user-select: none
+  -moz-user-select: none
+  -ms-user-select: none
+  user-select: none
+  cursor: pointer
+  -webkit-appearance: none
+  transition: all .3s ease-in 
+  -webkit-transition: all .3s ease-in
+
+  &:hover
+    color: white
+    background-color: lighten($blue, 30%)
+
+  &:focus
+    outline: none
+
+.github-fork
+  position: absolute
+  top: 0
+  right: 0
+  overflow: hidden
+  width: 20em
+  height: 11.6em
+
+  .button
+    display: block
+    border-radius: 0
+    height: 2.5em
+    -webkit-transform: translate(50%, -50%) rotate(45deg) translate(0, 7em)
+    z-index: 2

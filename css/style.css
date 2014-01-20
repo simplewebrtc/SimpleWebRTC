@@ -68,14 +68,6 @@ a {
 a:hover {
   color: #0d8ac1;
 }
-.cf:before,
-.cf:after {
-  content: " ";
-  display: table;
-}
-.cf:after {
-  clear: both;
-}
 ul {
   margin: 0 0 0 1.875em;
   padding: 0;

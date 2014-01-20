@@ -1,7 +1,6 @@
 # SimpleWebRTC - World's easiest WebRTC lib
 
-Check out the demo: http://conversat.io
-
+Check out the demo: [Talky.io](https://talky.io/)
 
 ## It's so easy:
 
@@ -18,7 +17,6 @@ Check out the demo: http://conversat.io
         <div id="remotesVideos"></div>
     </body>
 </html>
-
 ```
 
 ### 1. Create our WebRTC object
@@ -43,3 +41,5 @@ webrtc.on('readyToCall', function () {
     webrtc.joinRoom('your awesome room name');
 });
 ```
+## License
+MIT

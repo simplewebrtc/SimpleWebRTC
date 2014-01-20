@@ -101,6 +101,24 @@ ul li {
 .content {
   margin: 10em auto 0;
 }
+.button.github-fork {
+  display: block;
+  border-radius: 0;
+  position: absolute;
+  top: -3.5em;
+  right: -10em;
+  padding: 0 6em;
+  height: 2.5em;
+  line-height: 2.5em;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+  -webkit-transform-origin: top left;
+  transform-origin: top left;
+  z-index: 2;
+}
+.button.github-fork:hover {
+  background-color: #59c5f4;
+}
 @media screen and (max-width: 48em) {
   .content {
     width: 90%;

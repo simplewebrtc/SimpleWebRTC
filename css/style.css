@@ -6,15 +6,11 @@
   box-sizing: border-box;
 }
 ::-webkit-input-placeholder {
-  color: #aaa;
+  color: #b7c0c3;
   font-weight: 200;
 }
 :-moz-placeholder {
-  color: #aaa;
-  font-weight: 200;
-}
-::-moz-placeholder {
-  color: #aaa;
+  color: #b7c0c3;
   font-weight: 200;
 }
 html {

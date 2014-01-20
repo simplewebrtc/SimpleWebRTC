@@ -1,3 +1,6 @@
+/*
+* Base
+*/
 *,
 *:after,
 *:before {
@@ -101,4 +104,33 @@ pre {
   border-top: 1px solid #333;
   border-bottom: 1px solid #ccc;
   line-height: 140%;
+}
+/*
+* Buttons
+*/
+a.button {
+  border: none;
+  display: inline-block;
+  border-radius: 3px;
+  padding: 6px 15px;
+  background-color: #12acef;
+  font-size: inherit;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  transition: all 0.3s ease-in;
+  -webkit-transition: all 0.3s ease-in;
+}
+a.button:hover {
+  color: #fff;
+  background-color: #59c5f4;
+}
+a.button:focus {
+  outline: none;
 }

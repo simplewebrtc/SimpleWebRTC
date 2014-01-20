@@ -1,0 +1,102 @@
+/*!
+* Base
+*/
+
+@import colors
+
+*, *:after, *:before
+  -webkit-box-sizing: border-box
+  -moz-box-sizing: border-box
+  box-sizing: border-box
+
+::-webkit-input-placeholder
+  color: $gray-light
+  font-weight: 200
+
+:-moz-placeholder
+  color: $gray-light
+  font-weight: 200
+
+::-moz-selection
+  background-color: $blue-light
+  color: white
+
+::selection
+  background-color: $blue-light
+  color: white
+
+html
+  font-size: 100%
+
+body
+  font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif
+  font-weight: 400
+  font-size: 1em
+  text-rendering: optimizeLegibility
+  -webkit-font-smoothing: antialiased
+  color: $gray-darker
+  line-height: 1.5
+  background: url(http://andyet.com/images/header.png) top center no-repeat
+
+h1, h2, h3, strong
+  font-weight: 700
+
+h1, h2, h3
+  color: black
+
+h1
+  font-size: 3em
+
+h2
+  font-size: 1.75em
+
+h3
+  font-size: 1.25em
+
+h2, h3
+  line-height: 1.2
+
+a
+  color: $blue
+  text-decoration: none
+  cursor: pointer
+
+  &:hover 
+    color: darken($blue, 20%)
+
+.cf
+  &:before,
+  &:after
+    content: " "
+    display: table
+
+  &:after
+    clear: both
+
+ul
+  margin: 0 0 20px 20px
+  padding: 0
+
+  li
+    list-style-type: disc
+    padding: 5px 0
+
+.logo
+  font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif
+  text-align: center
+
+  span
+    &:first-of-type
+      color: $pink
+    &:last-of-type
+      color: $blue
+
+pre
+  background-color: #333
+  color: #fff
+  padding: 15px
+  font-size: 12px
+  margin: 5px 0 40px 0
+  border-top: 1px solid #333
+  border-bottom: 1px solid #ccc
+  line-height: 140%

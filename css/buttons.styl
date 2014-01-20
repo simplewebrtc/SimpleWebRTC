@@ -1,0 +1,29 @@
+/*!
+* Buttons
+*/
+
+a.button
+  border: none
+  display: inline-block
+  border-radius: 3px
+  padding: 6px 15px
+  background-color: $blue
+  font-size: inherit
+  font-weight: 700
+  text-align: center
+  color: white
+  -webkit-user-select: none
+  -moz-user-select: none
+  -ms-user-select: none
+  user-select: none
+  cursor: pointer
+  -webkit-appearance: none
+  transition: all .3s ease-in 
+  -webkit-transition: all .3s ease-in
+
+  &:hover
+    color: white
+    background-color: lighten($blue, 30%)
+
+  &:focus
+    outline: none

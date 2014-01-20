@@ -28,13 +28,17 @@ a.button
   &:focus
     outline: none
 
-.button.github-fork
-  display: block
-  border-radius: 0
+.github-fork
   position: absolute
   top: 0
   right: 0
+  overflow: hidden
   width: 20em
-  height: 2.5em
-  -webkit-transform: translate(50%, -50%) rotate(45deg) translate(0, 7em)
-  z-index: 2
+  height: 11.6em
+
+  .button
+    display: block
+    border-radius: 0
+    height: 2.5em
+    -webkit-transform: translate(50%, -50%) rotate(45deg) translate(0, 7em)
+    z-index: 2

@@ -13,6 +13,14 @@
   color: $gray-light
   font-weight: 200
 
+::-moz-selection
+  background-color: $blue-light
+  color: white
+
+::selection
+  background-color: $blue-light
+  color: white
+
 html
   font-size: 100%
 
@@ -20,12 +28,29 @@ body
   font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif
   font-weight: 400
   font-size: 1em
+  text-rendering: optimizeLegibility
+  -webkit-font-smoothing: antialiased
   color: $gray-darker
   line-height: 1.5
   background: url(http://andyet.com/images/header.png) top center no-repeat
 
 h1, h2, h3, strong
   font-weight: 700
+
+h1, h2, h3
+  color: black
+
+h1
+  font-size: 3em
+
+h2
+  font-size: 1.75em
+
+h3
+  font-size: 1.25em
+
+h2, h3
+  line-height: 1.2
 
 .logo
   font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif
@@ -36,9 +61,6 @@ h1, h2, h3, strong
       color: $pink
     &:last-of-type
       color: $blue
-
-h1
-  font-size: 3em
 
 pre
   background-color: #333

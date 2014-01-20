@@ -52,6 +52,31 @@ h3
 h2, h3
   line-height: 1.2
 
+a
+  color: $blue
+  text-decoration: none
+  cursor: pointer
+
+  &:hover 
+    color: darken($blue, 20%)
+
+.cf
+  &:before,
+  &:after
+    content: " "
+    display: table
+
+  &:after
+    clear: both
+
+ul
+  margin: 0 0 20px 20px
+  padding: 0
+
+  li
+    list-style-type: disc
+    padding: 5px 0
+
 .logo
   font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif
   text-align: center

@@ -58,6 +58,30 @@ h2,
 h3 {
   line-height: 1.2;
 }
+a {
+  color: #12acef;
+  text-decoration: none;
+  cursor: pointer;
+}
+a:hover {
+  color: #0d8ac1;
+}
+.cf:before,
+.cf:after {
+  content: " ";
+  display: table;
+}
+.cf:after {
+  clear: both;
+}
+ul {
+  margin: 0 0 20px 20px;
+  padding: 0;
+}
+ul li {
+  list-style-type: disc;
+  padding: 5px 0;
+}
 .logo {
   font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   text-align: center;

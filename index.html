@@ -1,122 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>SimpleWebRTC.js from &amp;yet</title>
+  <head>
+    <title>SimpleWebRTC.js from &amp;yet</title>
 
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="description" content="WebRTC, SimpleWebRTC, Talky, Talky.io, library, JavaScript, Node.js">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="WebRTC, SimpleWebRTC, Talky, Talky.io, library, JavaScript, Node.js">
 
-        <link rel="stylesheet" type="text/css" href="//cloud.typography.com/7773252/764742/css/fonts.css" />
-        <link rel="stylesheet" href="css/style.css">
-        <link rel="stylesheet" href="css/normalize.css">
-        <link rel="stylesheet" href="css/prettify.css">
+    <link rel="stylesheet" type="text/css" href="//cloud.typography.com/7773252/764742/css/fonts.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/prettify.css">
 
-        <link rel="icon" type="image/png" href="img/favicon.png">
-    </head>
+    <link rel="icon" type="image/png" href="img/favicon.png">
+  </head>
 
-    <body>
-      <div class="content">
-        <a href="https://github.com/HenrikJoreteg/SimpleWebRTC"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
+  <body>
+    <div class="content" role="main">
+      <a href="https://github.com/HenrikJoreteg/SimpleWebRTC"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 
-        <section>
-          <h1 class="logo"><span>simple</span><span>WebRTC</span></h1>
-          <h2>You can build cool stuff with WebRTC in five minutes.</h2>
+      <section>
+        <h1 class="logo"><span>simple</span><span>WebRTC</span></h1>
+        <h2>You can build cool stuff with WebRTC in five minutes.</h2>
 
-          <p>Want to see what this library can do? <a href="https://talky.io">Talky.io</a> is powered by SimpleWebRTC!</p>
+        <p>Want to see what this library can do? <a href="https://talky.io">Talky.io</a> is powered by SimpleWebRTC!</p>
 
-          <p>Or checkout the <a href="demo.html">demo</a> (note that screensharing won't work because HTTPS is required.)</p>
+        <p>Or checkout the <a href="demo.html">demo</a> (note that screensharing won't work because HTTPS is required.)</p>
 
-          <div class="intro">
-          <h3>A dab of HTML</h3>
+        <div class="intro">
+        <h3>A dab of HTML</h3>
 
-          <pre class="prettyprint.lang-html"><code>&lt;!DOCTYPE html&gt;
-          &lt;html&gt;
-              &lt;head&gt;
-                  &lt;script src=&quot;http://simplewebrtc.com/latest.js&quot;&gt;&lt;/script&gt; 
-              &lt;/head&gt;
-              &lt;body&gt;
-                  &lt;video height=&quot;300&quot; id=&quot;localVideo&quot;&gt;&lt;/video&gt;
-                  &lt;div id=&quot;remotesVideos&quot;&gt;&lt;/div&gt;
-              &lt;/body&gt;
-          &lt;/html&gt;
-          </code>
-          </pre>
+        <pre class="prettyprint.lang-html"><code>&lt;!DOCTYPE html&gt;
+        &lt;html&gt;
+            &lt;head&gt;
+                &lt;script src=&quot;http://simplewebrtc.com/latest.js&quot;&gt;&lt;/script&gt; 
+            &lt;/head&gt;
+            &lt;body&gt;
+                &lt;video height=&quot;300&quot; id=&quot;localVideo&quot;&gt;&lt;/video&gt;
+                &lt;div id=&quot;remotesVideos&quot;&gt;&lt;/div&gt;
+            &lt;/body&gt;
+        &lt;/html&gt;
+        </code>
+        </pre>
 
-          <h3>Stir in the WebRTC object</h3>
-          <pre class="prettyprint.lang-js"><code>var webrtc = new SimpleWebRTC({
-              // the id/element dom element that will hold "our" video
-              localVideoEl: 'localVideo',
-              // the id/element dom element that will hold remote videos
-              remoteVideosEl: 'remotesVideos',
-              // immediately ask for camera access
-              autoRequestMedia: true
-          });
-          </code>
-          </pre>
+        <h3>Stir in the WebRTC object</h3>
+        <pre class="prettyprint.lang-js"><code>var webrtc = new SimpleWebRTC({
+            // the id/element dom element that will hold "our" video
+            localVideoEl: 'localVideo',
+            // the id/element dom element that will hold remote videos
+            remoteVideosEl: 'remotesVideos',
+            // immediately ask for camera access
+            autoRequestMedia: true
+        });
+        </code>
+        </pre>
 
-          <h3>And join when ready</h3>
-          <pre class="prettyprint.lang-js"><code>// we have to wait until it's ready
-          webrtc.on('readyToCall', function () {
-              // you can name it anything
-              webrtc.joinRoom('your awesome room name');
-          });
-          </code>
-          </pre>
+        <h3>And join when ready</h3>
+        <pre class="prettyprint.lang-js"><code>// we have to wait until it's ready
+        webrtc.on('readyToCall', function () {
+            // you can name it anything
+            webrtc.joinRoom('your awesome room name');
+        });
+        </code>
+        </pre>
 
-          <h3 id="modules">Need More Control?</h3>
+        <h3 id="modules">Need More Control?</h3>
 
-          <p>In order to make WebRTC as approachable as possible, SimpleWebRTC assumes a lot about the type of app you want to build.</p>
+        <p>In order to make WebRTC as approachable as possible, SimpleWebRTC assumes a lot about the type of app you want to build.</p>
 
-          <p>It's unlikely that if you're going to ship an app that uses WebRTC SimpleWebRTC will have <em>the exact</em> features you want. Likely you'll want to use bits and pieces of it. Well, you're in luck! SimpleWebRTC is actually comprised of a whole bunch of independent little modules to help you:</p>
+        <p>It's unlikely that if you're going to ship an app that uses WebRTC SimpleWebRTC will have <em>the exact</em> features you want. Likely you'll want to use bits and pieces of it. Well, you're in luck! SimpleWebRTC is actually comprised of a whole bunch of independent little modules to help you:</p>
 
-          <p>
-            <ul>
-              <li><a href="https://github.com/andyet/signalmaster">Signalmaster</a> &mdash; Simple node.js/socket.io powered signaling server.</li>
-              <li><a href="https://github.com/henrikjoreteg/webrtc.js">webrtc.js</a> &mdash; Wraps/normalizes webrtc between browsers and manages multiple peer connections. It's completely signaling agnostic, so it's much more customizable than using SimpleWebRTC directly.</li>
-              <li><a href="https://github.com/henrikjoreteg/rtcpeerconnection">RTCPeerConnection</a> - Wraps/normalizes peer connections.</li>
-              <li><a href="https://github.com/HenrikJoreteg/getUserMedia">getUserMedia</a> &mdash; Wraps/normalizes getting access to user's camera/mic.</li>
-              <li><a href="https://github.com/HenrikJoreteg/attachMediaStream">attachMediaStream</a> - Normalizes adding streams to video tags and handles muting/mirroring in one simple API.</li>
-              <li><a href="https://github.com/HenrikJoreteg/webrtcsupport">webrtcsupport</a> - For checking browser capability and grabbing appropriate constructors for stuff like RTCPeerConnection and RTCSessionDescription as well as checking support for data channels, etc.</li>
-              <li><a href="https://github.com/HenrikJoreteg/getScreenMedia">getScreenMedia</a> &mdash; Extends getUserMedia but for getting access to screen media for screensharing.</li>
-              <li><a href="https://github.com/HenrikJoreteg/mediastream-gain">mediastream-gain</a> - Gives you a simple audio input volume controller.</li>
-              <li><a href="https://github.com/latentflip/hark">hark</a> &mdash; Detect who's speaking using the Web Audio API.</li>
-              <li><a href="https://github.com/HenrikJoreteg/wildemitter">WildEmitter</a> &mdash; Slick, minimalist EventEmitter with support for wildcards.</li>
-            </ul>
-          </p>
+        <p>
+          <ul>
+            <li><a href="https://github.com/andyet/signalmaster">Signalmaster</a> &mdash; Simple node.js/socket.io powered signaling server.</li>
+            <li><a href="https://github.com/henrikjoreteg/webrtc.js">webrtc.js</a> &mdash; Wraps/normalizes webrtc between browsers and manages multiple peer connections. It's completely signaling agnostic, so it's much more customizable than using SimpleWebRTC directly.</li>
+            <li><a href="https://github.com/henrikjoreteg/rtcpeerconnection">RTCPeerConnection</a> - Wraps/normalizes peer connections.</li>
+            <li><a href="https://github.com/HenrikJoreteg/getUserMedia">getUserMedia</a> &mdash; Wraps/normalizes getting access to user's camera/mic.</li>
+            <li><a href="https://github.com/HenrikJoreteg/attachMediaStream">attachMediaStream</a> - Normalizes adding streams to video tags and handles muting/mirroring in one simple API.</li>
+            <li><a href="https://github.com/HenrikJoreteg/webrtcsupport">webrtcsupport</a> - For checking browser capability and grabbing appropriate constructors for stuff like RTCPeerConnection and RTCSessionDescription as well as checking support for data channels, etc.</li>
+            <li><a href="https://github.com/HenrikJoreteg/getScreenMedia">getScreenMedia</a> &mdash; Extends getUserMedia but for getting access to screen media for screensharing.</li>
+            <li><a href="https://github.com/HenrikJoreteg/mediastream-gain">mediastream-gain</a> - Gives you a simple audio input volume controller.</li>
+            <li><a href="https://github.com/latentflip/hark">hark</a> &mdash; Detect who's speaking using the Web Audio API.</li>
+            <li><a href="https://github.com/HenrikJoreteg/wildemitter">WildEmitter</a> &mdash; Slick, minimalist EventEmitter with support for wildcards.</li>
+          </ul>
+        </p>
 
 
-          <h3>More Info</h3>
+        <h3>More Info</h3>
 
-          <p>For news/updates follow <a href="http://twitter.com/henrikjoreteg">@HenrikJoreteg</a>, <a href="http://twitter.com/andyet">@andyet</a>, and <a href="http://twitter.com/usetalky">@usetalky</a> for updates. </p>
+        <p>For news/updates follow <a href="http://twitter.com/henrikjoreteg">@HenrikJoreteg</a>, <a href="http://twitter.com/andyet">@andyet</a>, and <a href="http://twitter.com/usetalky">@usetalky</a> for updates. </p>
 
-          <p>Also, don't forget to try <a href="https://talky.io">Talky</a> for zero-setup meetings powered by WebRTC.</p>
+        <p>Also, don't forget to try <a href="https://talky.io">Talky</a> for zero-setup meetings powered by WebRTC.</p>
 
-          <p>Henrik's also written a book about modern clientside apps to help you build a well-structured, maintainable app to contain your WebRTC experience. The approaches it describes were used to build <a href="https://talky.io">Talky</a>, <a href="https://andbang.com">And Bang</a>, and many similar apps. Check out the book: <a href="http://humanjavascript.com">Human JavaScript</a>.</p>
+        <p>Henrik's also written a book about modern clientside apps to help you build a well-structured, maintainable app to contain your WebRTC experience. The approaches it describes were used to build <a href="https://talky.io">Talky</a>, <a href="https://andbang.com">And Bang</a>, and many similar apps. Check out the book: <a href="http://humanjavascript.com">Human JavaScript</a>.</p>
 
-          <h3>Signaling server</h3>
+        <h3>Signaling server</h3>
 
-          <p>SimpleWebRTC uses the SimpleWebRTC.com sandbox server and is only for development and testing purposes.</p>
+        <p>SimpleWebRTC uses the SimpleWebRTC.com sandbox server and is only for development and testing purposes.</p>
 
-          <p>The signaling server is open source (MIT) licensed as well. You can find it here: <a href="https://github.com/andyet/signalmaster">https://github.com/andyet/signalmaster</a></p>
+        <p>The signaling server is open source (MIT) licensed as well. You can find it here: <a href="https://github.com/andyet/signalmaster">https://github.com/andyet/signalmaster</a></p>
 
-          <div class="plans">
+        <div class="plans">
 
-            <h3>Need Help?</h3>
+          <h3>Need Help?</h3>
 
-            <p>Have a look around in the <a href="https://github.com/HenrikJoreteg/SimpleWebRTC/issues">issues</a> to see if your question has been answered. Also, at <a href="http://andyet.com">&amp;yet</a> we offer WebRTC consulting to help you build awesome apps with WebRTC.</p>
+          <p>Have a look around in the <a href="https://github.com/HenrikJoreteg/SimpleWebRTC/issues">issues</a> to see if your question has been answered. Also, at <a href="http://andyet.com">&amp;yet</a> we offer WebRTC consulting to help you build awesome apps with WebRTC.</p>
 
-            <a href="mailto:contact@andyet.net" class="button">Contact us for help with your project!</a>
+          <a href="mailto:contact@andyet.net" class="button">Contact us for help with your project!</a>
 
-        </div>
-      </section>
+      </div>
+    </section>
 
-      <footer>
-        <a href="http://andyet.com" target="_blank" id="andyet">
-          <img src="http://andyet.com/images/logo.png" width=40>
-        </a>
-      </footer>
+    <footer role="contentinfo">
+      <a href="http://andyet.com" target="_blank" id="andyet">
+        <img src="http://andyet.com/images/logo.png" width=40>
+      </a>
+    </footer>
   </div>
 
     <script>

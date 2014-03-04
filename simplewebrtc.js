@@ -276,6 +276,10 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
             // https://code.google.com/p/chromium/issues/detail?id=227485
             // we need to listen for the screenshare stream ending and call
             // the "stopScreenShare" method to clean things up.
+            stream.onended = function () {
+                self.emit('localScreenRemoved', el);
+                self.stopScreenShare();
+            }
 
             self.emit('localScreenAdded', el);
             self.connection.emit('shareScreen');

@@ -10,7 +10,7 @@
   "dependencies": {
     "webrtcsupport": "0.7.1",
     "wildemitter": "0.0.5",
-    "getscreenmedia": "0.2.1",
+    "getscreenmedia": "0.3.x",
     "socket.io-client": "0.9.16",
     "attachmediastream": "1.0.1",
     "hark": "0.1.1",

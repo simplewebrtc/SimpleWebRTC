@@ -76,6 +76,9 @@
                 setButton = function (bool) {
                     button.text(bool ? 'share screen' : 'stop sharing');
                 };
+            webrtc.on('localScreenRemoved', function () {
+                setButton(true);
+            });
 
             setButton(true);
 

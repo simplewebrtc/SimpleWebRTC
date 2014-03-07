@@ -11,7 +11,7 @@
     "trailing": true,
     "indent": 4,
     "latedef": true,
-    "newcap": true
+    "newcap": true,
     "predef": [
         "require",
         "__dirname",

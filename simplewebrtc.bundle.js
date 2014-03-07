@@ -256,6 +256,7 @@ SimpleWebRTC.prototype.getLocalVideoContainer = function () {
         return el;
     } else if (el) {
         var video = document.createElement('video');
+        video.oncontextmenu = function () { return false; };
         el.appendChild(video);
         return video;
     } else {
@@ -275,6 +276,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
             el = document.createElement('video'),
             container = self.getRemoteVideoContainer();
 
+        el.oncontextmenu = function () { return false; };
         if (!err) {
             self.webrtc.localScreen = stream;
             el.id = 'localScreen';
@@ -290,7 +292,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
             stream.onended = function () {
                 self.emit('localScreenRemoved', el);
                 self.stopScreenShare();
-            }
+            };
 
             self.emit('localScreenAdded', el);
             self.connection.emit('shareScreen');
@@ -370,86 +372,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":4,"getscreenmedia":6,"mockconsole":7,"socket.io-client":8,"webrtc":2,"webrtcsupport":3,"wildemitter":5}],3:[function(require,module,exports){
-// created by @HenrikJoreteg
-var prefix;
-var isChrome = false;
-var isFirefox = false;
-var ua = navigator.userAgent.toLowerCase();
-
-// basic sniffing
-if (ua.indexOf('firefox') !== -1) {
-    prefix = 'moz';
-    isFirefox = true;
-} else if (ua.indexOf('chrome') !== -1) {
-    prefix = 'webkit';
-    isChrome = true;
-}
-
-var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-var MediaStream = window.webkitMediaStream || window.MediaStream;
-var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
-var AudioContext = window.webkitAudioContext || window.AudioContext;
-
-
-// export support flags and constructors.prototype && PC
-module.exports = {
-    support: !!PC,
-    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
-    prefix: prefix,
-    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
-    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
-    screenSharing: !!screenSharing,
-    AudioContext: AudioContext,
-    PeerConnection: PC,
-    SessionDescription: SessionDescription,
-    IceCandidate: IceCandidate
-};
-
-},{}],4:[function(require,module,exports){
-module.exports = function (stream, el, options) {
-    var URL = window.URL;
-    var opts = {
-        autoplay: true,
-        mirror: false,
-        muted: false
-    };
-    var element = el || document.createElement('video');
-    var item;
-
-    if (options) {
-        for (item in options) {
-            opts[item] = options[item];
-        }
-    }
-
-    if (opts.autoplay) element.autoplay = 'autoplay';
-    if (opts.muted) element.muted = true;
-    if (opts.mirror) {
-        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
-            var styleName = prefix ? prefix + 'Transform' : 'transform';
-            element.style[styleName] = 'scaleX(-1)';
-        });
-    }
-
-    // this first one should work most everywhere now
-    // but we have a few fallbacks just in case.
-    if (URL && URL.createObjectURL) {
-        element.src = URL.createObjectURL(stream);
-    } else if (element.srcObject) {
-        element.srcObject = stream;
-    } else if (element.mozSrcObject) {
-        element.mozSrcObject = stream;
-    } else {
-        return false;
-    }
-
-    return element;
-};
-
-},{}],5:[function(require,module,exports){
+},{"attachmediastream":5,"getscreenmedia":6,"mockconsole":8,"socket.io-client":7,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -586,19 +509,86 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],7:[function(require,module,exports){
-var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
-var l = methods.length;
-var fn = function () {};
-var mockconsole = {};
+},{}],4:[function(require,module,exports){
+// created by @HenrikJoreteg
+var prefix;
+var isChrome = false;
+var isFirefox = false;
+var ua = navigator.userAgent.toLowerCase();
 
-while (l--) {
-    mockconsole[methods[l]] = fn;
+// basic sniffing
+if (ua.indexOf('firefox') !== -1) {
+    prefix = 'moz';
+    isFirefox = true;
+} else if (ua.indexOf('chrome') !== -1) {
+    prefix = 'webkit';
+    isChrome = true;
 }
 
-module.exports = mockconsole;
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var MediaStream = window.webkitMediaStream || window.MediaStream;
+var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
+var AudioContext = window.webkitAudioContext || window.AudioContext;
 
-},{}],8:[function(require,module,exports){
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
+    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
+    screenSharing: !!screenSharing,
+    AudioContext: AudioContext,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate
+};
+
+},{}],5:[function(require,module,exports){
+module.exports = function (stream, el, options) {
+    var URL = window.URL;
+    var opts = {
+        autoplay: true,
+        mirror: false,
+        muted: false
+    };
+    var element = el || document.createElement('video');
+    var item;
+
+    if (options) {
+        for (item in options) {
+            opts[item] = options[item];
+        }
+    }
+
+    if (opts.autoplay) element.autoplay = 'autoplay';
+    if (opts.muted) element.muted = true;
+    if (opts.mirror) {
+        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
+            var styleName = prefix ? prefix + 'Transform' : 'transform';
+            element.style[styleName] = 'scaleX(-1)';
+        });
+    }
+
+    // this first one should work most everywhere now
+    // but we have a few fallbacks just in case.
+    if (URL && URL.createObjectURL) {
+        element.src = URL.createObjectURL(stream);
+    } else if (element.srcObject) {
+        element.srcObject = stream;
+    } else if (element.mozSrcObject) {
+        element.mozSrcObject = stream;
+    } else {
+        return false;
+    }
+
+    return element;
+};
+
+},{}],7:[function(require,module,exports){
 /*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
 
 var io = ('undefined' === typeof module ? {} : module.exports);
@@ -4472,6 +4462,18 @@ if (typeof define === "function" && define.amd) {
   define([], function () { return io; });
 }
 })();
+},{}],8:[function(require,module,exports){
+var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
+var l = methods.length;
+var fn = function () {};
+var mockconsole = {};
+
+while (l--) {
+    mockconsole[methods[l]] = fn;
+}
+
+module.exports = mockconsole;
+
 },{}],6:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
@@ -5035,7 +5037,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
 
 module.exports = WebRTC;
 
-},{"getusermedia":10,"hark":13,"mediastream-gain":12,"mockconsole":7,"rtcpeerconnection":11,"webrtcsupport":3,"wildemitter":5}],11:[function(require,module,exports){
+},{"getusermedia":10,"hark":12,"mediastream-gain":13,"mockconsole":8,"rtcpeerconnection":11,"webrtcsupport":4,"wildemitter":3}],11:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var webrtc = require('webrtcsupport');
 
@@ -5257,7 +5259,7 @@ PeerConnection.prototype.createDataChannel = function (name, opts) {
 
 module.exports = PeerConnection;
 
-},{"webrtcsupport":3,"wildemitter":5}],13:[function(require,module,exports){
+},{"webrtcsupport":4,"wildemitter":3}],12:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -5350,7 +5352,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":5}],12:[function(require,module,exports){
+},{"wildemitter":3}],13:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -5397,6 +5399,6 @@ GainController.prototype.on = function () {
 
 module.exports = GainController;
 
-},{"webrtcsupport":3}]},{},[1])(1)
+},{"webrtcsupport":4}]},{},[1])(1)
 });
 ;

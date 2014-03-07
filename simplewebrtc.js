@@ -254,6 +254,7 @@ SimpleWebRTC.prototype.getLocalVideoContainer = function () {
         return el;
     } else if (el) {
         var video = document.createElement('video');
+        video.oncontextmenu = function () { return false; };
         el.appendChild(video);
         return video;
     } else {
@@ -273,6 +274,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
             el = document.createElement('video'),
             container = self.getRemoteVideoContainer();
 
+        el.oncontextmenu = function () { return false; };
         if (!err) {
             self.webrtc.localScreen = stream;
             el.id = 'localScreen';
@@ -288,7 +290,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
             stream.onended = function () {
                 self.emit('localScreenRemoved', el);
                 self.stopScreenShare();
-            }
+            };
 
             self.emit('localScreenAdded', el);
             self.connection.emit('shareScreen');

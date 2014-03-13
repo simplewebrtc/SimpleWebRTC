@@ -101,7 +101,7 @@ function SimpleWebRTC(opts) {
 
     // proxy events from WebRTC
     this.webrtc.on('*', function () {
-       self.emit.apply(self, arguments);
+        self.emit.apply(self, arguments);
     });
 
     // log all events in debug mode
@@ -111,11 +111,11 @@ function SimpleWebRTC(opts) {
 
     // check for readiness
     this.webrtc.on('localStream', function () {
-       self.testReadiness();
+        self.testReadiness();
     });
 
     this.webrtc.on('message', function (payload) {
-       self.connection.emit('message', payload);
+        self.connection.emit('message', payload);
     });
 
     this.webrtc.on('peerStreamAdded', this.handlePeerStreamAdded.bind(this));

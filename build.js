@@ -1,5 +1,5 @@
 var bundle = require('browserify')(),
-    fs = require('fs');
+    fs = require('fs'),
     request = require('request'),
     uglify = require('uglify-js');
 

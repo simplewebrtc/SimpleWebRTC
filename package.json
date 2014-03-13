@@ -19,6 +19,7 @@
   "devDependencies": {
     "express": "3.x.x",
     "browserify": "2.22.0",
+    "precommit-hook": "0.3.x",
     "request": "",
     "uglify-js": "2.3.6"
   },

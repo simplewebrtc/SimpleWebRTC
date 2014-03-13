@@ -6,8 +6,23 @@
     <body>
         <h1 id="title">Start a room</h1>
         <style>
-            #remotes video {
+            .videoContainer {
+                position: relative;
+                width: 200px;
                 height: 150px;
+            }
+            .videoContainer video {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+            }
+            .volume_bar {
+                position: absolute;
+                width: 5px;
+                height: 0px;
+                right: 0px;
+                bottom: 0px;
+                background-color: #12acef;
             }
         </style>
         <button id="screenShareButton"></button>
@@ -16,7 +31,10 @@
             <input id="sessionInput"/>
             <button type="submit">Create it!</button>
         </form>
-        <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
+        <div class="videoContainer">
+            <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
+            <div id="localVolume" class="volume_bar"></div>
+        </div>
         <div id="remotes"></div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
         <script src="socket.io.js"></script>
@@ -30,10 +48,10 @@
                 // the id/element dom element that will hold "our" video
                 localVideoEl: 'localVideo',
                 // the id/element dom element that will hold remote videos
-                remoteVideosEl: 'remotes',
+                remoteVideosEl: '',
                 // immediately ask for camera access
                 autoRequestMedia: true,
-                debug: true,
+                debug: false,
                 detectSpeakingEvents: true,
                 autoAdjustMic: false
             });
@@ -43,7 +61,50 @@
                 // you can name it anything
                 if (room) webrtc.joinRoom(room);
             });
-            
+
+            function showVolume(el, volume) {
+                if (!el) return;
+                if (volume < -45) { // vary between -45 and -20
+                    el.style.height = '0px';
+                } else if (volume > -20) {
+                    el.style.height = '100%';
+                } else {
+                    el.style.height = '' + Math.floor((volume + 100) * 100 / 25 - 220) + '%';
+                }
+            }
+            webrtc.on('channelMessage', function (peer, label, data) {
+                if (data.type == 'volume') {
+                    showVolume(document.getElementById('volume_' + peer.id), data.volume);
+                }
+            });
+            webrtc.on('videoAdded', function (video, peer) {
+                console.log('video added', peer);
+                var remotes = document.getElementById('remotes');
+                if (remotes) {
+                    var d = document.createElement('div');
+                    d.className = 'videoContainer';
+                    d.id = 'peer_' + peer.id;
+                    d.appendChild(video);
+                    var vol = document.createElement('div');
+                    vol.id = 'volume_' + peer.id;
+                    vol.className = 'volume_bar';
+                    d.appendChild(vol);
+                    remotes.appendChild(d);
+                }
+            });
+            webrtc.on('videoRemoved', function (video, peer) {
+                console.log('video added', peer);
+                var remotes = document.getElementById('remotes');
+                var el = document.getElementById('peer_' + peer.id);
+                if (remotes && el) {
+                    remotes.removeChild(el);
+                }
+            });
+            webrtc.on('volumeChange', function (volume, treshold) {
+                //console.log('own volume', volume);
+                showVolume(document.getElementById('localVolume'), volume);
+            });
+
             // Since we use this twice we put it here
             function setRoom(name) {
                 $('form').remove();

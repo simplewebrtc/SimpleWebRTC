@@ -344,12 +344,7 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
 SimpleWebRTC.prototype.testReadiness = function () {
     var self = this;
     if (this.webrtc.localStream && this.sessionReady) {
-        // This timeout is a workaround for the strange no-audio bug
-        // as described here: https://code.google.com/p/webrtc/issues/detail?id=1525
-        // remove timeout when this is fixed.
-        setTimeout(function () {
-            self.emit('readyToCall', self.connection.socket.sessionid);
-        }, 1000);
+        self.emit('readyToCall', self.connection.socket.sessionid);
     }
 };
 

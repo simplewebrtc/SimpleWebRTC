@@ -250,7 +250,6 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
-    console.log(this.config.mediaConstraints);
     this.webrtc.startLocalMedia(this.config.mediaConstraints, function (err, stream) {
         if (err) {
             self.emit(err);

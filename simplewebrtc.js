@@ -136,6 +136,20 @@ function SimpleWebRTC(opts) {
         self.webrtc.config.peerConnectionConfig.iceServers = self.webrtc.config.peerConnectionConfig.iceServers.concat(args);
     });
 
+    // sending mute/unmute to all peers
+    this.webrtc.on('audioOn', function () {
+        self.webrtc.sendToAll('unmute', {name: 'audio'});
+    });
+    this.webrtc.on('audioOff', function () {
+        self.webrtc.sendToAll('mute', {name: 'audio'});
+    });
+    this.webrtc.on('videoOn', function () {
+        self.webrtc.sendToAll('unmute', {name: 'video'});
+    });
+    this.webrtc.on('videoOff', function () {
+        self.webrtc.sendToAll('mute', {name: 'video'});
+    });
+
     if (this.config.autoRequestMedia) this.startLocalVideo();
 }
 
@@ -283,10 +297,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                 container.appendChild(el);
             }
 
-            // TODO: Once this chrome bug is fixed:
-            // https://code.google.com/p/chromium/issues/detail?id=227485
-            // we need to listen for the screenshare stream ending and call
-            // the "stopScreenShare" method to clean things up.
+            // TODO: might need to migrate to the video tracks onended
             stream.onended = function () {
                 self.emit('localScreenRemoved', el);
                 self.stopScreenShare();

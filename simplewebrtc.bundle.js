@@ -138,6 +138,20 @@ function SimpleWebRTC(opts) {
         self.webrtc.config.peerConnectionConfig.iceServers = self.webrtc.config.peerConnectionConfig.iceServers.concat(args);
     });
 
+    // sending mute/unmute to all peers
+    this.webrtc.on('audioOn', function () {
+        self.webrtc.sendToAll('unmute', {name: 'audio'});
+    });
+    this.webrtc.on('audioOff', function () {
+        self.webrtc.sendToAll('mute', {name: 'audio'});
+    });
+    this.webrtc.on('videoOn', function () {
+        self.webrtc.sendToAll('unmute', {name: 'video'});
+    });
+    this.webrtc.on('videoOff', function () {
+        self.webrtc.sendToAll('mute', {name: 'video'});
+    });
+
     if (this.config.autoRequestMedia) this.startLocalVideo();
 }
 
@@ -285,10 +299,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                 container.appendChild(el);
             }
 
-            // TODO: Once this chrome bug is fixed:
-            // https://code.google.com/p/chromium/issues/detail?id=227485
-            // we need to listen for the screenshare stream ending and call
-            // the "stopScreenShare" method to clean things up.
+            // TODO: might need to migrate to the video tracks onended
             stream.onended = function () {
                 self.emit('localScreenRemoved', el);
                 self.stopScreenShare();
@@ -367,7 +378,144 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":3,"getscreenmedia":4,"mockconsole":7,"socket.io-client":5,"webrtc":8,"webrtcsupport":2,"wildemitter":6}],3:[function(require,module,exports){
+},{"attachmediastream":5,"getscreenmedia":6,"mockconsole":7,"socket.io-client":8,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
+/*
+WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
+on @visionmedia's Emitter from UI Kit.
+
+Why? I wanted it standalone.
+
+I also wanted support for wildcard emitters like this:
+
+emitter.on('*', function (eventName, other, event, payloads) {
+    
+});
+
+emitter.on('somenamespace*', function (eventName, payloads) {
+    
+});
+
+Please note that callbacks triggered by wildcard registered events also get 
+the event name as the first argument.
+*/
+module.exports = WildEmitter;
+
+function WildEmitter() {
+    this.callbacks = {};
+}
+
+// Listen on the given `event` with `fn`. Store a group name if present.
+WildEmitter.prototype.on = function (event, groupName, fn) {
+    var hasGroup = (arguments.length === 3),
+        group = hasGroup ? arguments[1] : undefined, 
+        func = hasGroup ? arguments[2] : arguments[1];
+    func._groupName = group;
+    (this.callbacks[event] = this.callbacks[event] || []).push(func);
+    return this;
+};
+
+// Adds an `event` listener that will be invoked a single
+// time then automatically removed.
+WildEmitter.prototype.once = function (event, groupName, fn) {
+    var self = this,
+        hasGroup = (arguments.length === 3),
+        group = hasGroup ? arguments[1] : undefined, 
+        func = hasGroup ? arguments[2] : arguments[1];
+    function on() {
+        self.off(event, on);
+        func.apply(this, arguments);
+    }
+    this.on(event, group, on);
+    return this;
+};
+
+// Unbinds an entire group
+WildEmitter.prototype.releaseGroup = function (groupName) {
+    var item, i, len, handlers;
+    for (item in this.callbacks) {
+        handlers = this.callbacks[item];
+        for (i = 0, len = handlers.length; i < len; i++) {
+            if (handlers[i]._groupName === groupName) {
+                //console.log('removing');
+                // remove it and shorten the array we're looping through
+                handlers.splice(i, 1);
+                i--;
+                len--;
+            }
+        }
+    }
+    return this;
+};
+
+// Remove the given callback for `event` or all
+// registered callbacks.
+WildEmitter.prototype.off = function (event, fn) {
+    var callbacks = this.callbacks[event],
+        i;
+    
+    if (!callbacks) return this;
+
+    // remove all handlers
+    if (arguments.length === 1) {
+        delete this.callbacks[event];
+        return this;
+    }
+
+    // remove specific handler
+    i = callbacks.indexOf(fn);
+    callbacks.splice(i, 1);
+    return this;
+};
+
+// Emit `event` with the given args.
+// also calls any `*` handlers
+WildEmitter.prototype.emit = function (event) {
+    var args = [].slice.call(arguments, 1),
+        callbacks = this.callbacks[event],
+        specialCallbacks = this.getWildcardCallbacks(event),
+        i,
+        len,
+        item;
+
+    if (callbacks) {
+        for (i = 0, len = callbacks.length; i < len; ++i) {
+            if (callbacks[i]) {
+                callbacks[i].apply(this, args);
+            } else {
+                break;
+            }
+        }
+    }
+
+    if (specialCallbacks) {
+        for (i = 0, len = specialCallbacks.length; i < len; ++i) {
+            if (specialCallbacks[i]) {
+                specialCallbacks[i].apply(this, [event].concat(args));
+            } else {
+                break;
+            }
+        }
+    }
+
+    return this;
+};
+
+// Helper for for finding special wildcard event handlers that match the event
+WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
+    var item,
+        split,
+        result = [];
+
+    for (item in this.callbacks) {
+        split = item.split('*');
+        if (item === '*' || (split.length === 2 && eventName.slice(0, split[1].length) === split[1])) {
+            result = result.concat(this.callbacks[item]);
+        }
+    }
+    return result;
+};
+
+},{}],5:[function(require,module,exports){
 module.exports = function (stream, el, options) {
     var URL = window.URL;
     var opts = {
@@ -408,7 +556,7 @@ module.exports = function (stream, el, options) {
     return element;
 };
 
-},{}],2:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var isChrome = false;
@@ -446,7 +594,19 @@ module.exports = {
     IceCandidate: IceCandidate
 };
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
+var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
+var l = methods.length;
+var fn = function () {};
+var mockconsole = {};
+
+while (l--) {
+    mockconsole[methods[l]] = fn;
+}
+
+module.exports = mockconsole;
+
+},{}],8:[function(require,module,exports){
 /*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
 
 var io = ('undefined' === typeof module ? {} : module.exports);
@@ -4321,155 +4481,6 @@ if (typeof define === "function" && define.amd) {
 }
 })();
 },{}],6:[function(require,module,exports){
-/*
-WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
-on @visionmedia's Emitter from UI Kit.
-
-Why? I wanted it standalone.
-
-I also wanted support for wildcard emitters like this:
-
-emitter.on('*', function (eventName, other, event, payloads) {
-    
-});
-
-emitter.on('somenamespace*', function (eventName, payloads) {
-    
-});
-
-Please note that callbacks triggered by wildcard registered events also get 
-the event name as the first argument.
-*/
-module.exports = WildEmitter;
-
-function WildEmitter() {
-    this.callbacks = {};
-}
-
-// Listen on the given `event` with `fn`. Store a group name if present.
-WildEmitter.prototype.on = function (event, groupName, fn) {
-    var hasGroup = (arguments.length === 3),
-        group = hasGroup ? arguments[1] : undefined, 
-        func = hasGroup ? arguments[2] : arguments[1];
-    func._groupName = group;
-    (this.callbacks[event] = this.callbacks[event] || []).push(func);
-    return this;
-};
-
-// Adds an `event` listener that will be invoked a single
-// time then automatically removed.
-WildEmitter.prototype.once = function (event, groupName, fn) {
-    var self = this,
-        hasGroup = (arguments.length === 3),
-        group = hasGroup ? arguments[1] : undefined, 
-        func = hasGroup ? arguments[2] : arguments[1];
-    function on() {
-        self.off(event, on);
-        func.apply(this, arguments);
-    }
-    this.on(event, group, on);
-    return this;
-};
-
-// Unbinds an entire group
-WildEmitter.prototype.releaseGroup = function (groupName) {
-    var item, i, len, handlers;
-    for (item in this.callbacks) {
-        handlers = this.callbacks[item];
-        for (i = 0, len = handlers.length; i < len; i++) {
-            if (handlers[i]._groupName === groupName) {
-                //console.log('removing');
-                // remove it and shorten the array we're looping through
-                handlers.splice(i, 1);
-                i--;
-                len--;
-            }
-        }
-    }
-    return this;
-};
-
-// Remove the given callback for `event` or all
-// registered callbacks.
-WildEmitter.prototype.off = function (event, fn) {
-    var callbacks = this.callbacks[event],
-        i;
-    
-    if (!callbacks) return this;
-
-    // remove all handlers
-    if (arguments.length === 1) {
-        delete this.callbacks[event];
-        return this;
-    }
-
-    // remove specific handler
-    i = callbacks.indexOf(fn);
-    callbacks.splice(i, 1);
-    return this;
-};
-
-// Emit `event` with the given args.
-// also calls any `*` handlers
-WildEmitter.prototype.emit = function (event) {
-    var args = [].slice.call(arguments, 1),
-        callbacks = this.callbacks[event],
-        specialCallbacks = this.getWildcardCallbacks(event),
-        i,
-        len,
-        item;
-
-    if (callbacks) {
-        for (i = 0, len = callbacks.length; i < len; ++i) {
-            if (callbacks[i]) {
-                callbacks[i].apply(this, args);
-            } else {
-                break;
-            }
-        }
-    }
-
-    if (specialCallbacks) {
-        for (i = 0, len = specialCallbacks.length; i < len; ++i) {
-            if (specialCallbacks[i]) {
-                specialCallbacks[i].apply(this, [event].concat(args));
-            } else {
-                break;
-            }
-        }
-    }
-
-    return this;
-};
-
-// Helper for for finding special wildcard event handlers that match the event
-WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
-    var item,
-        split,
-        result = [];
-
-    for (item in this.callbacks) {
-        split = item.split('*');
-        if (item === '*' || (split.length === 2 && eventName.slice(0, split[1].length) === split[1])) {
-            result = result.concat(this.callbacks[item]);
-        }
-    }
-    return result;
-};
-
-},{}],7:[function(require,module,exports){
-var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
-var l = methods.length;
-var fn = function () {};
-var mockconsole = {};
-
-while (l--) {
-    mockconsole[methods[l]] = fn;
-}
-
-module.exports = mockconsole;
-
-},{}],4:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -4497,71 +4508,7 @@ module.exports = function (constraints, cb) {
     getUserMedia(constraints, callback);
 };
 
-},{"getusermedia":9}],9:[function(require,module,exports){
-// getUserMedia helper by @HenrikJoreteg
-var func = (window.navigator.getUserMedia ||
-            window.navigator.webkitGetUserMedia ||
-            window.navigator.mozGetUserMedia ||
-            window.navigator.msGetUserMedia);
-
-
-module.exports = function (constraints, cb) {
-    var options;
-    var haveOpts = arguments.length === 2;
-    var defaultOpts = {video: true, audio: true};
-    var error;
-    var denied = 'PERMISSION_DENIED';
-    var notSatified = 'CONSTRAINT_NOT_SATISFIED';
-
-    // make constraints optional
-    if (!haveOpts) {
-        cb = constraints;
-        constraints = defaultOpts;
-    }
-
-    // treat lack of browser support like an error
-    if (!func) {
-        // throw proper error per spec
-        error = new Error('NavigatorUserMediaError');
-        error.name = 'NOT_SUPPORTED_ERROR';
-        return cb(error);
-    }
-
-    func.call(window.navigator, constraints, function (stream) {
-        cb(null, stream);
-    }, function (err) {
-        var error;
-        // coerce into an error object since FF gives us a string
-        // there are only two valid names according to the spec
-        // we coerce all non-denied to "constraint not satisfied".
-        if (typeof err === 'string') {
-            error = new Error('NavigatorUserMediaError');
-            if (err === denied) {
-                error.name = denied;
-            } else {
-                error.name = notSatified;
-            }
-        } else {
-            // if we get an error object make sure '.name' property is set
-            // according to spec: http://dev.w3.org/2011/webrtc/editor/getusermedia.html#navigatorusermediaerror-and-navigatorusermediaerrorcallback
-            error = err;
-            if (!error.name) {
-                // this is likely chrome which
-                // sets a property called "ERROR_DENIED" on the error object
-                // if so we make sure to set a name
-                if (error[denied]) {
-                    err.name = denied;
-                } else {
-                    err.name = notSatified;
-                }
-            }
-        }
-
-        cb(error);
-    });
-};
-
-},{}],10:[function(require,module,exports){
+},{"getusermedia":9}],10:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -4625,7 +4572,71 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
+// getUserMedia helper by @HenrikJoreteg
+var func = (window.navigator.getUserMedia ||
+            window.navigator.webkitGetUserMedia ||
+            window.navigator.mozGetUserMedia ||
+            window.navigator.msGetUserMedia);
+
+
+module.exports = function (constraints, cb) {
+    var options;
+    var haveOpts = arguments.length === 2;
+    var defaultOpts = {video: true, audio: true};
+    var error;
+    var denied = 'PERMISSION_DENIED';
+    var notSatified = 'CONSTRAINT_NOT_SATISFIED';
+
+    // make constraints optional
+    if (!haveOpts) {
+        cb = constraints;
+        constraints = defaultOpts;
+    }
+
+    // treat lack of browser support like an error
+    if (!func) {
+        // throw proper error per spec
+        error = new Error('NavigatorUserMediaError');
+        error.name = 'NOT_SUPPORTED_ERROR';
+        return cb(error);
+    }
+
+    func.call(window.navigator, constraints, function (stream) {
+        cb(null, stream);
+    }, function (err) {
+        var error;
+        // coerce into an error object since FF gives us a string
+        // there are only two valid names according to the spec
+        // we coerce all non-denied to "constraint not satisfied".
+        if (typeof err === 'string') {
+            error = new Error('NavigatorUserMediaError');
+            if (err === denied) {
+                error.name = denied;
+            } else {
+                error.name = notSatified;
+            }
+        } else {
+            // if we get an error object make sure '.name' property is set
+            // according to spec: http://dev.w3.org/2011/webrtc/editor/getusermedia.html#navigatorusermediaerror-and-navigatorusermediaerrorcallback
+            error = err;
+            if (!error.name) {
+                // this is likely chrome which
+                // sets a property called "ERROR_DENIED" on the error object
+                // if so we make sure to set a name
+                if (error[denied]) {
+                    err.name = denied;
+                } else {
+                    err.name = notSatified;
+                }
+            }
+        }
+
+        cb(error);
+    });
+};
+
+},{}],2:[function(require,module,exports){
 var webrtc = require('webrtcsupport');
 var getUserMedia = require('getusermedia');
 var PeerConnection = require('rtcpeerconnection');
@@ -4952,6 +4963,10 @@ Peer.prototype.handleMessage = function (message) {
         this.parent.emit('speaking', {id: message.from});
     } else if (message.type === 'stopped_speaking') {
         this.parent.emit('stopped_speaking', {id: message.from});
+    } else if (message.type === 'mute') {
+        this.parent.emit('mute', {id: message.from, name: message.payload.name});
+    } else if (message.type === 'unmute') {
+        this.parent.emit('unmute', {id: message.from, name: message.payload.name});
     }
 };
 
@@ -5057,7 +5072,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
 
 module.exports = WebRTC;
 
-},{"getusermedia":10,"hark":13,"mediastream-gain":12,"mockconsole":7,"rtcpeerconnection":11,"webrtcsupport":2,"wildemitter":6}],14:[function(require,module,exports){
+},{"getusermedia":10,"hark":13,"mediastream-gain":12,"mockconsole":7,"rtcpeerconnection":11,"webrtcsupport":4,"wildemitter":3}],14:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -5405,6 +5420,147 @@ exports.format = function(f) {
 };
 
 },{"events":15}],16:[function(require,module,exports){
+/*
+WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
+on @visionmedia's Emitter from UI Kit.
+
+Why? I wanted it standalone.
+
+I also wanted support for wildcard emitters like this:
+
+emitter.on('*', function (eventName, other, event, payloads) {
+    
+});
+
+emitter.on('somenamespace*', function (eventName, payloads) {
+    
+});
+
+Please note that callbacks triggered by wildcard registered events also get 
+the event name as the first argument.
+*/
+module.exports = WildEmitter;
+
+function WildEmitter() {
+    this.callbacks = {};
+}
+
+// Listen on the given `event` with `fn`. Store a group name if present.
+WildEmitter.prototype.on = function (event, groupName, fn) {
+    var hasGroup = (arguments.length === 3),
+        group = hasGroup ? arguments[1] : undefined,
+        func = hasGroup ? arguments[2] : arguments[1];
+    func._groupName = group;
+    (this.callbacks[event] = this.callbacks[event] || []).push(func);
+    return this;
+};
+
+// Adds an `event` listener that will be invoked a single
+// time then automatically removed.
+WildEmitter.prototype.once = function (event, groupName, fn) {
+    var self = this,
+        hasGroup = (arguments.length === 3),
+        group = hasGroup ? arguments[1] : undefined,
+        func = hasGroup ? arguments[2] : arguments[1];
+    function on() {
+        self.off(event, on);
+        func.apply(this, arguments);
+    }
+    this.on(event, group, on);
+    return this;
+};
+
+// Unbinds an entire group
+WildEmitter.prototype.releaseGroup = function (groupName) {
+    var item, i, len, handlers;
+    for (item in this.callbacks) {
+        handlers = this.callbacks[item];
+        for (i = 0, len = handlers.length; i < len; i++) {
+            if (handlers[i]._groupName === groupName) {
+                //console.log('removing');
+                // remove it and shorten the array we're looping through
+                handlers.splice(i, 1);
+                i--;
+                len--;
+            }
+        }
+    }
+    return this;
+};
+
+// Remove the given callback for `event` or all
+// registered callbacks.
+WildEmitter.prototype.off = function (event, fn) {
+    var callbacks = this.callbacks[event],
+        i;
+
+    if (!callbacks) return this;
+
+    // remove all handlers
+    if (arguments.length === 1) {
+        delete this.callbacks[event];
+        return this;
+    }
+
+    // remove specific handler
+    i = callbacks.indexOf(fn);
+    callbacks.splice(i, 1);
+    return this;
+};
+
+/// Emit `event` with the given args.
+// also calls any `*` handlers
+WildEmitter.prototype.emit = function (event) {
+    var args = [].slice.call(arguments, 1),
+        callbacks = this.callbacks[event],
+        specialCallbacks = this.getWildcardCallbacks(event),
+        i,
+        len,
+        item,
+        listeners;
+
+    if (callbacks) {
+        listeners = callbacks.slice();
+        for (i = 0, len = listeners.length; i < len; ++i) {
+            if (listeners[i]) {
+                listeners[i].apply(this, args);
+            } else {
+                break;
+            }
+        }
+    }
+
+    if (specialCallbacks) {
+        len = specialCallbacks.length;
+        listeners = specialCallbacks.slice();
+        for (i = 0, len = listeners.length; i < len; ++i) {
+            if (listeners[i]) {
+                listeners[i].apply(this, [event].concat(args));
+            } else {
+                break;
+            }
+        }
+    }
+
+    return this;
+};
+
+// Helper for for finding special wildcard event handlers that match the event
+WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
+    var item,
+        split,
+        result = [];
+
+    for (item in this.callbacks) {
+        split = item.split('*');
+        if (item === '*' || (split.length === 2 && eventName.slice(0, split[0].length) === split[0])) {
+            result = result.concat(this.callbacks[item]);
+        }
+    }
+    return result;
+};
+
+},{}],17:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -6749,147 +6905,6 @@ exports.format = function(f) {
   }
 }).call(this);
 
-},{}],17:[function(require,module,exports){
-/*
-WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
-on @visionmedia's Emitter from UI Kit.
-
-Why? I wanted it standalone.
-
-I also wanted support for wildcard emitters like this:
-
-emitter.on('*', function (eventName, other, event, payloads) {
-    
-});
-
-emitter.on('somenamespace*', function (eventName, payloads) {
-    
-});
-
-Please note that callbacks triggered by wildcard registered events also get 
-the event name as the first argument.
-*/
-module.exports = WildEmitter;
-
-function WildEmitter() {
-    this.callbacks = {};
-}
-
-// Listen on the given `event` with `fn`. Store a group name if present.
-WildEmitter.prototype.on = function (event, groupName, fn) {
-    var hasGroup = (arguments.length === 3),
-        group = hasGroup ? arguments[1] : undefined,
-        func = hasGroup ? arguments[2] : arguments[1];
-    func._groupName = group;
-    (this.callbacks[event] = this.callbacks[event] || []).push(func);
-    return this;
-};
-
-// Adds an `event` listener that will be invoked a single
-// time then automatically removed.
-WildEmitter.prototype.once = function (event, groupName, fn) {
-    var self = this,
-        hasGroup = (arguments.length === 3),
-        group = hasGroup ? arguments[1] : undefined,
-        func = hasGroup ? arguments[2] : arguments[1];
-    function on() {
-        self.off(event, on);
-        func.apply(this, arguments);
-    }
-    this.on(event, group, on);
-    return this;
-};
-
-// Unbinds an entire group
-WildEmitter.prototype.releaseGroup = function (groupName) {
-    var item, i, len, handlers;
-    for (item in this.callbacks) {
-        handlers = this.callbacks[item];
-        for (i = 0, len = handlers.length; i < len; i++) {
-            if (handlers[i]._groupName === groupName) {
-                //console.log('removing');
-                // remove it and shorten the array we're looping through
-                handlers.splice(i, 1);
-                i--;
-                len--;
-            }
-        }
-    }
-    return this;
-};
-
-// Remove the given callback for `event` or all
-// registered callbacks.
-WildEmitter.prototype.off = function (event, fn) {
-    var callbacks = this.callbacks[event],
-        i;
-
-    if (!callbacks) return this;
-
-    // remove all handlers
-    if (arguments.length === 1) {
-        delete this.callbacks[event];
-        return this;
-    }
-
-    // remove specific handler
-    i = callbacks.indexOf(fn);
-    callbacks.splice(i, 1);
-    return this;
-};
-
-/// Emit `event` with the given args.
-// also calls any `*` handlers
-WildEmitter.prototype.emit = function (event) {
-    var args = [].slice.call(arguments, 1),
-        callbacks = this.callbacks[event],
-        specialCallbacks = this.getWildcardCallbacks(event),
-        i,
-        len,
-        item,
-        listeners;
-
-    if (callbacks) {
-        listeners = callbacks.slice();
-        for (i = 0, len = listeners.length; i < len; ++i) {
-            if (listeners[i]) {
-                listeners[i].apply(this, args);
-            } else {
-                break;
-            }
-        }
-    }
-
-    if (specialCallbacks) {
-        len = specialCallbacks.length;
-        listeners = specialCallbacks.slice();
-        for (i = 0, len = listeners.length; i < len; ++i) {
-            if (listeners[i]) {
-                listeners[i].apply(this, [event].concat(args));
-            } else {
-                break;
-            }
-        }
-    }
-
-    return this;
-};
-
-// Helper for for finding special wildcard event handlers that match the event
-WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
-    var item,
-        split,
-        result = [];
-
-    for (item in this.callbacks) {
-        split = item.split('*');
-        if (item === '*' || (split.length === 2 && eventName.slice(0, split[0].length) === split[0])) {
-            result = result.concat(this.callbacks[item]);
-        }
-    }
-    return result;
-};
-
 },{}],18:[function(require,module,exports){
 // shim for using process in browser
 
@@ -7496,7 +7511,54 @@ PeerConnection.prototype.createDataChannel = function (name, opts) {
 
 module.exports = PeerConnection;
 
-},{"sdp-jingle-json":20,"traceablepeerconnection":19,"underscore":16,"util":14,"webrtcsupport":2,"wildemitter":17}],13:[function(require,module,exports){
+},{"sdp-jingle-json":20,"traceablepeerconnection":19,"underscore":17,"util":14,"webrtcsupport":4,"wildemitter":16}],12:[function(require,module,exports){
+var support = require('webrtcsupport');
+
+
+function GainController(stream) {
+    this.support = support.webAudio && support.mediaStream;
+
+    // set our starting value
+    this.gain = 1;
+
+    if (this.support) {
+        var context = this.context = new support.AudioContext();
+        this.microphone = context.createMediaStreamSource(stream);
+        this.gainFilter = context.createGain();
+        this.destination = context.createMediaStreamDestination();
+        this.outputStream = this.destination.stream;
+        this.microphone.connect(this.gainFilter);
+        this.gainFilter.connect(this.destination);
+        stream.removeTrack(stream.getAudioTracks()[0]);
+        stream.addTrack(this.outputStream.getAudioTracks()[0]);
+    }
+    this.stream = stream;
+}
+
+// setting
+GainController.prototype.setGain = function (val) {
+    // check for support
+    if (!this.support) return;
+    this.gainFilter.gain.value = val;
+    this.gain = val;
+};
+
+GainController.prototype.getGain = function () {
+    return this.gain;
+};
+
+GainController.prototype.off = function () {
+    return this.setGain(0);
+};
+
+GainController.prototype.on = function () {
+    this.setGain(1);
+};
+
+
+module.exports = GainController;
+
+},{"webrtcsupport":4}],13:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -7611,54 +7673,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":6}],12:[function(require,module,exports){
-var support = require('webrtcsupport');
-
-
-function GainController(stream) {
-    this.support = support.webAudio && support.mediaStream;
-
-    // set our starting value
-    this.gain = 1;
-
-    if (this.support) {
-        var context = this.context = new support.AudioContext();
-        this.microphone = context.createMediaStreamSource(stream);
-        this.gainFilter = context.createGain();
-        this.destination = context.createMediaStreamDestination();
-        this.outputStream = this.destination.stream;
-        this.microphone.connect(this.gainFilter);
-        this.gainFilter.connect(this.destination);
-        stream.removeTrack(stream.getAudioTracks()[0]);
-        stream.addTrack(this.outputStream.getAudioTracks()[0]);
-    }
-    this.stream = stream;
-}
-
-// setting
-GainController.prototype.setGain = function (val) {
-    // check for support
-    if (!this.support) return;
-    this.gainFilter.gain.value = val;
-    this.gain = val;
-};
-
-GainController.prototype.getGain = function () {
-    return this.gain;
-};
-
-GainController.prototype.off = function () {
-    return this.setGain(0);
-};
-
-GainController.prototype.on = function () {
-    this.setGain(1);
-};
-
-
-module.exports = GainController;
-
-},{"webrtcsupport":2}],20:[function(require,module,exports){
+},{"wildemitter":3}],20:[function(require,module,exports){
 var tosdp = require('./lib/tosdp');
 var tojson = require('./lib/tojson');
 
@@ -8446,6 +8461,6 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":14,"webrtcsupport":2,"wildemitter":17}]},{},[1])(1)
+},{"util":14,"webrtcsupport":4,"wildemitter":16}]},{},[1])(1)
 });
 ;

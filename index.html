@@ -88,12 +88,16 @@
                     var vol = document.createElement('div');
                     vol.id = 'volume_' + peer.id;
                     vol.className = 'volume_bar';
+                    video.onclick = function () {
+                        video.style.width = video.videoWidth + 'px';
+                        video.style.height = video.videoHeight + 'px';
+                    };
                     d.appendChild(vol);
                     remotes.appendChild(d);
                 }
             });
             webrtc.on('videoRemoved', function (video, peer) {
-                console.log('video added', peer);
+                console.log('video removed ', peer);
                 var remotes = document.getElementById('remotes');
                 var el = document.getElementById('peer_' + peer.id);
                 if (remotes && el) {

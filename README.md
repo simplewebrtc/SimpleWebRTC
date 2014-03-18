@@ -1,6 +1,7 @@
 # SimpleWebRTC - World's easiest WebRTC lib
 
-Check out the demo: https://talky.io
+
+Want to see it in action? Check out the demo: https://talky.io/
 
 
 ## It's so easy:
@@ -29,7 +30,7 @@ Check out the demo: https://talky.io
 
 ```
 
-### 1. Create our WebRTC object
+### 2. Create our WebRTC object
 
 ```js
 var webrtc = new SimpleWebRTC({
@@ -42,7 +43,7 @@ var webrtc = new SimpleWebRTC({
 });
 ```
 
-### 2. Tell it to join a room when ready
+### 3. Tell it to join a room when ready
 
 ```js
 // we have to wait until it's ready
@@ -52,9 +53,14 @@ webrtc.on('readyToCall', function () {
 });
 ```
 
-### Available Options
+### Available options
 
 
-`peerConnectionConfig` - Set this to specify your own STUN and TURN servers. SimpleWebRTC uses Google's public STUN server by default: `stun.l.google.com:19302`. It's intended for public use according to: https://twitter.com/HenrikJoreteg/status/354105684591251456
+`peerConnectionConfig` - Set this to specify your own STUN and TURN servers. By default, SimpleWebRTC uses Google's public STUN server (`stun.l.google.com:19302`), which is intended for public use according to: https://twitter.com/HenrikJoreteg/status/354105684591251456
 
+### Got questions?
+
+Join the SimpleWebRTC discussion list: 
+
+http://lists.andyet.com/mailman/listinfo/simplewebrtc
 

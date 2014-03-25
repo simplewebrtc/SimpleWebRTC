@@ -4996,7 +4996,12 @@ Peer.prototype.sendDirectly = function (channel, messageType, payload) {
         payload: payload
     };
     this.logger.log('sending via datachannel', channel, messageType, message);
-    this.getDataChannel(channel).send(JSON.stringify(message));
+    var dc = this.getDataChannel(channel);
+    if (dc.readyState != 'open'){
+      this.parent.emit('cantsend', this, message);
+      return this.parent.emit('error', new Error('Cannot send message to peer ' + this.id + ' through ' + channel + ' dataChannel because it\'s not ready'));
+    }
+    dc.send(JSON.stringify(message));
 };
 
 // Internal method registering handlers for a data channel and emitting events on the peer

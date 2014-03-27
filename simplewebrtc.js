@@ -178,6 +178,7 @@ SimpleWebRTC.prototype.leaveRoom = function () {
 };
 
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
+    var self = this;
     var container = this.getRemoteVideoContainer();
     var video = attachMediaStream(peer.stream);
 
@@ -188,6 +189,28 @@ SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
     if (container) container.appendChild(video);
 
     this.emit('videoAdded', video, peer);
+
+    // send our mute status to new peer if we're muted
+    // currently called with a small delay because it arrives before
+    // the video element is created otherwise (which happens after
+    // the async setRemoteDescription-createAnswer)
+    window.setTimeout(function () {
+        var muted = false;
+        self.webrtc.localStream.getAudioTracks().forEach(function (track) {
+            muted = !track.enabled;
+        });
+        if (muted) {
+            peer.send('mute', {name: 'audio'});
+        }
+
+        muted = false;
+        self.webrtc.localStream.getVideoTracks().forEach(function (track) {
+            muted = !track.enabled;
+        });
+        if (muted) {
+            peer.send('mute', {name: 'video'});
+        }
+    }, 250);
 };
 
 SimpleWebRTC.prototype.handlePeerStreamRemoved = function (peer) {

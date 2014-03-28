@@ -101,7 +101,7 @@ function SimpleWebRTC(opts) {
     this.webrtc = new WebRTC(opts);
 
     // attach a few methods from underlying lib to simple.
-    ['mute', 'unmute', 'pauseVideo', 'resumeVideo', 'pause', 'resume'].forEach(function (method) {
+    ['mute', 'unmute', 'pauseVideo', 'resumeVideo', 'pause', 'resume', 'sendToAll', 'sendDirectlyToAll'].forEach(function (method) {
         self[method] = self.webrtc[method].bind(self.webrtc);
     });
 
@@ -5021,7 +5021,12 @@ Peer.prototype.sendDirectly = function (channel, messageType, payload) {
         payload: payload
     };
     this.logger.log('sending via datachannel', channel, messageType, message);
-    this.getDataChannel(channel).send(JSON.stringify(message));
+    var dc = this.getDataChannel(channel);
+    if (dc.readyState != 'open'){
+      this.parent.emit('cantsend', this, message);
+      return this.parent.emit('error', new Error('Cannot send message to peer ' + this.id + ' through ' + channel + ' dataChannel because it\'s not ready'));
+    }
+    dc.send(JSON.stringify(message));
 };
 
 // Internal method registering handlers for a data channel and emitting events on the peer

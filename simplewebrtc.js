@@ -275,7 +275,7 @@ SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
     this.webrtc.startLocalMedia(this.config.media, function (err, stream) {
         if (err) {
-            self.emit(err);
+            self.emit('localMediaError', err);
         } else {
             attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
         }

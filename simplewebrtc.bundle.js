@@ -136,10 +136,12 @@ function SimpleWebRTC(opts) {
     connection.on('stunservers', function (args) {
         // resets/overrides the config
         self.webrtc.config.peerConnectionConfig.iceServers = args;
+        self.emit('stunservers', args);
     });
     connection.on('turnservers', function (args) {
         // appends to the config
         self.webrtc.config.peerConnectionConfig.iceServers = self.webrtc.config.peerConnectionConfig.iceServers.concat(args);
+        self.emit('turnservers', args);
     });
 
     // sending mute/unmute to all peers
@@ -277,7 +279,7 @@ SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
     this.webrtc.startLocalMedia(this.config.media, function (err, stream) {
         if (err) {
-            self.emit('localmediaError', err);
+            self.emit('localMediaError', err);
         } else {
             attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
         }
@@ -5102,7 +5104,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
 
 module.exports = WebRTC;
 
-},{"getusermedia":10,"hark":13,"mediastream-gain":12,"mockconsole":7,"rtcpeerconnection":11,"webrtcsupport":4,"wildemitter":3}],14:[function(require,module,exports){
+},{"getusermedia":10,"hark":12,"mediastream-gain":13,"mockconsole":7,"rtcpeerconnection":11,"webrtcsupport":4,"wildemitter":3}],14:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -7253,12 +7255,14 @@ function PeerConnection(config, constraints) {
 
 util.inherits(PeerConnection, WildEmitter);
 
-PeerConnection.prototype.__defineGetter__('signalingState', function () {
-    return this.pc.signalingState;
-});
-PeerConnection.prototype.__defineGetter__('iceConnectionState', function () {
-    return this.pc.iceConnectionState;
-});
+if (PeerConnection.prototype.__defineGetter__) {
+    PeerConnection.prototype.__defineGetter__('signalingState', function () {
+        return this.pc.signalingState;
+    });
+    PeerConnection.prototype.__defineGetter__('iceConnectionState', function () {
+        return this.pc.iceConnectionState;
+    });
+}
 
 // Add a stream to the peer connection object
 PeerConnection.prototype.addStream = function (stream) {
@@ -7548,53 +7552,6 @@ PeerConnection.prototype.createDataChannel = function (name, opts) {
 module.exports = PeerConnection;
 
 },{"sdp-jingle-json":20,"traceablepeerconnection":19,"underscore":16,"util":14,"webrtcsupport":4,"wildemitter":17}],12:[function(require,module,exports){
-var support = require('webrtcsupport');
-
-
-function GainController(stream) {
-    this.support = support.webAudio && support.mediaStream;
-
-    // set our starting value
-    this.gain = 1;
-
-    if (this.support) {
-        var context = this.context = new support.AudioContext();
-        this.microphone = context.createMediaStreamSource(stream);
-        this.gainFilter = context.createGain();
-        this.destination = context.createMediaStreamDestination();
-        this.outputStream = this.destination.stream;
-        this.microphone.connect(this.gainFilter);
-        this.gainFilter.connect(this.destination);
-        stream.removeTrack(stream.getAudioTracks()[0]);
-        stream.addTrack(this.outputStream.getAudioTracks()[0]);
-    }
-    this.stream = stream;
-}
-
-// setting
-GainController.prototype.setGain = function (val) {
-    // check for support
-    if (!this.support) return;
-    this.gainFilter.gain.value = val;
-    this.gain = val;
-};
-
-GainController.prototype.getGain = function () {
-    return this.gain;
-};
-
-GainController.prototype.off = function () {
-    return this.setGain(0);
-};
-
-GainController.prototype.on = function () {
-    this.setGain(1);
-};
-
-
-module.exports = GainController;
-
-},{"webrtcsupport":4}],13:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -7709,7 +7666,54 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":3}],20:[function(require,module,exports){
+},{"wildemitter":3}],13:[function(require,module,exports){
+var support = require('webrtcsupport');
+
+
+function GainController(stream) {
+    this.support = support.webAudio && support.mediaStream;
+
+    // set our starting value
+    this.gain = 1;
+
+    if (this.support) {
+        var context = this.context = new support.AudioContext();
+        this.microphone = context.createMediaStreamSource(stream);
+        this.gainFilter = context.createGain();
+        this.destination = context.createMediaStreamDestination();
+        this.outputStream = this.destination.stream;
+        this.microphone.connect(this.gainFilter);
+        this.gainFilter.connect(this.destination);
+        stream.removeTrack(stream.getAudioTracks()[0]);
+        stream.addTrack(this.outputStream.getAudioTracks()[0]);
+    }
+    this.stream = stream;
+}
+
+// setting
+GainController.prototype.setGain = function (val) {
+    // check for support
+    if (!this.support) return;
+    this.gainFilter.gain.value = val;
+    this.gain = val;
+};
+
+GainController.prototype.getGain = function () {
+    return this.gain;
+};
+
+GainController.prototype.off = function () {
+    return this.setGain(0);
+};
+
+GainController.prototype.on = function () {
+    this.setGain(1);
+};
+
+
+module.exports = GainController;
+
+},{"webrtcsupport":4}],20:[function(require,module,exports){
 var tosdp = require('./lib/tosdp');
 var tojson = require('./lib/tojson');
 

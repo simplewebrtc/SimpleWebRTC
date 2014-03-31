@@ -347,7 +347,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                 }
             });
         } else {
-            self.emit(err);
+            self.emit('localMediaError', err);
         }
 
         // enable the callback

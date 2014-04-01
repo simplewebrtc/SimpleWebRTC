@@ -75,6 +75,7 @@ function SimpleWebRTC(opts) {
                 peer = self.webrtc.createPeer({
                     id: message.from,
                     type: message.roomType,
+                    enableDataChannels: self.config.enableDataChannels && message.roomType !== 'screen',
                     sharemyscreen: message.roomType === 'screen' && !message.broadcaster
                 });
             }
@@ -252,7 +253,14 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
                     if (client[type]) {
                         peer = self.webrtc.createPeer({
                             id: id,
-                            type: type
+                            type: type,
+                            enableDataChannels: self.config.enableDataChannels && type !== 'screen',
+                            receiveMedia: {
+                                mandatory: {
+                                    OfferToReceiveAudio: type !== 'screen',
+                                    OfferToReceiveVideo: true
+                                }
+                            }
                         });
                         peer.start();
                     }
@@ -341,7 +349,14 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                         id: existingPeer.id,
                         type: 'screen',
                         sharemyscreen: true,
-                        broadcaster: self.connection.socket.sessionid
+                        enableDataChannels: false,
+                        receiveMedia: {
+                            mandatory: {
+                                OfferToReceiveAudio: false,
+                                OfferToReceiveVideo: false
+                            }
+                        },
+                        broadcaster: self.connection.socket.sessionid,
                     });
                     peer.start();
                 }

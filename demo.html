@@ -35,6 +35,8 @@
             <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
             <div id="localVolume" class="volume_bar"></div>
         </div>
+        <div id="localScreenContainer" class="videoContainer">
+        </div>
         <div id="remotes"></div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
         <script src="latest.js"></script>
@@ -75,6 +77,18 @@
                 if (data.type == 'volume') {
                     showVolume(document.getElementById('volume_' + peer.id), data.volume);
                 }
+            });
+            webrtc.on('localScreenAdded', function (video) {
+                console.log('localScreenAdded', video);
+                video.onclick = function () {
+                    video.style.width = video.videoWidth + 'px';
+                    video.style.height = video.videoHeight + 'px';
+                };
+                document.getElementById('localScreenContainer').appendChild(video);
+            });
+            webrtc.on('localScreenRemoved', function (video) {
+                console.log('localScreenRemoved', video);
+                document.getElementById('localScreenContainer').removeChild(video);
             });
             webrtc.on('videoAdded', function (video, peer) {
                 console.log('video added', peer);

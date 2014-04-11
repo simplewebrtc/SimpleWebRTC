@@ -8,7 +8,7 @@
   "main": "./simplewebrtc.js",
   "description": "World's easiest webrtc",
   "dependencies": {
-    "webrtcsupport": "0.7.1",
+    "webrtcsupport": "0.7.3",
     "wildemitter": "0.0.5",
     "getscreenmedia": "1.0.x",
     "socket.io-client": "0.9.16",

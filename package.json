@@ -13,7 +13,7 @@
     "getscreenmedia": "1.0.x",
     "socket.io-client": "0.9.16",
     "attachmediastream": "1.0.1",
-    "webrtc": "1.4.x",
+    "webrtc": "1.5.x",
     "mockconsole": "0.0.1"
   },
   "devDependencies": {

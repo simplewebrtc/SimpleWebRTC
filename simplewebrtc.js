@@ -302,6 +302,7 @@ SimpleWebRTC.prototype.stopLocalVideo = function () {
 SimpleWebRTC.prototype.getLocalVideoContainer = function () {
     var el = this.getEl(this.config.localVideoEl);
     if (el && el.tagName === 'VIDEO') {
+        el.oncontextmenu = function () { return false; };
         return el;
     } else if (el) {
         var video = document.createElement('video');

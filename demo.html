@@ -24,6 +24,9 @@
                 bottom: 0px;
                 background-color: #12acef;
             }
+            #localScreenContainer {
+                display: none;
+            }
         </style>
         <button id="screenShareButton"></button>
         <p id="subTitle">(https required for screensaring to work)</p>
@@ -85,10 +88,12 @@
                     video.style.height = video.videoHeight + 'px';
                 };
                 document.getElementById('localScreenContainer').appendChild(video);
+                $('#localScreenContainer').show();
             });
             webrtc.on('localScreenRemoved', function (video) {
                 console.log('localScreenRemoved', video);
                 document.getElementById('localScreenContainer').removeChild(video);
+                $('#localScreenContainer').hide();
             });
             webrtc.on('videoAdded', function (video, peer) {
                 console.log('video added', peer);

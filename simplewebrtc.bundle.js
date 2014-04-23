@@ -78,7 +78,8 @@ function SimpleWebRTC(opts) {
                     id: message.from,
                     type: message.roomType,
                     enableDataChannels: self.config.enableDataChannels && message.roomType !== 'screen',
-                    sharemyscreen: message.roomType === 'screen' && !message.broadcaster
+                    sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
+                    broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.socket.sessionid : null
                 });
             }
             peer.handleMessage(message);
@@ -4601,6 +4602,44 @@ window.addEventListener('message', function (event) {
 });
 
 },{"getusermedia":9}],10:[function(require,module,exports){
+// created by @HenrikJoreteg
+var prefix;
+var isChrome = false;
+var isFirefox = false;
+var ua = navigator.userAgent.toLowerCase();
+
+// basic sniffing
+if (ua.indexOf('firefox') !== -1) {
+    prefix = 'moz';
+    isFirefox = true;
+} else if (ua.indexOf('chrome') !== -1) {
+    prefix = 'webkit';
+    isChrome = true;
+}
+
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var MediaStream = window.webkitMediaStream || window.MediaStream;
+var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
+var AudioContext = window.webkitAudioContext || window.AudioContext;
+
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
+    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
+    screenSharing: !!screenSharing,
+    AudioContext: AudioContext,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate
+};
+
+},{}],11:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
@@ -4662,44 +4701,6 @@ module.exports = function (constraints, cb) {
 
         cb(error);
     });
-};
-
-},{}],11:[function(require,module,exports){
-// created by @HenrikJoreteg
-var prefix;
-var isChrome = false;
-var isFirefox = false;
-var ua = navigator.userAgent.toLowerCase();
-
-// basic sniffing
-if (ua.indexOf('firefox') !== -1) {
-    prefix = 'moz';
-    isFirefox = true;
-} else if (ua.indexOf('chrome') !== -1) {
-    prefix = 'webkit';
-    isChrome = true;
-}
-
-var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-var MediaStream = window.webkitMediaStream || window.MediaStream;
-var screenSharing = navigator.userAgent.match('Chrome') && parseInt(navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
-var AudioContext = window.webkitAudioContext || window.AudioContext;
-
-
-// export support flags and constructors.prototype && PC
-module.exports = {
-    support: !!PC,
-    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
-    prefix: prefix,
-    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
-    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
-    screenSharing: !!screenSharing,
-    AudioContext: AudioContext,
-    PeerConnection: PC,
-    SessionDescription: SessionDescription,
-    IceCandidate: IceCandidate
 };
 
 },{}],9:[function(require,module,exports){
@@ -4924,27 +4925,27 @@ WebRTC.prototype.setupAudioMonitor = function (stream) {
     var timeout;
 
     audio.on('speaking', function () {
+        self.emit('speaking');
         if (self.hardMuted) return;
         self.setMicIfEnabled(1);
         self.sendToAll('speaking', {});
-        self.emit('speaking');
     });
 
     audio.on('stopped_speaking', function () {
-        if (self.hardMuted) return;
         if (timeout) clearTimeout(timeout);
 
         timeout = setTimeout(function () {
+            self.emit('stoppedSpeaking');
+            if (self.hardMuted) return;
             self.setMicIfEnabled(0.5);
             self.sendToAll('stopped_speaking', {});
-            self.emit('stoppedSpeaking');
         }, 1000);
     });
     if (this.config.enableDataChannels) {
         // until https://code.google.com/p/chromium/issues/detail?id=121673 is fixed...
         audio.on('volume_change', function (volume, treshold) {
-            if (self.hardMuted) return;
             self.emit('volumeChange', volume, treshold);
+            if (self.hardMuted) return;
             // FIXME: should use sendDirectlyToAll, but currently has different semantics wrt payload
             self.peers.forEach(function (peer) {
                 if (peer.enableDataChannels) {
@@ -5225,7 +5226,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
 
 module.exports = WebRTC;
 
-},{"getusermedia":10,"hark":13,"mediastream-gain":14,"mockconsole":7,"rtcpeerconnection":12,"webrtcsupport":11,"wildemitter":3}],15:[function(require,module,exports){
+},{"getusermedia":11,"hark":13,"mediastream-gain":14,"mockconsole":7,"rtcpeerconnection":12,"webrtcsupport":10,"wildemitter":3}],15:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -7421,7 +7422,7 @@ PeerConnection.prototype.createDataChannel = function (name, opts) {
 
 module.exports = PeerConnection;
 
-},{"sdp-jingle-json":20,"traceablepeerconnection":19,"underscore":17,"util":15,"webrtcsupport":11,"wildemitter":18}],14:[function(require,module,exports){
+},{"sdp-jingle-json":20,"traceablepeerconnection":19,"underscore":17,"util":15,"webrtcsupport":10,"wildemitter":18}],14:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -7468,7 +7469,7 @@ GainController.prototype.on = function () {
 
 module.exports = GainController;
 
-},{"webrtcsupport":11}],21:[function(require,module,exports){
+},{"webrtcsupport":10}],21:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -8224,7 +8225,7 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":15,"webrtcsupport":11,"wildemitter":18}],23:[function(require,module,exports){
+},{"util":15,"webrtcsupport":10,"wildemitter":18}],23:[function(require,module,exports){
 var parsers = require('./parsers');
 var idCounter = Math.random();
 

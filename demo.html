@@ -48,6 +48,15 @@
         <div id="localScreenContainer" class="videoContainer">
         </div>
         <div id="remotes"></div>
+        <hr>
+        <div>
+          <h3>A note on connectivity issues</h3>
+          If you see black videos from peers or the connection state displayed ontop of those videos 
+          either hangs in <i>Connecting to peer...</i> or changes to <i>Connection failed</i>, a direct peer-to-peer connection could not be established.
+          <br>
+          This typically means that a TURN server is required. This <a href="http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/#after-signaling-using-ice-to-cope-with-nats-and-firewalls">tutorial</a> explains the problem.
+          You can check if those peers can connect each other on <a href="https://talky.io">talky.io</a> which runs a TURN server.
+        </div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
         <script src="latest.js"></script>
         <script>
@@ -110,6 +119,11 @@
                     container.className = 'videoContainer';
                     container.id = 'container_' + webrtc.getDomId(peer);
                     container.appendChild(video);
+
+                    // suppress contextmenu
+                    video.oncontextmenu = function () { return false; };
+
+                    // show the remote volume
                     var vol = document.createElement('div');
                     vol.id = 'volume_' + peer.id;
                     vol.className = 'volumeBar';

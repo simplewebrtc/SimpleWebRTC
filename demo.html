@@ -102,12 +102,15 @@
                 }
             });
 
+            // we got access to the camera
             webrtc.on('localStream', function (stream) {
                 $('form>button').attr('disabled', null);
             });
+            // we did not get access to the camera
             webrtc.on('localMediaError', function (err) {
             });
 
+            // local screen obtained
             webrtc.on('localScreenAdded', function (video) {
                 video.onclick = function () {
                     video.style.width = video.videoWidth + 'px';
@@ -116,11 +119,13 @@
                 document.getElementById('localScreenContainer').appendChild(video);
                 $('#localScreenContainer').show();
             });
+            // local screen removed
             webrtc.on('localScreenRemoved', function (video) {
                 document.getElementById('localScreenContainer').removeChild(video);
                 $('#localScreenContainer').hide();
             });
 
+            // a peer video has been added
             webrtc.on('videoAdded', function (video, peer) {
                 console.log('video added', peer);
                 var remotes = document.getElementById('remotes');
@@ -172,6 +177,7 @@
                     remotes.appendChild(container);
                 }
             });
+            // a peer was removed
             webrtc.on('videoRemoved', function (video, peer) {
                 console.log('video removed ', peer);
                 var remotes = document.getElementById('remotes');
@@ -180,6 +186,8 @@
                     remotes.removeChild(el);
                 }
             });
+
+            // local volume has changed
             webrtc.on('volumeChange', function (volume, treshold) {
                 showVolume(document.getElementById('localVolume'), volume);
             });

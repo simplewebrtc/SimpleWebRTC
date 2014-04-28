@@ -16,13 +16,20 @@
                 width: 100%;
                 height: 100%;
             }
-            .volume_bar {
+            .volumeBar {
                 position: absolute;
                 width: 5px;
                 height: 0px;
                 right: 0px;
                 bottom: 0px;
                 background-color: #12acef;
+            }
+            .connectionstate {
+                position: absolute;
+                top: 0px;
+                width: 100%;
+                text-align: center;
+                color: #fff
             }
             #localScreenContainer {
                 display: none;
@@ -36,7 +43,7 @@
         </form>
         <div class="videoContainer">
             <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
-            <div id="localVolume" class="volume_bar"></div>
+            <div id="localVolume" class="volumeBar"></div>
         </div>
         <div id="localScreenContainer" class="videoContainer">
         </div>
@@ -99,19 +106,46 @@
                 console.log('video added', peer);
                 var remotes = document.getElementById('remotes');
                 if (remotes) {
-                    var d = document.createElement('div');
-                    d.className = 'videoContainer';
-                    d.id = 'container_' + webrtc.getDomId(peer);
-                    d.appendChild(video);
+                    var container = document.createElement('div');
+                    container.className = 'videoContainer';
+                    container.id = 'container_' + webrtc.getDomId(peer);
+                    container.appendChild(video);
                     var vol = document.createElement('div');
                     vol.id = 'volume_' + peer.id;
-                    vol.className = 'volume_bar';
+                    vol.className = 'volumeBar';
                     video.onclick = function () {
                         video.style.width = video.videoWidth + 'px';
                         video.style.height = video.videoHeight + 'px';
                     };
-                    d.appendChild(vol);
-                    remotes.appendChild(d);
+                    container.appendChild(vol);
+                    
+                    // show the ice connection state
+                    if (peer && peer.pc) {
+                        var connstate = document.createElement('div');
+                        connstate.className = 'connectionstate';
+                        container.appendChild(connstate);
+                        peer.pc.on('iceConnectionStateChange', function (event) {
+                            switch (peer.pc.iceConnectionState) {
+                            case 'checking': 
+                                $(connstate).text('Connecting to peer...');
+                                break;
+                            case 'connected':
+                            case 'completed': // on caller side
+                                $(connstate).text('Connection established.');
+                                break;
+                            case 'disconnected':
+                                $(connstate).text('Disconnected.');
+                                break;
+                            case 'failed':
+                                $(connstate).text('Connection failed.');
+                                break;
+                            case 'closed':
+                                $(connstate).text('Connection closed.');
+                                break;
+                            }
+                        });
+                    }
+                    remotes.appendChild(container);
                 }
             });
             webrtc.on('videoRemoved', function (video, peer) {

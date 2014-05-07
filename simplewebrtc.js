@@ -364,6 +364,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
                 }
             });
         } else {
+            err.media = 'screen';
             self.emit('localMediaError', err);
         }
 

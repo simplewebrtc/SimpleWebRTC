@@ -170,7 +170,7 @@ SimpleWebRTC.prototype = Object.create(WildEmitter.prototype, {
 
 SimpleWebRTC.prototype.leaveRoom = function () {
     if (this.roomName) {
-        this.connection.emit('leave', this.roomName);
+        this.connection.emit('leave');
         this.webrtc.peers.forEach(function (peer) {
             peer.end();
         });
@@ -178,6 +178,7 @@ SimpleWebRTC.prototype.leaveRoom = function () {
             this.stopScreenShare();
         }
         this.emit('leftRoom', this.roomName);
+        this.roomName = undefined;
     }
 };
 

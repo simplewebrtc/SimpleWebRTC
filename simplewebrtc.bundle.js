@@ -415,48 +415,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":5,"mockconsole":6,"socket.io-client":7,"webrtc":3,"webrtcsupport":4,"wildemitter":2}],5:[function(require,module,exports){
-module.exports = function (stream, el, options) {
-    var URL = window.URL;
-    var opts = {
-        autoplay: true,
-        mirror: false,
-        muted: false
-    };
-    var element = el || document.createElement('video');
-    var item;
-
-    if (options) {
-        for (item in options) {
-            opts[item] = options[item];
-        }
-    }
-
-    if (opts.autoplay) element.autoplay = 'autoplay';
-    if (opts.muted) element.muted = true;
-    if (opts.mirror) {
-        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
-            var styleName = prefix ? prefix + 'Transform' : 'transform';
-            element.style[styleName] = 'scaleX(-1)';
-        });
-    }
-
-    // this first one should work most everywhere now
-    // but we have a few fallbacks just in case.
-    if (URL && URL.createObjectURL) {
-        element.src = URL.createObjectURL(stream);
-    } else if (element.srcObject) {
-        element.srcObject = stream;
-    } else if (element.mozSrcObject) {
-        element.mozSrcObject = stream;
-    } else {
-        return false;
-    }
-
-    return element;
-};
-
-},{}],2:[function(require,module,exports){
+},{"attachmediastream":5,"mockconsole":4,"socket.io-client":7,"webrtc":6,"webrtcsupport":3,"wildemitter":2}],2:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -593,7 +552,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var isChrome = false;
@@ -631,7 +590,48 @@ module.exports = {
     IceCandidate: IceCandidate
 };
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+module.exports = function (stream, el, options) {
+    var URL = window.URL;
+    var opts = {
+        autoplay: true,
+        mirror: false,
+        muted: false
+    };
+    var element = el || document.createElement('video');
+    var item;
+
+    if (options) {
+        for (item in options) {
+            opts[item] = options[item];
+        }
+    }
+
+    if (opts.autoplay) element.autoplay = 'autoplay';
+    if (opts.muted) element.muted = true;
+    if (opts.mirror) {
+        ['', 'moz', 'webkit', 'o', 'ms'].forEach(function (prefix) {
+            var styleName = prefix ? prefix + 'Transform' : 'transform';
+            element.style[styleName] = 'scaleX(-1)';
+        });
+    }
+
+    // this first one should work most everywhere now
+    // but we have a few fallbacks just in case.
+    if (URL && URL.createObjectURL) {
+        element.src = URL.createObjectURL(stream);
+    } else if (element.srcObject) {
+        element.srcObject = stream;
+    } else if (element.mozSrcObject) {
+        element.mozSrcObject = stream;
+    } else {
+        return false;
+    }
+
+    return element;
+};
+
+},{}],4:[function(require,module,exports){
 var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
 var l = methods.length;
 var fn = function () {};
@@ -4517,363 +4517,7 @@ if (typeof define === "function" && define.amd) {
   define([], function () { return io; });
 }
 })();
-},{}],3:[function(require,module,exports){
-var util = require('util');
-var webrtc = require('webrtcsupport');
-var PeerConnection = require('rtcpeerconnection');
-var WildEmitter = require('wildemitter');
-var mockconsole = require('mockconsole');
-var localMedia = require('localmedia');
-
-
-function WebRTC(opts) {
-    var self = this;
-    var options = opts || {};
-    var config = this.config = {
-            debug: false,
-            // makes the entire PC config overridable
-            peerConnectionConfig: {
-                iceServers: [{"url": "stun:stun.l.google.com:19302"}]
-            },
-            peerConnectionContraints: {
-                optional: [
-                    {DtlsSrtpKeyAgreement: true}
-                ]
-            },
-            receiveMedia: {
-                mandatory: {
-                    OfferToReceiveAudio: true,
-                    OfferToReceiveVideo: true
-                }
-            },
-            enableDataChannels: true
-        };
-    var item;
-
-    // expose screensharing check
-    this.screenSharingSupport = webrtc.screenSharing;
-
-    // We also allow a 'logger' option. It can be any object that implements
-    // log, warn, and error methods.
-    // We log nothing by default, following "the rule of silence":
-    // http://www.linfo.org/rule_of_silence.html
-    this.logger = function () {
-        // we assume that if you're in debug mode and you didn't
-        // pass in a logger, you actually want to log as much as
-        // possible.
-        if (opts.debug) {
-            return opts.logger || console;
-        } else {
-        // or we'll use your logger which should have its own logic
-        // for output. Or we'll return the no-op.
-            return opts.logger || mockconsole;
-        }
-    }();
-
-    // set options
-    for (item in options) {
-        this.config[item] = options[item];
-    }
-
-    // check for support
-    if (!webrtc.support) {
-        this.logger.error('Your browser doesn\'t seem to support WebRTC');
-    }
-
-    // where we'll store our peer connections
-    this.peers = [];
-
-    // call localMedia constructor
-    localMedia.call(this, this.config);
-
-    this.on('speaking', function () {
-        if (!self.hardMuted) {
-            self.sendToAll('speaking');
-        }
-    });
-    this.on('stoppedSpeaking', function () {
-        if (!self.hardMuted) {
-            self.sendToAll('stopped_speaking');
-        }
-    });
-    this.on('volumeChange', function (volume, treshold) {
-        if (!self.hardMuted) {
-            // FIXME: should use sendDirectlyToAll, but currently has different semantics wrt payload
-            self.peers.forEach(function (peer) {
-                if (peer.enableDataChannels) {
-                    var dc = peer.getDataChannel('hark');
-                    if (dc.readyState != 'open') return;
-                    dc.send(JSON.stringify({type: 'volume', volume: volume }));
-                }
-            });
-        }
-    });
-
-    // log events in debug mode
-    if (this.config.debug) {
-        this.on('*', function (event, val1, val2) {
-            var logger;
-            // if you didn't pass in a logger and you explicitly turning on debug
-            // we're just going to assume you're wanting log output with console
-            if (self.config.logger === mockconsole) {
-                logger = console;
-            } else {
-                logger = self.logger;
-            }
-            logger.log('event:', event, val1, val2);
-        });
-    }
-}
-
-util.inherits(WebRTC, localMedia);
-
-WebRTC.prototype.createPeer = function (opts) {
-    var peer;
-    opts.parent = this;
-    peer = new Peer(opts);
-    this.peers.push(peer);
-    return peer;
-};
-
-// removes peers
-WebRTC.prototype.removePeers = function (id, type) {
-    this.getPeers(id, type).forEach(function (peer) {
-        peer.end();
-    });
-};
-
-// fetches all Peer objects by session id and/or type
-WebRTC.prototype.getPeers = function (sessionId, type) {
-    return this.peers.filter(function (peer) {
-        return (!sessionId || peer.id === sessionId) && (!type || peer.type === type);
-    });
-};
-
-// sends message to all
-WebRTC.prototype.sendToAll = function (message, payload) {
-    this.peers.forEach(function (peer) {
-        peer.send(message, payload);
-    });
-};
-
-// sends message to all using a datachannel
-// only sends to anyone who has an open datachannel
-WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
-    this.peers.forEach(function (peer) {
-        if (peer.enableDataChannels) {
-            peer.sendDirectly(channel, message, payload);
-        }
-    });
-};
-
-function Peer(options) {
-    var self = this;
-
-    this.id = options.id;
-    this.parent = options.parent;
-    this.type = options.type || 'video';
-    this.oneway = options.oneway || false;
-    this.sharemyscreen = options.sharemyscreen || false;
-    this.browserPrefix = options.prefix;
-    this.stream = options.stream;
-    this.enableDataChannels = options.enableDataChannels === undefined ? this.parent.config.enableDataChannels : options.enableDataChannels;
-    this.receiveMedia = options.receiveMedia || this.parent.config.receiveMedia;
-    this.channels = {};
-    // Create an RTCPeerConnection via the polyfill
-    this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
-    this.pc.on('ice', this.onIceCandidate.bind(this));
-    this.pc.on('addStream', this.handleRemoteStreamAdded.bind(this));
-    this.pc.on('addChannel', this.handleDataChannelAdded.bind(this));
-    this.pc.on('removeStream', this.handleStreamRemoved.bind(this));
-    // Just fire negotiation needed events for now
-    // When browser re-negotiation handling seems to work
-    // we can use this as the trigger for starting the offer/answer process
-    // automatically. We'll just leave it be for now while this stabalizes.
-    this.pc.on('negotiationNeeded', this.emit.bind(this, 'negotiationNeeded'));
-    this.pc.on('iceConnectionStateChange', this.emit.bind(this, 'iceConnectionStateChange'));
-    this.pc.on('iceConnectionStateChange', function () {
-        switch (self.pc.iceConnectionState) {
-        case 'failed':
-            // currently, in chrome only the initiator goes to failed
-            // so we need to signal this to the peer
-            if (self.pc.config.isInitiator) {
-                self.parent.emit('iceFailed', {id: self.id});
-            }
-            break;
-        }
-    });
-    this.pc.on('signalingStateChange', this.emit.bind(this, 'signalingStateChange'));
-    this.logger = this.parent.logger;
-
-    // handle screensharing/broadcast mode
-    if (options.type === 'screen') {
-        if (this.parent.localScreen && this.sharemyscreen) {
-            this.logger.log('adding local screen stream to peer connection');
-            this.pc.addStream(this.parent.localScreen);
-            this.broadcaster = options.broadcaster;
-        }
-    } else {
-        this.parent.localStreams.forEach(function (stream) {
-            self.pc.addStream(stream);
-        });
-    }
-
-    // call emitter constructor
-    WildEmitter.call(this);
-
-    // proxy events to parent
-    this.on('*', function () {
-        self.parent.emit.apply(self.parent, arguments);
-    });
-}
-
-Peer.prototype = Object.create(WildEmitter.prototype, {
-    constructor: {
-        value: Peer
-    }
-});
-
-Peer.prototype.handleMessage = function (message) {
-    var self = this;
-
-    this.logger.log('getting', message.type, message);
-
-    if (message.prefix) this.browserPrefix = message.prefix;
-
-    if (message.type === 'offer') {
-        this.pc.handleOffer(message.payload, function (err) {
-            if (err) {
-                return;
-            }
-            // auto-accept
-            self.pc.answer(self.receiveMedia, function (err, sessionDescription) {
-                self.send('answer', sessionDescription);
-            });
-        });
-    } else if (message.type === 'answer') {
-        this.pc.handleAnswer(message.payload);
-    } else if (message.type === 'candidate') {
-        this.pc.processIce(message.payload);
-    } else if (message.type === 'speaking') {
-        this.parent.emit('speaking', {id: message.from});
-    } else if (message.type === 'stopped_speaking') {
-        this.parent.emit('stopped_speaking', {id: message.from});
-    } else if (message.type === 'mute') {
-        this.parent.emit('mute', {id: message.from, name: message.payload.name});
-    } else if (message.type === 'unmute') {
-        this.parent.emit('unmute', {id: message.from, name: message.payload.name});
-    }
-};
-
-// send via signalling channel
-Peer.prototype.send = function (messageType, payload) {
-    var message = {
-        to: this.id,
-        broadcaster: this.broadcaster,
-        roomType: this.type,
-        type: messageType,
-        payload: payload,
-        prefix: webrtc.prefix
-    };
-    this.logger.log('sending', messageType, message);
-    this.parent.emit('message', message);
-};
-
-// send via data channel
-// returns true when message was sent and false if channel is not open
-Peer.prototype.sendDirectly = function (channel, messageType, payload) {
-    var message = {
-        type: messageType,
-        payload: payload
-    };
-    this.logger.log('sending via datachannel', channel, messageType, message);
-    var dc = this.getDataChannel(channel);
-    if (dc.readyState != 'open') return false;
-    dc.send(JSON.stringify(message));
-    return true;
-};
-
-// Internal method registering handlers for a data channel and emitting events on the peer
-Peer.prototype._observeDataChannel = function (channel) {
-    var self = this;
-    channel.onclose = this.emit.bind(this, 'channelClose', channel);
-    channel.onerror = this.emit.bind(this, 'channelError', channel);
-    channel.onmessage = function (event) {
-        self.emit('channelMessage', self, channel.label, JSON.parse(event.data), channel, event);
-    };
-    channel.onopen = this.emit.bind(this, 'channelOpen', channel);
-};
-
-// Fetch or create a data channel by the given name
-Peer.prototype.getDataChannel = function (name, opts) {
-    if (!webrtc.dataChannel) return this.emit('error', new Error('createDataChannel not supported'));
-    var channel = this.channels[name];
-    opts || (opts = {});
-    if (channel) return channel;
-    // if we don't have one by this label, create it
-    channel = this.channels[name] = this.pc.createDataChannel(name, opts);
-    this._observeDataChannel(channel);
-    return channel;
-};
-
-Peer.prototype.onIceCandidate = function (candidate) {
-    if (this.closed) return;
-    if (candidate) {
-        this.send('candidate', candidate);
-    } else {
-        this.logger.log("End of candidates.");
-    }
-};
-
-Peer.prototype.start = function () {
-    var self = this;
-
-    // well, the webrtc api requires that we either
-    // a) create a datachannel a priori
-    // b) do a renegotiation later to add the SCTP m-line
-    // Let's do (a) first...
-    if (this.enableDataChannels) {
-        this.getDataChannel('simplewebrtc');
-    }
-
-    this.pc.offer(this.receiveMedia, function (err, sessionDescription) {
-        self.send('offer', sessionDescription);
-    });
-};
-
-Peer.prototype.end = function () {
-    if (this.closed) return;
-    this.pc.close();
-    this.handleStreamRemoved();
-};
-
-Peer.prototype.handleRemoteStreamAdded = function (event) {
-    var self = this;
-    if (this.stream) {
-        this.logger.warn('Already have a remote stream');
-    } else {
-        this.stream = event.stream;
-        this.stream.onended = function () {
-            self.end();
-        };
-        this.parent.emit('peerStreamAdded', this);
-    }
-};
-
-Peer.prototype.handleStreamRemoved = function () {
-    this.parent.peers.splice(this.parent.peers.indexOf(this), 1);
-    this.closed = true;
-    this.parent.emit('peerStreamRemoved', this);
-};
-
-Peer.prototype.handleDataChannelAdded = function (channel) {
-    this.channels[channel.label] = channel;
-    this._observeDataChannel(channel);
-};
-
-module.exports = WebRTC;
-
-},{"localmedia":13,"mockconsole":11,"rtcpeerconnection":10,"util":8,"webrtcsupport":9,"wildemitter":12}],8:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -5220,7 +4864,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":14}],9:[function(require,module,exports){
+},{"events":9}],10:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var isChrome = false;
@@ -5258,156 +4902,365 @@ module.exports = {
     IceCandidate: IceCandidate
 };
 
-},{}],11:[function(require,module,exports){
-var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
-var l = methods.length;
-var fn = function () {};
-var mockconsole = {};
+},{}],6:[function(require,module,exports){
+var util = require('util');
+var webrtc = require('webrtcsupport');
+var PeerConnection = require('rtcpeerconnection');
+var WildEmitter = require('wildemitter');
+var mockconsole = require('mockconsole');
+var localMedia = require('localmedia');
 
-while (l--) {
-    mockconsole[methods[l]] = fn;
+
+function WebRTC(opts) {
+    var self = this;
+    var options = opts || {};
+    var config = this.config = {
+            debug: false,
+            // makes the entire PC config overridable
+            peerConnectionConfig: {
+                iceServers: [{"url": "stun:stun.l.google.com:19302"}]
+            },
+            peerConnectionContraints: {
+                optional: [
+                    {DtlsSrtpKeyAgreement: true}
+                ]
+            },
+            receiveMedia: {
+                mandatory: {
+                    OfferToReceiveAudio: true,
+                    OfferToReceiveVideo: true
+                }
+            },
+            enableDataChannels: true
+        };
+    var item;
+
+    // expose screensharing check
+    this.screenSharingSupport = webrtc.screenSharing;
+
+    // We also allow a 'logger' option. It can be any object that implements
+    // log, warn, and error methods.
+    // We log nothing by default, following "the rule of silence":
+    // http://www.linfo.org/rule_of_silence.html
+    this.logger = function () {
+        // we assume that if you're in debug mode and you didn't
+        // pass in a logger, you actually want to log as much as
+        // possible.
+        if (opts.debug) {
+            return opts.logger || console;
+        } else {
+        // or we'll use your logger which should have its own logic
+        // for output. Or we'll return the no-op.
+            return opts.logger || mockconsole;
+        }
+    }();
+
+    // set options
+    for (item in options) {
+        this.config[item] = options[item];
+    }
+
+    // check for support
+    if (!webrtc.support) {
+        this.logger.error('Your browser doesn\'t seem to support WebRTC');
+    }
+
+    // where we'll store our peer connections
+    this.peers = [];
+
+    // call localMedia constructor
+    localMedia.call(this, this.config);
+
+    this.on('speaking', function () {
+        if (!self.hardMuted) {
+            self.sendToAll('speaking');
+        }
+    });
+    this.on('stoppedSpeaking', function () {
+        if (!self.hardMuted) {
+            self.sendToAll('stopped_speaking');
+        }
+    });
+    this.on('volumeChange', function (volume, treshold) {
+        if (!self.hardMuted) {
+            // FIXME: should use sendDirectlyToAll, but currently has different semantics wrt payload
+            self.peers.forEach(function (peer) {
+                if (peer.enableDataChannels) {
+                    var dc = peer.getDataChannel('hark');
+                    if (dc.readyState != 'open') return;
+                    dc.send(JSON.stringify({type: 'volume', volume: volume }));
+                }
+            });
+        }
+    });
+
+    // log events in debug mode
+    if (this.config.debug) {
+        this.on('*', function (event, val1, val2) {
+            var logger;
+            // if you didn't pass in a logger and you explicitly turning on debug
+            // we're just going to assume you're wanting log output with console
+            if (self.config.logger === mockconsole) {
+                logger = console;
+            } else {
+                logger = self.logger;
+            }
+            logger.log('event:', event, val1, val2);
+        });
+    }
 }
 
-module.exports = mockconsole;
+util.inherits(WebRTC, localMedia);
 
-},{}],12:[function(require,module,exports){
-/*
-WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
-on @visionmedia's Emitter from UI Kit.
+WebRTC.prototype.createPeer = function (opts) {
+    var peer;
+    opts.parent = this;
+    peer = new Peer(opts);
+    this.peers.push(peer);
+    return peer;
+};
 
-Why? I wanted it standalone.
+// removes peers
+WebRTC.prototype.removePeers = function (id, type) {
+    this.getPeers(id, type).forEach(function (peer) {
+        peer.end();
+    });
+};
 
-I also wanted support for wildcard emitters like this:
+// fetches all Peer objects by session id and/or type
+WebRTC.prototype.getPeers = function (sessionId, type) {
+    return this.peers.filter(function (peer) {
+        return (!sessionId || peer.id === sessionId) && (!type || peer.type === type);
+    });
+};
 
-emitter.on('*', function (eventName, other, event, payloads) {
-    
-});
+// sends message to all
+WebRTC.prototype.sendToAll = function (message, payload) {
+    this.peers.forEach(function (peer) {
+        peer.send(message, payload);
+    });
+};
 
-emitter.on('somenamespace*', function (eventName, payloads) {
-    
-});
+// sends message to all using a datachannel
+// only sends to anyone who has an open datachannel
+WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
+    this.peers.forEach(function (peer) {
+        if (peer.enableDataChannels) {
+            peer.sendDirectly(channel, message, payload);
+        }
+    });
+};
 
-Please note that callbacks triggered by wildcard registered events also get 
-the event name as the first argument.
-*/
-module.exports = WildEmitter;
+function Peer(options) {
+    var self = this;
 
-function WildEmitter() {
-    this.callbacks = {};
+    this.id = options.id;
+    this.parent = options.parent;
+    this.type = options.type || 'video';
+    this.oneway = options.oneway || false;
+    this.sharemyscreen = options.sharemyscreen || false;
+    this.browserPrefix = options.prefix;
+    this.stream = options.stream;
+    this.enableDataChannels = options.enableDataChannels === undefined ? this.parent.config.enableDataChannels : options.enableDataChannels;
+    this.receiveMedia = options.receiveMedia || this.parent.config.receiveMedia;
+    this.channels = {};
+    // Create an RTCPeerConnection via the polyfill
+    this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionContraints);
+    this.pc.on('ice', this.onIceCandidate.bind(this));
+    this.pc.on('addStream', this.handleRemoteStreamAdded.bind(this));
+    this.pc.on('addChannel', this.handleDataChannelAdded.bind(this));
+    this.pc.on('removeStream', this.handleStreamRemoved.bind(this));
+    // Just fire negotiation needed events for now
+    // When browser re-negotiation handling seems to work
+    // we can use this as the trigger for starting the offer/answer process
+    // automatically. We'll just leave it be for now while this stabalizes.
+    this.pc.on('negotiationNeeded', this.emit.bind(this, 'negotiationNeeded'));
+    this.pc.on('iceConnectionStateChange', this.emit.bind(this, 'iceConnectionStateChange'));
+    this.pc.on('iceConnectionStateChange', function () {
+        switch (self.pc.iceConnectionState) {
+        case 'failed':
+            // currently, in chrome only the initiator goes to failed
+            // so we need to signal this to the peer
+            if (self.pc.config.isInitiator) {
+                self.parent.emit('iceFailed', {id: self.id});
+            }
+            break;
+        }
+    });
+    this.pc.on('signalingStateChange', this.emit.bind(this, 'signalingStateChange'));
+    this.logger = this.parent.logger;
+
+    // handle screensharing/broadcast mode
+    if (options.type === 'screen') {
+        if (this.parent.localScreen && this.sharemyscreen) {
+            this.logger.log('adding local screen stream to peer connection');
+            this.pc.addStream(this.parent.localScreen);
+            this.broadcaster = options.broadcaster;
+        }
+    } else {
+        this.parent.localStreams.forEach(function (stream) {
+            self.pc.addStream(stream);
+        });
+    }
+
+    // call emitter constructor
+    WildEmitter.call(this);
+
+    // proxy events to parent
+    this.on('*', function () {
+        self.parent.emit.apply(self.parent, arguments);
+    });
 }
 
-// Listen on the given `event` with `fn`. Store a group name if present.
-WildEmitter.prototype.on = function (event, groupName, fn) {
-    var hasGroup = (arguments.length === 3),
-        group = hasGroup ? arguments[1] : undefined, 
-        func = hasGroup ? arguments[2] : arguments[1];
-    func._groupName = group;
-    (this.callbacks[event] = this.callbacks[event] || []).push(func);
-    return this;
-};
-
-// Adds an `event` listener that will be invoked a single
-// time then automatically removed.
-WildEmitter.prototype.once = function (event, groupName, fn) {
-    var self = this,
-        hasGroup = (arguments.length === 3),
-        group = hasGroup ? arguments[1] : undefined, 
-        func = hasGroup ? arguments[2] : arguments[1];
-    function on() {
-        self.off(event, on);
-        func.apply(this, arguments);
+Peer.prototype = Object.create(WildEmitter.prototype, {
+    constructor: {
+        value: Peer
     }
-    this.on(event, group, on);
-    return this;
-};
+});
 
-// Unbinds an entire group
-WildEmitter.prototype.releaseGroup = function (groupName) {
-    var item, i, len, handlers;
-    for (item in this.callbacks) {
-        handlers = this.callbacks[item];
-        for (i = 0, len = handlers.length; i < len; i++) {
-            if (handlers[i]._groupName === groupName) {
-                //console.log('removing');
-                // remove it and shorten the array we're looping through
-                handlers.splice(i, 1);
-                i--;
-                len--;
+Peer.prototype.handleMessage = function (message) {
+    var self = this;
+
+    this.logger.log('getting', message.type, message);
+
+    if (message.prefix) this.browserPrefix = message.prefix;
+
+    if (message.type === 'offer') {
+        this.pc.handleOffer(message.payload, function (err) {
+            if (err) {
+                return;
             }
-        }
+            // auto-accept
+            self.pc.answer(self.receiveMedia, function (err, sessionDescription) {
+                self.send('answer', sessionDescription);
+            });
+        });
+    } else if (message.type === 'answer') {
+        this.pc.handleAnswer(message.payload);
+    } else if (message.type === 'candidate') {
+        this.pc.processIce(message.payload);
+    } else if (message.type === 'speaking') {
+        this.parent.emit('speaking', {id: message.from});
+    } else if (message.type === 'stopped_speaking') {
+        this.parent.emit('stopped_speaking', {id: message.from});
+    } else if (message.type === 'mute') {
+        this.parent.emit('mute', {id: message.from, name: message.payload.name});
+    } else if (message.type === 'unmute') {
+        this.parent.emit('unmute', {id: message.from, name: message.payload.name});
     }
-    return this;
 };
 
-// Remove the given callback for `event` or all
-// registered callbacks.
-WildEmitter.prototype.off = function (event, fn) {
-    var callbacks = this.callbacks[event],
-        i;
-    
-    if (!callbacks) return this;
-
-    // remove all handlers
-    if (arguments.length === 1) {
-        delete this.callbacks[event];
-        return this;
-    }
-
-    // remove specific handler
-    i = callbacks.indexOf(fn);
-    callbacks.splice(i, 1);
-    return this;
+// send via signalling channel
+Peer.prototype.send = function (messageType, payload) {
+    var message = {
+        to: this.id,
+        broadcaster: this.broadcaster,
+        roomType: this.type,
+        type: messageType,
+        payload: payload,
+        prefix: webrtc.prefix
+    };
+    this.logger.log('sending', messageType, message);
+    this.parent.emit('message', message);
 };
 
-// Emit `event` with the given args.
-// also calls any `*` handlers
-WildEmitter.prototype.emit = function (event) {
-    var args = [].slice.call(arguments, 1),
-        callbacks = this.callbacks[event],
-        specialCallbacks = this.getWildcardCallbacks(event),
-        i,
-        len,
-        item;
-
-    if (callbacks) {
-        for (i = 0, len = callbacks.length; i < len; ++i) {
-            if (callbacks[i]) {
-                callbacks[i].apply(this, args);
-            } else {
-                break;
-            }
-        }
-    }
-
-    if (specialCallbacks) {
-        for (i = 0, len = specialCallbacks.length; i < len; ++i) {
-            if (specialCallbacks[i]) {
-                specialCallbacks[i].apply(this, [event].concat(args));
-            } else {
-                break;
-            }
-        }
-    }
-
-    return this;
+// send via data channel
+// returns true when message was sent and false if channel is not open
+Peer.prototype.sendDirectly = function (channel, messageType, payload) {
+    var message = {
+        type: messageType,
+        payload: payload
+    };
+    this.logger.log('sending via datachannel', channel, messageType, message);
+    var dc = this.getDataChannel(channel);
+    if (dc.readyState != 'open') return false;
+    dc.send(JSON.stringify(message));
+    return true;
 };
 
-// Helper for for finding special wildcard event handlers that match the event
-WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
-    var item,
-        split,
-        result = [];
-
-    for (item in this.callbacks) {
-        split = item.split('*');
-        if (item === '*' || (split.length === 2 && eventName.slice(0, split[1].length) === split[1])) {
-            result = result.concat(this.callbacks[item]);
-        }
-    }
-    return result;
+// Internal method registering handlers for a data channel and emitting events on the peer
+Peer.prototype._observeDataChannel = function (channel) {
+    var self = this;
+    channel.onclose = this.emit.bind(this, 'channelClose', channel);
+    channel.onerror = this.emit.bind(this, 'channelError', channel);
+    channel.onmessage = function (event) {
+        self.emit('channelMessage', self, channel.label, JSON.parse(event.data), channel, event);
+    };
+    channel.onopen = this.emit.bind(this, 'channelOpen', channel);
 };
 
-},{}],15:[function(require,module,exports){
+// Fetch or create a data channel by the given name
+Peer.prototype.getDataChannel = function (name, opts) {
+    if (!webrtc.dataChannel) return this.emit('error', new Error('createDataChannel not supported'));
+    var channel = this.channels[name];
+    opts || (opts = {});
+    if (channel) return channel;
+    // if we don't have one by this label, create it
+    channel = this.channels[name] = this.pc.createDataChannel(name, opts);
+    this._observeDataChannel(channel);
+    return channel;
+};
+
+Peer.prototype.onIceCandidate = function (candidate) {
+    if (this.closed) return;
+    if (candidate) {
+        this.send('candidate', candidate);
+    } else {
+        this.logger.log("End of candidates.");
+    }
+};
+
+Peer.prototype.start = function () {
+    var self = this;
+
+    // well, the webrtc api requires that we either
+    // a) create a datachannel a priori
+    // b) do a renegotiation later to add the SCTP m-line
+    // Let's do (a) first...
+    if (this.enableDataChannels) {
+        this.getDataChannel('simplewebrtc');
+    }
+
+    this.pc.offer(this.receiveMedia, function (err, sessionDescription) {
+        self.send('offer', sessionDescription);
+    });
+};
+
+Peer.prototype.end = function () {
+    if (this.closed) return;
+    this.pc.close();
+    this.handleStreamRemoved();
+};
+
+Peer.prototype.handleRemoteStreamAdded = function (event) {
+    var self = this;
+    if (this.stream) {
+        this.logger.warn('Already have a remote stream');
+    } else {
+        this.stream = event.stream;
+        // FIXME: addEventListener('ended', ...) would be nicer
+        // but does not work in firefox 
+        this.stream.onended = function () {
+            self.end();
+        };
+        this.parent.emit('peerStreamAdded', this);
+    }
+};
+
+Peer.prototype.handleStreamRemoved = function () {
+    this.parent.peers.splice(this.parent.peers.indexOf(this), 1);
+    this.closed = true;
+    this.parent.emit('peerStreamRemoved', this);
+};
+
+Peer.prototype.handleDataChannelAdded = function (channel) {
+    this.channels[channel.label] = channel;
+    this._observeDataChannel(channel);
+};
+
+module.exports = WebRTC;
+
+},{"localmedia":12,"mockconsole":4,"rtcpeerconnection":11,"util":8,"webrtcsupport":10,"wildemitter":2}],13:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5462,7 +5315,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],14:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -5658,7 +5511,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":15}],16:[function(require,module,exports){
+},{"__browserify_process":13}],14:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -7003,6 +6856,211 @@ EventEmitter.listenerCount = function(emitter, type) {
   }
 }).call(this);
 
+},{}],15:[function(require,module,exports){
+/*
+WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
+on @visionmedia's Emitter from UI Kit.
+
+Why? I wanted it standalone.
+
+I also wanted support for wildcard emitters like this:
+
+emitter.on('*', function (eventName, other, event, payloads) {
+    
+});
+
+emitter.on('somenamespace*', function (eventName, payloads) {
+    
+});
+
+Please note that callbacks triggered by wildcard registered events also get 
+the event name as the first argument.
+*/
+module.exports = WildEmitter;
+
+function WildEmitter() {
+    this.callbacks = {};
+}
+
+// Listen on the given `event` with `fn`. Store a group name if present.
+WildEmitter.prototype.on = function (event, groupName, fn) {
+    var hasGroup = (arguments.length === 3),
+        group = hasGroup ? arguments[1] : undefined,
+        func = hasGroup ? arguments[2] : arguments[1];
+    func._groupName = group;
+    (this.callbacks[event] = this.callbacks[event] || []).push(func);
+    return this;
+};
+
+// Adds an `event` listener that will be invoked a single
+// time then automatically removed.
+WildEmitter.prototype.once = function (event, groupName, fn) {
+    var self = this,
+        hasGroup = (arguments.length === 3),
+        group = hasGroup ? arguments[1] : undefined,
+        func = hasGroup ? arguments[2] : arguments[1];
+    function on() {
+        self.off(event, on);
+        func.apply(this, arguments);
+    }
+    this.on(event, group, on);
+    return this;
+};
+
+// Unbinds an entire group
+WildEmitter.prototype.releaseGroup = function (groupName) {
+    var item, i, len, handlers;
+    for (item in this.callbacks) {
+        handlers = this.callbacks[item];
+        for (i = 0, len = handlers.length; i < len; i++) {
+            if (handlers[i]._groupName === groupName) {
+                //console.log('removing');
+                // remove it and shorten the array we're looping through
+                handlers.splice(i, 1);
+                i--;
+                len--;
+            }
+        }
+    }
+    return this;
+};
+
+// Remove the given callback for `event` or all
+// registered callbacks.
+WildEmitter.prototype.off = function (event, fn) {
+    var callbacks = this.callbacks[event],
+        i;
+
+    if (!callbacks) return this;
+
+    // remove all handlers
+    if (arguments.length === 1) {
+        delete this.callbacks[event];
+        return this;
+    }
+
+    // remove specific handler
+    i = callbacks.indexOf(fn);
+    callbacks.splice(i, 1);
+    return this;
+};
+
+/// Emit `event` with the given args.
+// also calls any `*` handlers
+WildEmitter.prototype.emit = function (event) {
+    var args = [].slice.call(arguments, 1),
+        callbacks = this.callbacks[event],
+        specialCallbacks = this.getWildcardCallbacks(event),
+        i,
+        len,
+        item,
+        listeners;
+
+    if (callbacks) {
+        listeners = callbacks.slice();
+        for (i = 0, len = listeners.length; i < len; ++i) {
+            if (listeners[i]) {
+                listeners[i].apply(this, args);
+            } else {
+                break;
+            }
+        }
+    }
+
+    if (specialCallbacks) {
+        len = specialCallbacks.length;
+        listeners = specialCallbacks.slice();
+        for (i = 0, len = listeners.length; i < len; ++i) {
+            if (listeners[i]) {
+                listeners[i].apply(this, [event].concat(args));
+            } else {
+                break;
+            }
+        }
+    }
+
+    return this;
+};
+
+// Helper for for finding special wildcard event handlers that match the event
+WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
+    var item,
+        split,
+        result = [];
+
+    for (item in this.callbacks) {
+        split = item.split('*');
+        if (item === '*' || (split.length === 2 && eventName.slice(0, split[0].length) === split[0])) {
+            result = result.concat(this.callbacks[item]);
+        }
+    }
+    return result;
+};
+
+},{}],16:[function(require,module,exports){
+// getUserMedia helper by @HenrikJoreteg
+var func = (window.navigator.getUserMedia ||
+            window.navigator.webkitGetUserMedia ||
+            window.navigator.mozGetUserMedia ||
+            window.navigator.msGetUserMedia);
+
+
+module.exports = function (constraints, cb) {
+    var options;
+    var haveOpts = arguments.length === 2;
+    var defaultOpts = {video: true, audio: true};
+    var error;
+    var denied = 'PERMISSION_DENIED';
+    var notSatified = 'CONSTRAINT_NOT_SATISFIED';
+
+    // make constraints optional
+    if (!haveOpts) {
+        cb = constraints;
+        constraints = defaultOpts;
+    }
+
+    // treat lack of browser support like an error
+    if (!func) {
+        // throw proper error per spec
+        error = new Error('NavigatorUserMediaError');
+        error.name = 'NOT_SUPPORTED_ERROR';
+        return cb(error);
+    }
+
+    func.call(window.navigator, constraints, function (stream) {
+        cb(null, stream);
+    }, function (err) {
+        var error;
+        // coerce into an error object since FF gives us a string
+        // there are only two valid names according to the spec
+        // we coerce all non-denied to "constraint not satisfied".
+        if (typeof err === 'string') {
+            error = new Error('NavigatorUserMediaError');
+            if (err === denied) {
+                error.name = denied;
+            } else {
+                error.name = notSatified;
+            }
+        } else {
+            // if we get an error object make sure '.name' property is set
+            // according to spec: http://dev.w3.org/2011/webrtc/editor/getusermedia.html#navigatorusermediaerror-and-navigatorusermediaerrorcallback
+            error = err;
+            if (!error.name) {
+                // this is likely chrome which
+                // sets a property called "ERROR_DENIED" on the error object
+                // if so we make sure to set a name
+                if (error[denied]) {
+                    err.name = denied;
+                } else {
+                    err.name = notSatified;
+                }
+            }
+        }
+
+        cb(error);
+    });
+};
+
 },{}],17:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
@@ -7144,212 +7202,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],18:[function(require,module,exports){
-// getUserMedia helper by @HenrikJoreteg
-var func = (navigator.getUserMedia ||
-            navigator.webkitGetUserMedia ||
-            navigator.mozGetUserMedia ||
-            navigator.msGetUserMedia);
-
-
-module.exports = function (constraints, cb) {
-    var options;
-    var haveOpts = arguments.length === 2;
-    var defaultOpts = {video: true, audio: true};
-    var error;
-    var denied = 'PERMISSION_DENIED';
-    var notSatified = 'CONSTRAINT_NOT_SATISFIED';
-
-    // make constraints optional
-    if (!haveOpts) {
-        cb = constraints;
-        constraints = defaultOpts;
-    }
-
-    // treat lack of browser support like an error
-    if (!func) {
-        // throw proper error per spec
-        error = new Error('NavigatorUserMediaError');
-        error.name = 'NOT_SUPPORTED_ERROR';
-        return cb(error);
-    }
-
-    func.call(navigator, constraints, function (stream) {
-        cb(null, stream);
-    }, function (err) {
-        var error;
-        // coerce into an error object since FF gives us a string
-        // there are only two valid names according to the spec
-        // we coerce all non-denied to "constraint not satisfied".
-        if (typeof err === 'string') {
-            error = new Error('NavigatorUserMediaError');
-            if (err === denied) {
-                error.name = denied;
-            } else {
-                error.name = notSatified;
-            }
-        } else {
-            // if we get an error object make sure '.name' property is set
-            // according to spec: http://dev.w3.org/2011/webrtc/editor/getusermedia.html#navigatorusermediaerror-and-navigatorusermediaerrorcallback
-            error = err;
-            if (!error.name) {
-                // this is likely chrome which
-                // sets a property called "ERROR_DENIED" on the error object
-                // if so we make sure to set a name
-                if (error[denied]) {
-                    err.name = denied;
-                } else {
-                    err.name = notSatified;
-                }
-            }
-        }
-
-        cb(error);
-    });
-};
-
-},{}],19:[function(require,module,exports){
-/*
-WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
-on @visionmedia's Emitter from UI Kit.
-
-Why? I wanted it standalone.
-
-I also wanted support for wildcard emitters like this:
-
-emitter.on('*', function (eventName, other, event, payloads) {
-    
-});
-
-emitter.on('somenamespace*', function (eventName, payloads) {
-    
-});
-
-Please note that callbacks triggered by wildcard registered events also get 
-the event name as the first argument.
-*/
-module.exports = WildEmitter;
-
-function WildEmitter() {
-    this.callbacks = {};
-}
-
-// Listen on the given `event` with `fn`. Store a group name if present.
-WildEmitter.prototype.on = function (event, groupName, fn) {
-    var hasGroup = (arguments.length === 3),
-        group = hasGroup ? arguments[1] : undefined,
-        func = hasGroup ? arguments[2] : arguments[1];
-    func._groupName = group;
-    (this.callbacks[event] = this.callbacks[event] || []).push(func);
-    return this;
-};
-
-// Adds an `event` listener that will be invoked a single
-// time then automatically removed.
-WildEmitter.prototype.once = function (event, groupName, fn) {
-    var self = this,
-        hasGroup = (arguments.length === 3),
-        group = hasGroup ? arguments[1] : undefined,
-        func = hasGroup ? arguments[2] : arguments[1];
-    function on() {
-        self.off(event, on);
-        func.apply(this, arguments);
-    }
-    this.on(event, group, on);
-    return this;
-};
-
-// Unbinds an entire group
-WildEmitter.prototype.releaseGroup = function (groupName) {
-    var item, i, len, handlers;
-    for (item in this.callbacks) {
-        handlers = this.callbacks[item];
-        for (i = 0, len = handlers.length; i < len; i++) {
-            if (handlers[i]._groupName === groupName) {
-                //console.log('removing');
-                // remove it and shorten the array we're looping through
-                handlers.splice(i, 1);
-                i--;
-                len--;
-            }
-        }
-    }
-    return this;
-};
-
-// Remove the given callback for `event` or all
-// registered callbacks.
-WildEmitter.prototype.off = function (event, fn) {
-    var callbacks = this.callbacks[event],
-        i;
-
-    if (!callbacks) return this;
-
-    // remove all handlers
-    if (arguments.length === 1) {
-        delete this.callbacks[event];
-        return this;
-    }
-
-    // remove specific handler
-    i = callbacks.indexOf(fn);
-    callbacks.splice(i, 1);
-    return this;
-};
-
-/// Emit `event` with the given args.
-// also calls any `*` handlers
-WildEmitter.prototype.emit = function (event) {
-    var args = [].slice.call(arguments, 1),
-        callbacks = this.callbacks[event],
-        specialCallbacks = this.getWildcardCallbacks(event),
-        i,
-        len,
-        item,
-        listeners;
-
-    if (callbacks) {
-        listeners = callbacks.slice();
-        for (i = 0, len = listeners.length; i < len; ++i) {
-            if (listeners[i]) {
-                listeners[i].apply(this, args);
-            } else {
-                break;
-            }
-        }
-    }
-
-    if (specialCallbacks) {
-        len = specialCallbacks.length;
-        listeners = specialCallbacks.slice();
-        for (i = 0, len = listeners.length; i < len; ++i) {
-            if (listeners[i]) {
-                listeners[i].apply(this, [event].concat(args));
-            } else {
-                break;
-            }
-        }
-    }
-
-    return this;
-};
-
-// Helper for for finding special wildcard event handlers that match the event
-WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
-    var item,
-        split,
-        result = [];
-
-    for (item in this.callbacks) {
-        split = item.split('*');
-        if (item === '*' || (split.length === 2 && eventName.slice(0, split[0].length) === split[0])) {
-            result = result.concat(this.callbacks[item]);
-        }
-    }
-    return result;
-};
-
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var _ = require('underscore');
 var util = require('util');
 var webrtc = require('webrtcsupport');
@@ -7712,7 +7565,20 @@ PeerConnection.prototype.createDataChannel = function (name, opts) {
 
 module.exports = PeerConnection;
 
-},{"sdp-jingle-json":20,"traceablepeerconnection":21,"underscore":16,"util":8,"webrtcsupport":9,"wildemitter":17}],13:[function(require,module,exports){
+},{"sdp-jingle-json":18,"traceablepeerconnection":19,"underscore":14,"util":8,"webrtcsupport":10,"wildemitter":15}],18:[function(require,module,exports){
+var tosdp = require('./lib/tosdp');
+var tojson = require('./lib/tojson');
+
+
+exports.toSessionSDP = tosdp.toSessionSDP;
+exports.toMediaSDP = tosdp.toMediaSDP;
+exports.toCandidateSDP = tosdp.toCandidateSDP;
+
+exports.toSessionJSON = tojson.toSessionJSON;
+exports.toMediaJSON = tojson.toMediaJSON;
+exports.toCandidateJSON = tojson.toCandidateJSON;
+
+},{"./lib/tojson":21,"./lib/tosdp":20}],12:[function(require,module,exports){
 var util = require('util');
 var hark = require('hark');
 var webrtc = require('webrtcsupport');
@@ -7776,13 +7642,16 @@ LocalMedia.prototype.start = function (mediaConstraints, cb) {
             }
 
             // TODO: might need to migrate to the video tracks onended
-            stream.addEventListener('ended', function () {
+            // FIXME: firefox does not seem to trigger this...
+            stream.onended = function () {
+                /*
                 var idx = self.localStreams.indexOf(stream);
                 if (idx > -1) {
                     self.localScreens.splice(idx, 1);
                 }
                 self.emit('localStreamStopped', stream);
-            });
+                */
+            };
 
             self.emit('localStream', stream);
         }
@@ -7794,6 +7663,7 @@ LocalMedia.prototype.start = function (mediaConstraints, cb) {
 
 LocalMedia.prototype.stop = function (stream) {
     var self = this;
+    // FIXME: duplicates cleanup code until fixed in FF
     if (stream) {
         stream.stop();
         self.emit('localStreamStopped', stream);
@@ -7817,13 +7687,15 @@ LocalMedia.prototype.startScreenShare = function (cb) {
             self.localScreens.push(stream);
 
             // TODO: might need to migrate to the video tracks onended
-            stream.addEventListener('ended', function () {
+            // Firefox does not support .onended but it does not support
+            // screensharing either
+            stream.onended = function () {
                 var idx = self.localScreens.indexOf(stream);
                 if (idx > -1) {
                     self.localScreens.splice(idx, 1);
                 }
                 self.emit('localScreenStopped', stream);
-            });
+            };
             self.emit('localScreen', stream);
         }
 
@@ -7835,13 +7707,8 @@ LocalMedia.prototype.startScreenShare = function (cb) {
 };
 
 LocalMedia.prototype.stopScreenShare = function (stream) {
-    var self = this;
     if (stream) {
         stream.stop();
-        var idx = self.localScreens.indexOf(stream);
-        if (idx > -1) {
-            self.localScreens.splice(idx, 1);
-        }
     } else {
         this.localScreens.forEach(function (stream) {
             stream.stop();
@@ -7949,7 +7816,7 @@ LocalMedia.prototype.isAudioEnabled = function () {
     var enabled = true;
     this.localStreams.forEach(function (stream) {
         stream.getAudioTracks().forEach(function (track) {
-            enabled &= track.enabled;
+            enabled = enabled && track.enabled;
         });
     });
     return enabled;
@@ -7960,7 +7827,7 @@ LocalMedia.prototype.isVideoEnabled = function () {
     var enabled = true;
     this.localStreams.forEach(function (stream) {
         stream.getVideoTracks().forEach(function (track) {
-            enabled &= track.enabled;
+            enabled = enabled && track.enabled;
         });
     });
     return enabled;
@@ -7977,28 +7844,15 @@ Object.defineProperty(LocalMedia.prototype, 'localStream', {
     }
 });
 // fallback for old .localScreen behaviour
-Object.defineProperty(LocalMedia.prototype, 'localScreen', 
-    { get: function () {
+Object.defineProperty(LocalMedia.prototype, 'localScreen', {
+    get: function () {
         return this.localScreens.length > 0 ? this.localScreens[0] : null;
     }
 });
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":23,"getusermedia":18,"hark":22,"mediastream-gain":24,"mockconsole":11,"util":8,"webrtcsupport":9,"wildemitter":19}],20:[function(require,module,exports){
-var tosdp = require('./lib/tosdp');
-var tojson = require('./lib/tojson');
-
-
-exports.toSessionSDP = tosdp.toSessionSDP;
-exports.toMediaSDP = tosdp.toMediaSDP;
-exports.toCandidateSDP = tosdp.toCandidateSDP;
-
-exports.toSessionJSON = tojson.toSessionJSON;
-exports.toMediaJSON = tojson.toMediaJSON;
-exports.toCandidateJSON = tojson.toCandidateJSON;
-
-},{"./lib/tojson":25,"./lib/tosdp":26}],26:[function(require,module,exports){
+},{"getscreenmedia":23,"getusermedia":16,"hark":22,"mediastream-gain":24,"mockconsole":4,"util":8,"webrtcsupport":10,"wildemitter":17}],20:[function(require,module,exports){
 var senders = {
     'initiator': 'sendonly',
     'responder': 'recvonly',
@@ -8289,7 +8143,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":27}],27:[function(require,module,exports){
+},{"wildemitter":25}],25:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -8426,7 +8280,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var parsers = require('./parsers');
 var idCounter = Math.random();
 
@@ -8592,7 +8446,7 @@ exports.toCandidateJSON = function (line) {
     return candidate;
 };
 
-},{"./parsers":28}],23:[function(require,module,exports){
+},{"./parsers":26}],23:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -8615,7 +8469,6 @@ module.exports = function (constraints, cb) {
         var maxver = 33;
         // "known‶ bug in chrome 34 on linux
         if (window.navigator.userAgent.match('Linux')) maxver = 34;
-        maxver = 40;
         if (chromever >= 26 && chromever <= maxver) {
             // chrome 26 - chrome 33 way to do it -- requires bad chrome://flags
             constraints = (hasConstraints && constraints) || { 
@@ -8671,7 +8524,7 @@ window.addEventListener('message', function (event) {
     }
 });
 
-},{"getusermedia":18}],28:[function(require,module,exports){
+},{"getusermedia":16}],26:[function(require,module,exports){
 exports.lines = function (sdp) {
     return sdp.split('\r\n').filter(function (line) {
         return line.length > 0;
@@ -8905,7 +8758,7 @@ exports.groups = function (lines) {
     return parsed;
 };
 
-},{}],21:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 // based on https://github.com/ESTOS/strophe.jingle/
 // adds wildemitter support
 var util = require('util');
@@ -9106,7 +8959,7 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":8,"webrtcsupport":9,"wildemitter":17}],24:[function(require,module,exports){
+},{"util":8,"webrtcsupport":10,"wildemitter":15}],24:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -9153,6 +9006,6 @@ GainController.prototype.on = function () {
 
 module.exports = GainController;
 
-},{"webrtcsupport":9}]},{},[1])(1)
+},{"webrtcsupport":10}]},{},[1])(1)
 });
 ;

@@ -143,6 +143,14 @@ function SimpleWebRTC(opts) {
         self.emit('turnservers', args);
     });
 
+    this.webrtc.on('iceFailed', function (peer) {
+        // local ice failure
+    });
+    this.webrtc.on('connectivityError', function (peer) {
+        // remote ice failure
+    });
+
+
     // sending mute/unmute to all peers
     this.webrtc.on('audioOn', function () {
         self.webrtc.sendToAll('unmute', {name: 'audio'});

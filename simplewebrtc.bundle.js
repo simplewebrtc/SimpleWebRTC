@@ -145,6 +145,14 @@ function SimpleWebRTC(opts) {
         self.emit('turnservers', args);
     });
 
+    this.webrtc.on('iceFailed', function (peer) {
+        // local ice failure
+    });
+    this.webrtc.on('connectivityError', function (peer) {
+        // remote ice failure
+    });
+
+
     // sending mute/unmute to all peers
     this.webrtc.on('audioOn', function () {
         self.webrtc.sendToAll('unmute', {name: 'audio'});
@@ -415,7 +423,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":5,"mockconsole":4,"socket.io-client":7,"webrtc":6,"webrtcsupport":3,"wildemitter":2}],2:[function(require,module,exports){
+},{"attachmediastream":5,"mockconsole":6,"socket.io-client":7,"webrtc":2,"webrtcsupport":4,"wildemitter":3}],3:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -552,7 +560,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var isChrome = false;
@@ -631,7 +639,7 @@ module.exports = function (stream, el, options) {
     return element;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
 var l = methods.length;
 var fn = function () {};
@@ -4902,7 +4910,7 @@ module.exports = {
     IceCandidate: IceCandidate
 };
 
-},{}],6:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var PeerConnection = require('rtcpeerconnection');
@@ -5082,7 +5090,8 @@ function Peer(options) {
             // currently, in chrome only the initiator goes to failed
             // so we need to signal this to the peer
             if (self.pc.config.isInitiator) {
-                self.parent.emit('iceFailed', {id: self.id});
+                self.parent.emit('iceFailed', self);
+                self.send('connectivityError');
             }
             break;
         }
@@ -5139,6 +5148,8 @@ Peer.prototype.handleMessage = function (message) {
         this.pc.handleAnswer(message.payload);
     } else if (message.type === 'candidate') {
         this.pc.processIce(message.payload);
+    } else if (message.type === 'connectivityError') {
+        this.parent.emit('connectivityError', self);
     } else if (message.type === 'speaking') {
         this.parent.emit('speaking', {id: message.from});
     } else if (message.type === 'stopped_speaking') {
@@ -5260,7 +5271,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
 
 module.exports = WebRTC;
 
-},{"localmedia":12,"mockconsole":4,"rtcpeerconnection":11,"util":8,"webrtcsupport":10,"wildemitter":2}],13:[function(require,module,exports){
+},{"localmedia":12,"mockconsole":6,"rtcpeerconnection":11,"util":8,"webrtcsupport":10,"wildemitter":3}],13:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -7265,18 +7276,24 @@ function PeerConnection(config, constraints) {
             logger.log('PeerConnection event:', arguments);
         });
     }
+    this.hadLocalStunCandidate = false;
+    this.hadRemoteStunCandidate = false;
+    this.hadLocalRelayCandidate = false;
+    this.hadRemoteRelayCandidate = false;
 }
 
 util.inherits(PeerConnection, WildEmitter);
 
-if (PeerConnection.prototype.__defineGetter__) {
-    PeerConnection.prototype.__defineGetter__('signalingState', function () {
+Object.defineProperty(PeerConnection.prototype, 'signalingState', {
+    get: function () {
         return this.pc.signalingState;
-    });
-    PeerConnection.prototype.__defineGetter__('iceConnectionState', function () {
+    }
+});
+Object.defineProperty(PeerConnection.prototype, 'iceConnectionState', {
+    get: function () {
         return this.pc.iceConnectionState;
-    });
-}
+    }
+});
 
 // Add a stream to the peer connection object
 PeerConnection.prototype.addStream = function (stream) {
@@ -7301,7 +7318,6 @@ PeerConnection.prototype.processIce = function (update, cb) {
             var mid = content.name;
 
             candidates.forEach(function (candidate) {
-                console.log('addicecandidate');
                 var iceCandidate = SJJ.toCandidateSDP(candidate) + '\r\n';
                 self.pc.addIceCandidate(new webrtc.IceCandidate({
                     candidate: iceCandidate,
@@ -7318,10 +7334,22 @@ PeerConnection.prototype.processIce = function (update, cb) {
                 }
                 */
                 );
+                if (candidate.type === 'srflx') {
+                    this.hadRemoteStunCandidate = true;
+                }
+                else if (candidate.type === 'relay') {
+                    this.hadRemoteRelayCandidate = true;
+                }
             });
         });
     } else {
         self.pc.addIceCandidate(new webrtc.IceCandidate(update.candidate));
+        if (update.candidate.candidate.indexOf('typ srflx') !== -1) {
+            this.hadRemoteStunCandidate = true;
+        }
+        else if (update.candidate.candidate.indexOf('typ relay') !== -1) {
+            this.hadRemoteRelayCandidate = true;
+        }
     }
     cb();
 };
@@ -7394,6 +7422,7 @@ PeerConnection.prototype.handleOffer = function (offer, cb) {
     offer.type = 'offer';
     if (offer.jingle) {
         offer.sdp = SJJ.toSessionSDP(offer.jingle, self.config.sdpSessionID);
+        self.remoteDescription = offer.jingle;
     }
     self.pc.setRemoteDescription(new webrtc.SessionDescription(offer), function () {
         cb();
@@ -7536,6 +7565,12 @@ PeerConnection.prototype._onIce = function (event) {
                     }
                 }]
             };
+            if (event.candidate.indexOf('typ srflx') !== -1) {
+                this.hadLocalStunCandidate = true;
+            }
+            else if (event.candidate.indexOf('typ relay') !== -1) {
+                this.hadLocalRelayCandidate = true;
+            }
         }
 
         this.emit('ice', expandedCandidate);
@@ -7561,6 +7596,37 @@ PeerConnection.prototype._onAddStream = function (event) {
 PeerConnection.prototype.createDataChannel = function (name, opts) {
     var channel = this.pc.createDataChannel(name, opts);
     return channel;
+};
+
+// a wrapper around getStats which hides the differences (where possible)
+PeerConnection.prototype.getStats = function (cb) {
+    if (webrtc.prefix === 'moz') {
+        this.pc.getStats(
+            function (res) {
+                var items = [];
+                res.forEach(function (result) {
+                    items.push(result);
+                });
+                cb(null, items);
+            },
+            cb
+        );
+    } else {
+        this.pc.getStats(function (res) {
+            var items = [];
+            res.result().forEach(function (result) {
+                var item = {};
+                result.names().forEach(function (name) {
+                    item[name] = result.stat(name);
+                });
+                item.id = result.id;
+                item.type = result.type;
+                item.timestamp = result.timestamp;
+                items.push(item);
+            });
+            cb(null, items);
+        });
+    }
 };
 
 module.exports = PeerConnection;
@@ -7852,7 +7918,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":23,"getusermedia":16,"hark":22,"mediastream-gain":24,"mockconsole":4,"util":8,"webrtcsupport":10,"wildemitter":17}],20:[function(require,module,exports){
+},{"getscreenmedia":23,"getusermedia":16,"hark":22,"mediastream-gain":24,"mockconsole":6,"util":8,"webrtcsupport":10,"wildemitter":17}],20:[function(require,module,exports){
 var senders = {
     'initiator': 'sendonly',
     'responder': 'recvonly',
@@ -8770,6 +8836,7 @@ function dumpSDP(description) {
 }
 
 function TraceablePeerConnection(config, constraints) {
+    console.log('tp init');
     var self = this;
     WildEmitter.call(this);
 
@@ -8836,12 +8903,29 @@ function TraceablePeerConnection(config, constraints) {
 
 util.inherits(TraceablePeerConnection, WildEmitter);
 
-if (TraceablePeerConnection.prototype.__defineGetter__ !== undefined) {
-    TraceablePeerConnection.prototype.__defineGetter__('signalingState', function () { return this.peerconnection.signalingState; });
-    TraceablePeerConnection.prototype.__defineGetter__('iceConnectionState', function () { return this.peerconnection.iceConnectionState; });
-    TraceablePeerConnection.prototype.__defineGetter__('localDescription', function () { return this.peerconnection.localDescription; });
-    TraceablePeerConnection.prototype.__defineGetter__('remoteDescription', function () { return this.peerconnection.remoteDescription; });
-}
+Object.defineProperty(TraceablePeerConnection.prototype, 'signalingState', {
+    get: function () {
+        return this.peerconnection.signalingState;
+    }
+});
+
+Object.defineProperty(TraceablePeerConnection.prototype, 'iceConnectionState', {
+    get: function () {
+        return this.peerconnection.iceConnectionState;
+    }
+});
+
+Object.defineProperty(TraceablePeerConnection.prototype, 'localDescription', {
+    get: function () {
+        return this.peerconnection.localDescription;
+    }
+});
+
+Object.defineProperty(TraceablePeerConnection.prototype, 'remoteDescription', {
+    get: function () {
+        return this.peerconnection.remoteDescription;
+    }
+});
 
 TraceablePeerConnection.prototype.addStream = function (stream) {
     this.trace('addStream', stream.id);
@@ -8951,7 +9035,7 @@ TraceablePeerConnection.prototype.addIceCandidate = function (candidate, success
 
 TraceablePeerConnection.prototype.getStats = function (callback, errback) {
     if (navigator.mozGetUserMedia) {
-        // ignore for now...
+        this.peerconnection.getStats(null, callback, errback);
     } else {
         this.peerconnection.getStats(callback);
     }

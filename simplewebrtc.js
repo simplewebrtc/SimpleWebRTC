@@ -19,7 +19,9 @@ function SimpleWebRTC(opts) {
             autoRemoveVideos: true,
             adjustPeerVolume: true,
             peerVolumeWhenSpeaking: 0.25,
-            media: {
+            // User can pass in data to specify media options 
+            // in the index.html file by passing in a media object. 
+            media: opts.media || {
                 video: true,
                 audio: true
             }

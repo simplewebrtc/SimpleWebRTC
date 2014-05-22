@@ -7633,7 +7633,7 @@ LocalMedia.prototype.start = function (mediaConstraints, cb) {
     getUserMedia(constraints, function (err, stream) {
         if (!err) {
             if (constraints.audio && self.config.detectSpeakingEvents) {
-                self.setupAudioMonitor(stream);
+                self.setupAudioMonitor(stream, self.config.harkOptions);
             }
             self.localStreams.push(stream);
 
@@ -7732,9 +7732,9 @@ LocalMedia.prototype.unmute = function () {
     this.emit('audioOn');
 };
 
-LocalMedia.prototype.setupAudioMonitor = function (stream) {
+LocalMedia.prototype.setupAudioMonitor = function (stream, harkOptions) {
     this._log('Setup audio');
-    var audio = hark(stream);
+    var audio = hark(stream, harkOptions);
     var self = this;
     var timeout;
 

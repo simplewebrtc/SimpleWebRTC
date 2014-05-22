@@ -9,7 +9,7 @@
   "description": "World's easiest webrtc",
   "dependencies": {
     "webrtcsupport": "0.7.3",
-    "wildemitter": "0.0.5",
+    "wildemitter": "1.x",
     "socket.io-client": "0.9.16",
     "attachmediastream": "1.0.1",
     "webrtc": "1.8.x",

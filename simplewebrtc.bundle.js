@@ -5147,6 +5147,8 @@ Peer.prototype.handleMessage = function (message) {
         this.parent.emit('mute', {id: message.from, name: message.payload.name});
     } else if (message.type === 'unmute') {
         this.parent.emit('unmute', {id: message.from, name: message.payload.name});
+    } else {
+        this.parent.emit(message.type, {id: message.from, payload: message.payload});
     }
 };
 
@@ -7631,7 +7633,7 @@ LocalMedia.prototype.start = function (mediaConstraints, cb) {
     getUserMedia(constraints, function (err, stream) {
         if (!err) {
             if (constraints.audio && self.config.detectSpeakingEvents) {
-                self.setupAudioMonitor(stream);
+                self.setupAudioMonitor(stream, self.config.harkOptions);
             }
             self.localStreams.push(stream);
 
@@ -7730,9 +7732,9 @@ LocalMedia.prototype.unmute = function () {
     this.emit('audioOn');
 };
 
-LocalMedia.prototype.setupAudioMonitor = function (stream) {
+LocalMedia.prototype.setupAudioMonitor = function (stream, harkOptions) {
     this._log('Setup audio');
-    var audio = hark(stream);
+    var audio = hark(stream, harkOptions);
     var self = this;
     var timeout;
 

@@ -238,6 +238,11 @@ SimpleWebRTC.prototype.leaveRoom = function () {
     }
 };
 
+SimpleWebRTC.prototype.close = function () {
+    this.connection.disconnect();
+    delete this.connection;
+};
+
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
     var self = this;
     var container = this.getRemoteVideoContainer();

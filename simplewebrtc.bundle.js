@@ -240,6 +240,11 @@ SimpleWebRTC.prototype.leaveRoom = function () {
     }
 };
 
+SimpleWebRTC.prototype.close = function () {
+    this.connection.disconnect();
+    delete this.connection;
+};
+
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
     var self = this;
     var container = this.getRemoteVideoContainer();
@@ -7474,6 +7479,10 @@ LocalMedia.prototype.stop = function (stream) {
             self.localStreams = self.localStreams.splice(idx, 1);
         }
     } else {
+        if (this.audioMonitor) {
+            this.audioMonitor.stop();
+            delete this.audioMonitor;
+        }
         this.localStreams.forEach(function (stream) {
             stream.stop();
             self.emit('localStreamStopped', stream);
@@ -7534,7 +7543,7 @@ LocalMedia.prototype.unmute = function () {
 
 LocalMedia.prototype.setupAudioMonitor = function (stream, harkOptions) {
     this._log('Setup audio');
-    var audio = hark(stream, harkOptions);
+    var audio = this.audioMonitor = hark(stream, harkOptions);
     var self = this;
     var timeout;
 
@@ -7654,7 +7663,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":21,"getusermedia":15,"hark":20,"mediastream-gain":22,"mockconsole":6,"util":8,"webrtcsupport":10,"wildemitter":3}],17:[function(require,module,exports){
+},{"getscreenmedia":22,"getusermedia":15,"hark":21,"mediastream-gain":20,"mockconsole":6,"util":8,"webrtcsupport":10,"wildemitter":3}],17:[function(require,module,exports){
 var senders = {
     'initiator': 'sendonly',
     'responder': 'recvonly',
@@ -7996,7 +8005,7 @@ exports.toCandidateJSON = function (line) {
     return candidate;
 };
 
-},{"./parsers":23}],21:[function(require,module,exports){
+},{"./parsers":23}],22:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -8310,7 +8319,7 @@ exports.groups = function (lines) {
     return parsed;
 };
 
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -8577,14 +8586,14 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":8,"webrtcsupport":10,"wildemitter":3}],20:[function(require,module,exports){
+},{"util":8,"webrtcsupport":10,"wildemitter":3}],21:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
   var maxVolume = -Infinity;
   analyser.getFloatFrequencyData(fftBins);
 
-  for(var i=0, ii=fftBins.length; i < ii; i++) {
+  for(var i=4, ii=fftBins.length; i < ii; i++) {
     if (fftBins[i] > maxVolume && fftBins[i] < 0) {
       maxVolume = fftBins[i];
     }
@@ -8606,10 +8615,11 @@ module.exports = function(stream, options) {
 
   //Config
   var options = options || {},
-      smoothing = (options.smoothing || 0.5),
-      interval = (options.interval || 100),
+      smoothing = (options.smoothing || 0.1),
+      interval = (options.interval || 50),
       threshold = options.threshold,
       play = options.play,
+      history = options.history || 10,
       running = true;
 
   //Setup Audio Context
@@ -8624,15 +8634,15 @@ module.exports = function(stream, options) {
   fftBins = new Float32Array(analyser.fftSize);
 
   if (stream.jquery) stream = stream[0];
-  if (stream instanceof HTMLAudioElement) {
+  if (stream instanceof HTMLAudioElement || stream instanceof HTMLVideoElement) {
     //Audio Tag
     sourceNode = audioContext.createMediaElementSource(stream);
     if (typeof play === 'undefined') play = true;
-    threshold = threshold || -65;
+    threshold = threshold || -50;
   } else {
     //WebRTC Stream
     sourceNode = audioContext.createMediaStreamSource(stream);
-    threshold = threshold || -45;
+    threshold = threshold || -50;
   }
 
   sourceNode.connect(analyser);
@@ -8656,6 +8666,10 @@ module.exports = function(stream, options) {
       harker.emit('stopped_speaking');
     }
   };
+  harker.speakingHistory = [];
+  for (var i = 0; i < history; i++) {
+      harker.speakingHistory.push(0);
+  }
 
   // Poll the analyser node to determine if speaking
   // and emit events if changed
@@ -8671,17 +8685,27 @@ module.exports = function(stream, options) {
 
       harker.emit('volume_change', currentVolume, threshold);
 
-      if (currentVolume > threshold) {
-        if (!harker.speaking) {
+      var history = 0;
+      if (currentVolume > threshold && !harker.speaking) {
+        // trigger quickly, short history
+        for (var i = harker.speakingHistory.length - 3; i < harker.speakingHistory.length; i++) {
+          history += harker.speakingHistory[i];
+        }
+        if (history >= 2) {
           harker.speaking = true;
           harker.emit('speaking');
         }
-      } else {
-        if (harker.speaking) {
+      } else if (currentVolume < threshold && harker.speaking) {
+        for (var i = 0; i < harker.speakingHistory.length; i++) {
+          history += harker.speakingHistory[i];
+        }
+        if (history == 0) {
           harker.speaking = false;
           harker.emit('stopped_speaking');
         }
       }
+      harker.speakingHistory.shift();
+      harker.speakingHistory.push(0 + (currentVolume > threshold));
 
       looper();
     }, interval);

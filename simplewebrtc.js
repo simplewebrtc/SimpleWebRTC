@@ -238,7 +238,7 @@ SimpleWebRTC.prototype.leaveRoom = function () {
     }
 };
 
-SimpleWebRTC.prototype.close = function () {
+SimpleWebRTC.prototype.disconnect = function () {
     this.connection.disconnect();
     delete this.connection;
 };

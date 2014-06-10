@@ -240,7 +240,7 @@ SimpleWebRTC.prototype.leaveRoom = function () {
     }
 };
 
-SimpleWebRTC.prototype.close = function () {
+SimpleWebRTC.prototype.disconnect = function () {
     this.connection.disconnect();
     delete this.connection;
 };
@@ -7663,7 +7663,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":22,"getusermedia":15,"hark":21,"mediastream-gain":20,"mockconsole":6,"util":8,"webrtcsupport":10,"wildemitter":3}],17:[function(require,module,exports){
+},{"getscreenmedia":21,"getusermedia":15,"hark":20,"mediastream-gain":22,"mockconsole":6,"util":8,"webrtcsupport":10,"wildemitter":3}],17:[function(require,module,exports){
 var senders = {
     'initiator': 'sendonly',
     'responder': 'recvonly',
@@ -8005,7 +8005,7 @@ exports.toCandidateJSON = function (line) {
     return candidate;
 };
 
-},{"./parsers":23}],22:[function(require,module,exports){
+},{"./parsers":23}],21:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -8319,7 +8319,7 @@ exports.groups = function (lines) {
     return parsed;
 };
 
-},{}],20:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -8586,7 +8586,7 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":8,"webrtcsupport":10,"wildemitter":3}],21:[function(require,module,exports){
+},{"util":8,"webrtcsupport":10,"wildemitter":3}],20:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {

@@ -181,7 +181,7 @@
             webrtc.on('videoRemoved', function (video, peer) {
                 console.log('video removed ', peer);
                 var remotes = document.getElementById('remotes');
-                var el = document.getElementById('container_' + webrtc.getDomId(peer));
+                var el = document.getElementById(peer ? 'container_' + webrtc.getDomId(peer) : 'localScreenContainer');
                 if (remotes && el) {
                     remotes.removeChild(el);
                 }

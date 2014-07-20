@@ -11,6 +11,7 @@ function SimpleWebRTC(opts) {
     var options = opts || {};
     var config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
+            socketio: {/* 'force new connection':true*/},
             debug: false,
             localVideoEl: '',
             remoteVideosEl: '',
@@ -55,7 +56,7 @@ function SimpleWebRTC(opts) {
     WildEmitter.call(this);
 
     // our socket.io connection
-    connection = this.connection = io.connect(this.config.url);
+    connection = this.connection = io.connect(this.config.url, this.config.socketio);
 
     connection.on('connect', function () {
         self.emit('connectionReady', connection.socket.sessionid);

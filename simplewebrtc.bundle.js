@@ -13,6 +13,7 @@ function SimpleWebRTC(opts) {
     var options = opts || {};
     var config = this.config = {
             url: 'http://signaling.simplewebrtc.com:8888',
+            socketio: {/* 'force new connection':true*/},
             debug: false,
             localVideoEl: '',
             remoteVideosEl: '',
@@ -57,7 +58,7 @@ function SimpleWebRTC(opts) {
     WildEmitter.call(this);
 
     // our socket.io connection
-    connection = this.connection = io.connect(this.config.url);
+    connection = this.connection = io.connect(this.config.url, this.config.socketio);
 
     connection.on('connect', function () {
         self.emit('connectionReady', connection.socket.sessionid);
@@ -428,7 +429,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":5,"mockconsole":7,"socket.io-client":6,"webrtc":3,"webrtcsupport":4,"wildemitter":2}],2:[function(require,module,exports){
+},{"attachmediastream":5,"mockconsole":6,"socket.io-client":7,"webrtc":2,"webrtcsupport":3,"wildemitter":4}],4:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -569,7 +570,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var isChrome = false;
@@ -606,6 +607,18 @@ module.exports = {
     SessionDescription: SessionDescription,
     IceCandidate: IceCandidate
 };
+
+},{}],6:[function(require,module,exports){
+var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
+var l = methods.length;
+var fn = function () {};
+var mockconsole = {};
+
+while (l--) {
+    mockconsole[methods[l]] = fn;
+}
+
+module.exports = mockconsole;
 
 },{}],5:[function(require,module,exports){
 module.exports = function (stream, el, options) {
@@ -648,7 +661,7 @@ module.exports = function (stream, el, options) {
     return element;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
 
 var io = ('undefined' === typeof module ? {} : module.exports);
@@ -4522,18 +4535,6 @@ if (typeof define === "function" && define.amd) {
   define([], function () { return io; });
 }
 })();
-},{}],7:[function(require,module,exports){
-var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
-var l = methods.length;
-var fn = function () {};
-var mockconsole = {};
-
-while (l--) {
-    mockconsole[methods[l]] = fn;
-}
-
-module.exports = mockconsole;
-
 },{}],8:[function(require,module,exports){
 var events = require('events');
 
@@ -4919,7 +4920,7 @@ module.exports = {
     IceCandidate: IceCandidate
 };
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var WildEmitter = require('wildemitter');
@@ -5084,7 +5085,7 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
 
 module.exports = WebRTC;
 
-},{"./peer":11,"localmedia":12,"mockconsole":7,"util":8,"webrtcsupport":10,"wildemitter":2}],13:[function(require,module,exports){
+},{"./peer":11,"localmedia":12,"mockconsole":6,"util":8,"webrtcsupport":10,"wildemitter":4}],13:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5546,7 +5547,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
 
 module.exports = Peer;
 
-},{"rtcpeerconnection":14,"util":8,"webrtcsupport":10,"wildemitter":2}],15:[function(require,module,exports){
+},{"rtcpeerconnection":14,"util":8,"webrtcsupport":10,"wildemitter":4}],15:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (window.navigator.getUserMedia ||
             window.navigator.webkitGetUserMedia ||
@@ -5888,7 +5889,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":17,"getusermedia":15,"hark":16,"mediastream-gain":18,"mockconsole":7,"util":8,"webrtcsupport":10,"wildemitter":2}],19:[function(require,module,exports){
+},{"getscreenmedia":17,"getusermedia":15,"hark":16,"mediastream-gain":18,"mockconsole":6,"util":8,"webrtcsupport":10,"wildemitter":4}],19:[function(require,module,exports){
 //     Underscore.js 1.6.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -7233,7 +7234,20 @@ module.exports = LocalMedia;
   }
 }).call(this);
 
-},{}],14:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
+var tosdp = require('./lib/tosdp');
+var tojson = require('./lib/tojson');
+
+
+exports.toSessionSDP = tosdp.toSessionSDP;
+exports.toMediaSDP = tosdp.toMediaSDP;
+exports.toCandidateSDP = tosdp.toCandidateSDP;
+
+exports.toSessionJSON = tojson.toSessionJSON;
+exports.toMediaJSON = tojson.toMediaJSON;
+exports.toCandidateJSON = tojson.toCandidateJSON;
+
+},{"./lib/tojson":22,"./lib/tosdp":21}],14:[function(require,module,exports){
 var _ = require('underscore');
 var util = require('util');
 var webrtc = require('webrtcsupport');
@@ -7655,20 +7669,7 @@ PeerConnection.prototype.getStats = function (cb) {
 
 module.exports = PeerConnection;
 
-},{"sdp-jingle-json":20,"traceablepeerconnection":21,"underscore":19,"util":8,"webrtcsupport":10,"wildemitter":2}],20:[function(require,module,exports){
-var tosdp = require('./lib/tosdp');
-var tojson = require('./lib/tojson');
-
-
-exports.toSessionSDP = tosdp.toSessionSDP;
-exports.toMediaSDP = tosdp.toMediaSDP;
-exports.toCandidateSDP = tosdp.toCandidateSDP;
-
-exports.toSessionJSON = tojson.toSessionJSON;
-exports.toMediaJSON = tojson.toMediaJSON;
-exports.toCandidateJSON = tojson.toCandidateJSON;
-
-},{"./lib/tojson":22,"./lib/tosdp":23}],17:[function(require,module,exports){
+},{"sdp-jingle-json":20,"traceablepeerconnection":23,"underscore":19,"util":8,"webrtcsupport":10,"wildemitter":4}],17:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -7748,7 +7749,7 @@ window.addEventListener('message', function (event) {
     }
 });
 
-},{"getusermedia":15}],23:[function(require,module,exports){
+},{"getusermedia":15}],21:[function(require,module,exports){
 var senders = {
     'initiator': 'sendonly',
     'responder': 'recvonly',
@@ -8127,7 +8128,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":2}],22:[function(require,module,exports){
+},{"wildemitter":4}],22:[function(require,module,exports){
 var parsers = require('./parsers');
 var idCounter = Math.random();
 
@@ -8563,7 +8564,7 @@ exports.groups = function (lines) {
     return parsed;
 };
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 // based on https://github.com/ESTOS/strophe.jingle/
 // adds wildemitter support
 var util = require('util');
@@ -8783,6 +8784,6 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":8,"webrtcsupport":10,"wildemitter":2}]},{},[1])(1)
+},{"util":8,"webrtcsupport":10,"wildemitter":4}]},{},[1])(1)
 });
 ;

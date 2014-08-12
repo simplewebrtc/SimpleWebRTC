@@ -23,6 +23,11 @@ function SimpleWebRTC(opts) {
             media: {
                 video: true,
                 audio: true
+            },
+            localVideo: {
+                autoplay: true,
+                mirror: true,
+                muted: true
             }
         };
     var item, connection;
@@ -342,7 +347,7 @@ SimpleWebRTC.prototype.startLocalVideo = function () {
         if (err) {
             self.emit('localMediaError', err);
         } else {
-            attachMediaStream(stream, self.getLocalVideoContainer(), {muted: true, mirror: true});
+            attachMediaStream(stream, self.getLocalVideoContainer(), self.config.localVideo);
         }
     });
 };

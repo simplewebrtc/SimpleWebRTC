@@ -207,12 +207,10 @@ function SimpleWebRTC(opts) {
         });
     });
     this.webrtc.on('localScreenStopped', function (stream) {
-        console.log('local screen stopped');
         self.stopScreenShare();
         /*
         self.connection.emit('unshareScreen');
         self.webrtc.peers.forEach(function (peer) {
-            console.log('peer', peer);
             if (peer.sharemyscreen) {
                 peer.end();
             }

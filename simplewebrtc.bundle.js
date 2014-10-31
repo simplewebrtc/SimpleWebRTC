@@ -8906,3 +8906,19 @@ module.exports = TraceablePeerConnection;
 },{"util":8,"webrtcsupport":24,"wildemitter":2}]},{},[1])(1)
 });
 ;
+
+SimpleWebRTC.prototype.sendMessage= function(msg, event , peer, opts){
+    this.webrtc.peers.forEach(function (peer) {
+        if (peer.enableDataChannels) {
+            var dc =  peer.getDataChannel('messagechannel');
+            peer.emit('addChannel', dc);
+            dc.onopen = sendData;
+            if (dc.readyState === 'open')   sendData(dc);
+            return true;
+        }
+
+       function sendData(dc) {
+                       dc = dc.send?dc:dc.srcElement;
+                     dc.send(JSON.stringify(msg));
+    });
+};

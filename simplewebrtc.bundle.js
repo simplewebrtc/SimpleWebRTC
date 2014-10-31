@@ -8919,6 +8919,6 @@ SimpleWebRTC.prototype.sendMessage= function(msg, event , peer, opts){
 
        function sendData(dc) {
                        dc = dc.send?dc:dc.srcElement;
-                     dc.send(JSON.stringify(msg));
+                     dc.send(JSON.stringify({type: 'message', message:msg }));
     });
 };

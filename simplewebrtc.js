@@ -10,7 +10,7 @@ function SimpleWebRTC(opts) {
     var self = this;
     var options = opts || {};
     var config = this.config = {
-            url: '//signaling.simplewebrtc.com',
+            url: 'https://signaling.simplewebrtc.com',
             socketio: {/* 'force new connection':true*/},
             debug: false,
             localVideoEl: '',

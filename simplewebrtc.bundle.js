@@ -77,10 +77,14 @@ function SimpleWebRTC(opts) {
 
         if (message.type === 'offer') {
             if (peers.length) {
-                peer = peers[0];
-            } else {
+                peers.forEach(function (p) {
+                    if (p.sid == message.sid) peer = p;
+                });
+            }
+            if (!peer) {
                 peer = self.webrtc.createPeer({
                     id: message.from,
+                    sid: message.sid,
                     type: message.roomType,
                     enableDataChannels: self.config.enableDataChannels && message.roomType !== 'screen',
                     sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
@@ -90,7 +94,9 @@ function SimpleWebRTC(opts) {
             peer.handleMessage(message);
         } else if (peers.length) {
             peers.forEach(function (peer) {
-                peer.handleMessage(message);
+                if (peer.sid === message.sid) {
+                    peer.handleMessage(message);
+                }
             });
         }
     });
@@ -432,7 +438,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":5,"mockconsole":3,"socket.io-client":7,"webrtc":6,"webrtcsupport":4,"wildemitter":2}],2:[function(require,module,exports){
+},{"attachmediastream":4,"mockconsole":5,"socket.io-client":7,"webrtc":3,"webrtcsupport":6,"wildemitter":2}],2:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -573,60 +579,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],3:[function(require,module,exports){
-var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
-var l = methods.length;
-var fn = function () {};
-var mockconsole = {};
-
-while (l--) {
-    mockconsole[methods[l]] = fn;
-}
-
-module.exports = mockconsole;
-
 },{}],4:[function(require,module,exports){
-// created by @HenrikJoreteg
-var prefix;
-var isChrome = false;
-var isFirefox = false;
-var ua = window.navigator.userAgent.toLowerCase();
-
-// basic sniffing
-if (ua.indexOf('firefox') !== -1) {
-    prefix = 'moz';
-    isFirefox = true;
-} else if (ua.indexOf('chrome') !== -1) {
-    prefix = 'webkit';
-    isChrome = true;
-}
-
-var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-var MediaStream = window.webkitMediaStream || window.MediaStream;
-var screenSharing = window.location.protocol === 'https:' &&
-    ((window.navigator.userAgent.match('Chrome') && parseInt(window.navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26) ||
-     (window.navigator.userAgent.match('Firefox') && parseInt(window.navigator.userAgent.match(/Firefox\/(.*)/)[1], 10) >= 33));
-var AudioContext = window.webkitAudioContext || window.AudioContext;
-
-
-// export support flags and constructors.prototype && PC
-module.exports = {
-    support: !!PC,
-    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
-    prefix: prefix,
-    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
-    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
-    screenSharing: !!screenSharing,
-    AudioContext: AudioContext,
-    PeerConnection: PC,
-    SessionDescription: SessionDescription,
-    IceCandidate: IceCandidate,
-    MediaStream: MediaStream
-};
-
-},{}],5:[function(require,module,exports){
 module.exports = function (stream, el, options) {
     var URL = window.URL;
     var opts = {
@@ -665,6 +618,59 @@ module.exports = function (stream, el, options) {
     }
 
     return element;
+};
+
+},{}],5:[function(require,module,exports){
+var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
+var l = methods.length;
+var fn = function () {};
+var mockconsole = {};
+
+while (l--) {
+    mockconsole[methods[l]] = fn;
+}
+
+module.exports = mockconsole;
+
+},{}],6:[function(require,module,exports){
+// created by @HenrikJoreteg
+var prefix;
+var isChrome = false;
+var isFirefox = false;
+var ua = window.navigator.userAgent.toLowerCase();
+
+// basic sniffing
+if (ua.indexOf('firefox') !== -1) {
+    prefix = 'moz';
+    isFirefox = true;
+} else if (ua.indexOf('chrome') !== -1) {
+    prefix = 'webkit';
+    isChrome = true;
+}
+
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var MediaStream = window.webkitMediaStream || window.MediaStream;
+var screenSharing = window.location.protocol === 'https:' &&
+    ((window.navigator.userAgent.match('Chrome') && parseInt(window.navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26) ||
+     (window.navigator.userAgent.match('Firefox') && parseInt(window.navigator.userAgent.match(/Firefox\/(.*)/)[1], 10) >= 33));
+var AudioContext = window.webkitAudioContext || window.AudioContext;
+
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
+    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
+    screenSharing: !!screenSharing,
+    AudioContext: AudioContext,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate,
+    MediaStream: MediaStream
 };
 
 },{}],7:[function(require,module,exports){
@@ -4888,7 +4894,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":9}],6:[function(require,module,exports){
+},{"events":9}],3:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var WildEmitter = require('wildemitter');
@@ -5053,7 +5059,7 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
 
 module.exports = WebRTC;
 
-},{"./peer":10,"localmedia":11,"mockconsole":3,"util":8,"webrtcsupport":4,"wildemitter":2}],12:[function(require,module,exports){
+},{"./peer":10,"localmedia":11,"mockconsole":5,"util":8,"webrtcsupport":6,"wildemitter":2}],12:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5324,6 +5330,7 @@ function Peer(options) {
     this.enableDataChannels = options.enableDataChannels === undefined ? this.parent.config.enableDataChannels : options.enableDataChannels;
     this.receiveMedia = options.receiveMedia || this.parent.config.receiveMedia;
     this.channels = {};
+    this.sid = options.sid || Date.now().toString();
     // Create an RTCPeerConnection via the polyfill
     this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionConstraints);
     this.pc.on('ice', this.onIceCandidate.bind(this));
@@ -5411,6 +5418,7 @@ Peer.prototype.handleMessage = function (message) {
 Peer.prototype.send = function (messageType, payload) {
     var message = {
         to: this.id,
+        sid: this.sid,
         broadcaster: this.broadcaster,
         roomType: this.type,
         type: messageType,
@@ -5517,7 +5525,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
 
 module.exports = Peer;
 
-},{"rtcpeerconnection":13,"util":8,"webrtcsupport":4,"wildemitter":2}],14:[function(require,module,exports){
+},{"rtcpeerconnection":13,"util":8,"webrtcsupport":6,"wildemitter":2}],14:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (window.navigator.getUserMedia ||
             window.navigator.webkitGetUserMedia ||
@@ -5863,7 +5871,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":16,"getusermedia":14,"hark":15,"mediastream-gain":17,"mockconsole":3,"util":8,"webrtcsupport":4,"wildemitter":2}],18:[function(require,module,exports){
+},{"getscreenmedia":16,"getusermedia":14,"hark":15,"mediastream-gain":17,"mockconsole":5,"util":8,"webrtcsupport":6,"wildemitter":2}],18:[function(require,module,exports){
 //     Underscore.js 1.7.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -7340,45 +7348,7 @@ exports.toSessionJSON = tojson.toSessionJSON;
 exports.toMediaJSON = tojson.toMediaJSON;
 exports.toCandidateJSON = tojson.toCandidateJSON;
 
-},{"./lib/tojson":21,"./lib/tosdp":22}],19:[function(require,module,exports){
-// created by @HenrikJoreteg
-var prefix;
-var isChrome = false;
-var isFirefox = false;
-var ua = window.navigator.userAgent.toLowerCase();
-
-// basic sniffing
-if (ua.indexOf('firefox') !== -1) {
-    prefix = 'moz';
-    isFirefox = true;
-} else if (ua.indexOf('chrome') !== -1) {
-    prefix = 'webkit';
-    isChrome = true;
-}
-
-var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-var MediaStream = window.webkitMediaStream || window.MediaStream;
-var screenSharing = window.location.protocol === 'https:' && window.navigator.userAgent.match('Chrome') && parseInt(window.navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
-var AudioContext = window.webkitAudioContext || window.AudioContext;
-
-
-// export support flags and constructors.prototype && PC
-module.exports = {
-    support: !!PC,
-    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
-    prefix: prefix,
-    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
-    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
-    screenSharing: !!screenSharing,
-    AudioContext: AudioContext,
-    PeerConnection: PC,
-    SessionDescription: SessionDescription,
-    IceCandidate: IceCandidate
-};
-
-},{}],13:[function(require,module,exports){
+},{"./lib/tojson":22,"./lib/tosdp":21}],13:[function(require,module,exports){
 var _ = require('underscore');
 var util = require('util');
 var webrtc = require('webrtcsupport');
@@ -7393,6 +7363,29 @@ function PeerConnection(config, constraints) {
 
     config = config || {};
     config.iceServers = config.iceServers || [];
+
+    // make sure this only gets enabled in Google Chrome
+    // EXPERIMENTAL FLAG, might get removed without notice
+    this.enableChromeNativeSimulcast = false;
+    if (constraints && constraints.optional &&
+            webrtc.prefix === 'webkit' &&
+            navigator.appVersion.match(/Chromium\//) === null) {
+        constraints.optional.forEach(function (constraint, idx) {
+            if (constraint.enableChromeNativeSimulcast) {
+                self.enableChromeNativeSimulcast = true;
+            }
+        });
+    }
+
+    // EXPERIMENTAL FLAG, might get removed without notice
+    this.enableMultiStreamHacks = false;
+    if (constraints && constraints.optional) {
+        constraints.optional.forEach(function (constraint, idx) {
+            if (constraint.enableMultiStreamHacks) {
+                self.enableMultiStreamHacks = true;
+            }
+        });
+    }
 
     this.pc = new peerconn(config, constraints);
 
@@ -7484,6 +7477,34 @@ PeerConnection.prototype.addStream = function (stream) {
     this.pc.addStream(stream);
 };
 
+// helper function to check if a remote candidate is a stun/relay
+// candidate or an ipv6 candidate
+PeerConnection.prototype._checkLocalCandidate = function (candidate) {
+    var cand = SJJ.toCandidateJSON(candidate);
+    if (cand.type == 'srflx') {
+        this.hadLocalStunCandidate = true;
+    } else if (cand.type == 'relay') {
+        this.hadLocalRelayCandidate = true;
+    }
+    if (cand.ip.indexOf(':') != -1) {
+        this.hadLocalIPv6Candidate = true;
+    }
+};
+
+// helper function to check if a remote candidate is a stun/relay
+// candidate or an ipv6 candidate
+PeerConnection.prototype._checkRemoteCandidate = function (candidate) {
+    var cand = SJJ.toCandidateJSON(candidate);
+    if (cand.type == 'srflx') {
+        this.hadRemoteStunCandidate = true;
+    } else if (cand.type == 'relay') {
+        this.hadRemoteRelayCandidate = true;
+    }
+    if (cand.ip.indexOf(':') != -1) {
+        this.hadRemoteIPv6Candidate = true;
+    }
+};
+
 
 // Init and add ice candidate object with correct constructor
 PeerConnection.prototype.processIce = function (update, cb) {
@@ -7517,14 +7538,7 @@ PeerConnection.prototype.processIce = function (update, cb) {
                 }
                 */
                 );
-                if (candidate.type === 'srflx') {
-                    self.hadRemoteStunCandidate = true;
-                } else if (candidate.type === 'relay') {
-                    self.hadRemoteRelayCandidate = true;
-                }
-                if (candidate.ip.indexOf(':') != -1) {
-                    self.hadRemoteIPv6Candidate = true;
-                }
+                self._checkRemoteCandidate(iceCandidate);
             });
         });
     } else {
@@ -7534,15 +7548,7 @@ PeerConnection.prototype.processIce = function (update, cb) {
         }
 
         self.pc.addIceCandidate(new webrtc.IceCandidate(update.candidate));
-        var cand = SJJ.toCandidateJSON(update.candidate.candidate);
-        if (cand.type == 'srflx') {
-            self.hadRemoteStunCandidate = true;
-        } else if (cand.type == 'relay') {
-            self.hadRemoteRelayCandidate = true;
-        }
-        if (cand.ip.indexOf(':') != -1) {
-            self.hadRemoteIPv6Candidate = true;
-        }
+        self._checkRemoteCandidate(update.candidate.candidate);
     }
     cb();
 };
@@ -7588,6 +7594,11 @@ PeerConnection.prototype.offer = function (constraints, cb) {
 
                         expandedOffer.jingle = jingle;
                     }
+                    expandedOffer.sdp.split('\r\n').forEach(function (line) {
+                        if (line.indexOf('a=candidate:') === 0) {
+                            self._checkLocalCandidate(line);
+                        }
+                    });
 
                     self.emit('offer', expandedOffer);
                     cb(null, expandedOffer);
@@ -7614,12 +7625,53 @@ PeerConnection.prototype.handleOffer = function (offer, cb) {
     var self = this;
     offer.type = 'offer';
     if (offer.jingle) {
+        if (this.enableChromeNativeSimulcast) {
+            offer.jingle.contents.forEach(function (content) {
+                if (content.name === 'video') {
+                    content.description.googConferenceFlag = true;
+                }
+            });
+        }
+        /*
+        if (this.enableMultiStreamHacks) {
+            // add a mixed video stream as first stream
+            offer.jingle.contents.forEach(function (content) {
+                if (content.name === 'video') {
+                    var sources = content.description.sources || [];
+                    if (sources.length === 0 || sources[0].ssrc !== "3735928559") {
+                        sources.unshift({
+                            ssrc: "3735928559", // 0xdeadbeef
+                            parameters: [
+                                {
+                                    key: "cname",
+                                    value: "deadbeef"
+                                },
+                                {
+                                    key: "msid",
+                                    value: "mixyourfecintothis please"
+                                }
+                            ]
+                        });
+                        content.description.sources = sources;
+                    }
+                }
+            });
+        }
+        */
         offer.sdp = SJJ.toSessionSDP(offer.jingle, self.config.sdpSessionID);
         self.remoteDescription = offer.jingle;
     }
-    self.pc.setRemoteDescription(new webrtc.SessionDescription(offer), function () {
-        cb();
-    }, cb);
+    offer.sdp.split('\r\n').forEach(function (line) {
+        if (line.indexOf('a=candidate:') === 0) {
+            self._checkRemoteCandidate(line);
+        }
+    });
+    self.pc.setRemoteDescription(new webrtc.SessionDescription(offer),
+        function () {
+            cb();
+        },
+        cb
+    );
 };
 
 // Answer an offer with audio only
@@ -7667,6 +7719,11 @@ PeerConnection.prototype.handleAnswer = function (answer, cb) {
         answer.sdp = SJJ.toSessionSDP(answer.jingle, self.config.sdpSessionID);
         self.remoteDescription = answer.jingle;
     }
+    answer.sdp.split('\r\n').forEach(function (line) {
+        if (line.indexOf('a=candidate:') === 0) {
+            self._checkRemoteCandidate(line);
+        }
+    });
     self.pc.setRemoteDescription(
         new webrtc.SessionDescription(answer),
         function () {
@@ -7694,32 +7751,45 @@ PeerConnection.prototype._answer = function (constraints, cb) {
         // the old API is used, call handleOffer
         throw new Error('remoteDescription not set');
     }
-    // make sure this only gets enabled in Google Chrome
-    var enableChromeNativeSimulcast = (constraints.enableChromeNativeSimulcast &&
-                                       webrtc.prefix === 'webkit' &&
-                                       navigator.appVersion.match(/Chromium\//) === null) || false;
-    delete constraints.enableChromeNativeSimulcast;
     self.pc.createAnswer(
         function (answer) {
             var sim = [];
-            if (enableChromeNativeSimulcast) {
+            var rtx = [];
+            if (self.enableChromeNativeSimulcast) {
                 // native simulcast part 1: add another SSRC
                 answer.jingle = SJJ.toSessionJSON(answer.sdp);
                 if (answer.jingle.contents.length >= 2 && answer.jingle.contents[1].name === 'video') {
-                    var newssrc = JSON.parse(JSON.stringify(answer.jingle.contents[1].description.sources[0]));
-                    newssrc.ssrc = '' + Math.floor(Math.random() * 0xffffffff); // FIXME: look for conflicts
-                    answer.jingle.contents[1].description.sources.push(newssrc);
-
-                    answer.jingle.contents[1].description.sources.forEach(function (source) {
-                        sim.push(source.ssrc);
+                    var hasSimgroup = false;
+                    var groups = answer.jingle.contents[1].description.sourceGroups || [];
+                    var hasSim = false;
+                    groups.forEach(function (group) {
+                        if (group.semantics == 'SIM') hasSim = true;
                     });
-                    answer.jingle.contents[1].description.sourceGroups = [
-                        {
+                    if (!hasSim &&
+                        answer.jingle.contents[1].description.sources.length) {
+                        var newssrc = JSON.parse(JSON.stringify(answer.jingle.contents[1].description.sources[0]));
+                        newssrc.ssrc = '' + Math.floor(Math.random() * 0xffffffff); // FIXME: look for conflicts
+                        answer.jingle.contents[1].description.sources.push(newssrc);
+
+                        sim.push(answer.jingle.contents[1].description.sources[0].ssrc);
+                        sim.push(newssrc.ssrc);
+                        groups.push({
                             semantics: 'SIM',
                             sources: sim
-                        }
-                    ];
-                    answer.sdp = SJJ.toSessionSDP(answer.jingle, self.config.sdpSessionID);
+                        });
+
+                        // also create an RTX one for the SIM one
+                        var rtxssrc = JSON.parse(JSON.stringify(newssrc));
+                        rtxssrc.ssrc = '' + Math.floor(Math.random() * 0xffffffff); // FIXME: look for conflicts
+                        answer.jingle.contents[1].description.sources.push(rtxssrc);
+                        groups.push({
+                            semantics: 'FID',
+                            sources: [newssrc.ssrc, rtxssrc.ssrc]
+                        });
+
+                        answer.jingle.contents[1].description.sourceGroups = groups;
+                        answer.sdp = SJJ.toSessionSDP(answer.jingle, self.config.sdpSessionID);
+                    }
                 }
             }
             self.pc.setLocalDescription(answer,
@@ -7734,24 +7804,31 @@ PeerConnection.prototype._answer = function (constraints, cb) {
                         self.localDescription = jingle;
                         expandedAnswer.jingle = jingle;
                     }
-                    if (enableChromeNativeSimulcast) {
+                    if (self.enableChromeNativeSimulcast) {
                         // native simulcast part 2: 
                         // signal multiple tracks to the receiver
+                        // for anything in the SIM group
                         if (!expandedAnswer.jingle) {
                             expandedAnswer.jingle = SJJ.toSessionJSON(answer.sdp);
                         }
+                        var groups = expandedAnswer.jingle.contents[1].description.sourceGroups || [];
                         expandedAnswer.jingle.contents[1].description.sources.forEach(function (source, idx) {
-                            if (sim.indexOf(source.ssrc) != -1) {
-                                source.parameters = source.parameters.map(function (parameter) {
-                                    if (parameter.key === 'msid') {
-                                        parameter.value += '-' + idx;
-                                    }
-                                    return parameter;
-                                });
-                            }
+                            // the floor idx/2 is a hack that relies on a particular order
+                            // of groups, alternating between sim and rtx
+                            source.parameters = source.parameters.map(function (parameter) {
+                                if (parameter.key === 'msid') {
+                                    parameter.value += '-' + Math.floor(idx / 2);
+                                }
+                                return parameter;
+                            });
                         });
                         expandedAnswer.sdp = SJJ.toSessionSDP(expandedAnswer.jingle);
                     }
+                    expandedAnswer.sdp.split('\r\n').forEach(function (line) {
+                        if (line.indexOf('a=candidate:') === 0) {
+                            self._checkLocalCandidate(line);
+                        }
+                    });
                     self.emit('answer', expandedAnswer);
                     cb(null, expandedAnswer);
                 },
@@ -7811,15 +7888,7 @@ PeerConnection.prototype._onIce = function (event) {
                 }]
             };
         }
-        if (cand.type === 'srflx') {
-            this.hadLocalStunCandidate = true;
-        } else if (cand.type == 'relay') {
-            this.hadLocalRelayCandidate = true;
-        }
-        if (cand.ip.indexOf(':') != -1) {
-            self.hadLocalIPv6Candidate = true;
-        }
-
+        this._checkLocalCandidate(ice.candidate);
         this.emit('ice', expandedCandidate);
     } else {
         this.emit('endOfCandidates');
@@ -7859,9 +7928,11 @@ PeerConnection.prototype.getStats = function (cb) {
         this.pc.getStats(
             function (res) {
                 var items = [];
-                res.forEach(function (result) {
-                    items.push(result);
-                });
+                for (var result in res) {
+                    if (typeof res[result] === 'object') {
+                        items.push(res[result]);
+                    }
+                }
                 cb(null, items);
             },
             cb
@@ -7886,7 +7957,45 @@ PeerConnection.prototype.getStats = function (cb) {
 
 module.exports = PeerConnection;
 
-},{"sdp-jingle-json":20,"traceablepeerconnection":23,"underscore":18,"util":8,"webrtcsupport":4,"wildemitter":2}],16:[function(require,module,exports){
+},{"sdp-jingle-json":20,"traceablepeerconnection":23,"underscore":18,"util":8,"webrtcsupport":6,"wildemitter":2}],19:[function(require,module,exports){
+// created by @HenrikJoreteg
+var prefix;
+var isChrome = false;
+var isFirefox = false;
+var ua = window.navigator.userAgent.toLowerCase();
+
+// basic sniffing
+if (ua.indexOf('firefox') !== -1) {
+    prefix = 'moz';
+    isFirefox = true;
+} else if (ua.indexOf('chrome') !== -1) {
+    prefix = 'webkit';
+    isChrome = true;
+}
+
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var MediaStream = window.webkitMediaStream || window.MediaStream;
+var screenSharing = window.location.protocol === 'https:' && window.navigator.userAgent.match('Chrome') && parseInt(window.navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26;
+var AudioContext = window.webkitAudioContext || window.AudioContext;
+
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
+    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
+    screenSharing: !!screenSharing,
+    AudioContext: AudioContext,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate
+};
+
+},{}],16:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -8002,7 +8111,7 @@ window.addEventListener('message', function (event) {
     }
 });
 
-},{"getusermedia":14}],22:[function(require,module,exports){
+},{"getusermedia":14}],21:[function(require,module,exports){
 var senders = {
     'initiator': 'sendonly',
     'responder': 'recvonly',
@@ -8219,137 +8328,7 @@ exports.toCandidateSDP = function (candidate) {
     return 'a=candidate:' + sdp.join(' ');
 };
 
-},{}],15:[function(require,module,exports){
-var WildEmitter = require('wildemitter');
-
-function getMaxVolume (analyser, fftBins) {
-  var maxVolume = -Infinity;
-  analyser.getFloatFrequencyData(fftBins);
-
-  for(var i=4, ii=fftBins.length; i < ii; i++) {
-    if (fftBins[i] > maxVolume && fftBins[i] < 0) {
-      maxVolume = fftBins[i];
-    }
-  };
-
-  return maxVolume;
-}
-
-
-var audioContextType = window.webkitAudioContext || window.AudioContext;
-// use a single audio context due to hardware limits
-var audioContext = null;
-module.exports = function(stream, options) {
-  var harker = new WildEmitter();
-
-
-  // make it not break in non-supported browsers
-  if (!audioContextType) return harker;
-
-  //Config
-  var options = options || {},
-      smoothing = (options.smoothing || 0.1),
-      interval = (options.interval || 50),
-      threshold = options.threshold,
-      play = options.play,
-      history = options.history || 10,
-      running = true;
-
-  //Setup Audio Context
-  if (!audioContext) {
-    audioContext = new audioContextType();
-  }
-  var sourceNode, fftBins, analyser;
-
-  analyser = audioContext.createAnalyser();
-  analyser.fftSize = 512;
-  analyser.smoothingTimeConstant = smoothing;
-  fftBins = new Float32Array(analyser.fftSize);
-
-  if (stream.jquery) stream = stream[0];
-  if (stream instanceof HTMLAudioElement || stream instanceof HTMLVideoElement) {
-    //Audio Tag
-    sourceNode = audioContext.createMediaElementSource(stream);
-    if (typeof play === 'undefined') play = true;
-    threshold = threshold || -50;
-  } else {
-    //WebRTC Stream
-    sourceNode = audioContext.createMediaStreamSource(stream);
-    threshold = threshold || -50;
-  }
-
-  sourceNode.connect(analyser);
-  if (play) analyser.connect(audioContext.destination);
-
-  harker.speaking = false;
-
-  harker.setThreshold = function(t) {
-    threshold = t;
-  };
-
-  harker.setInterval = function(i) {
-    interval = i;
-  };
-  
-  harker.stop = function() {
-    running = false;
-    harker.emit('volume_change', -100, threshold);
-    if (harker.speaking) {
-      harker.speaking = false;
-      harker.emit('stopped_speaking');
-    }
-  };
-  harker.speakingHistory = [];
-  for (var i = 0; i < history; i++) {
-      harker.speakingHistory.push(0);
-  }
-
-  // Poll the analyser node to determine if speaking
-  // and emit events if changed
-  var looper = function() {
-    setTimeout(function() {
-    
-      //check if stop has been called
-      if(!running) {
-        return;
-      }
-      
-      var currentVolume = getMaxVolume(analyser, fftBins);
-
-      harker.emit('volume_change', currentVolume, threshold);
-
-      var history = 0;
-      if (currentVolume > threshold && !harker.speaking) {
-        // trigger quickly, short history
-        for (var i = harker.speakingHistory.length - 3; i < harker.speakingHistory.length; i++) {
-          history += harker.speakingHistory[i];
-        }
-        if (history >= 2) {
-          harker.speaking = true;
-          harker.emit('speaking');
-        }
-      } else if (currentVolume < threshold && harker.speaking) {
-        for (var i = 0; i < harker.speakingHistory.length; i++) {
-          history += harker.speakingHistory[i];
-        }
-        if (history == 0) {
-          harker.speaking = false;
-          harker.emit('stopped_speaking');
-        }
-      }
-      harker.speakingHistory.shift();
-      harker.speakingHistory.push(0 + (currentVolume > threshold));
-
-      looper();
-    }, interval);
-  };
-  looper();
-
-
-  return harker;
-}
-
-},{"wildemitter":2}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var parsers = require('./parsers');
 var idCounter = Math.random();
 
@@ -8543,7 +8522,137 @@ exports.toCandidateJSON = function (line) {
     return candidate;
 };
 
-},{"./parsers":24}],24:[function(require,module,exports){
+},{"./parsers":24}],15:[function(require,module,exports){
+var WildEmitter = require('wildemitter');
+
+function getMaxVolume (analyser, fftBins) {
+  var maxVolume = -Infinity;
+  analyser.getFloatFrequencyData(fftBins);
+
+  for(var i=4, ii=fftBins.length; i < ii; i++) {
+    if (fftBins[i] > maxVolume && fftBins[i] < 0) {
+      maxVolume = fftBins[i];
+    }
+  };
+
+  return maxVolume;
+}
+
+
+var audioContextType = window.webkitAudioContext || window.AudioContext;
+// use a single audio context due to hardware limits
+var audioContext = null;
+module.exports = function(stream, options) {
+  var harker = new WildEmitter();
+
+
+  // make it not break in non-supported browsers
+  if (!audioContextType) return harker;
+
+  //Config
+  var options = options || {},
+      smoothing = (options.smoothing || 0.1),
+      interval = (options.interval || 50),
+      threshold = options.threshold,
+      play = options.play,
+      history = options.history || 10,
+      running = true;
+
+  //Setup Audio Context
+  if (!audioContext) {
+    audioContext = new audioContextType();
+  }
+  var sourceNode, fftBins, analyser;
+
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 512;
+  analyser.smoothingTimeConstant = smoothing;
+  fftBins = new Float32Array(analyser.fftSize);
+
+  if (stream.jquery) stream = stream[0];
+  if (stream instanceof HTMLAudioElement || stream instanceof HTMLVideoElement) {
+    //Audio Tag
+    sourceNode = audioContext.createMediaElementSource(stream);
+    if (typeof play === 'undefined') play = true;
+    threshold = threshold || -50;
+  } else {
+    //WebRTC Stream
+    sourceNode = audioContext.createMediaStreamSource(stream);
+    threshold = threshold || -50;
+  }
+
+  sourceNode.connect(analyser);
+  if (play) analyser.connect(audioContext.destination);
+
+  harker.speaking = false;
+
+  harker.setThreshold = function(t) {
+    threshold = t;
+  };
+
+  harker.setInterval = function(i) {
+    interval = i;
+  };
+  
+  harker.stop = function() {
+    running = false;
+    harker.emit('volume_change', -100, threshold);
+    if (harker.speaking) {
+      harker.speaking = false;
+      harker.emit('stopped_speaking');
+    }
+  };
+  harker.speakingHistory = [];
+  for (var i = 0; i < history; i++) {
+      harker.speakingHistory.push(0);
+  }
+
+  // Poll the analyser node to determine if speaking
+  // and emit events if changed
+  var looper = function() {
+    setTimeout(function() {
+    
+      //check if stop has been called
+      if(!running) {
+        return;
+      }
+      
+      var currentVolume = getMaxVolume(analyser, fftBins);
+
+      harker.emit('volume_change', currentVolume, threshold);
+
+      var history = 0;
+      if (currentVolume > threshold && !harker.speaking) {
+        // trigger quickly, short history
+        for (var i = harker.speakingHistory.length - 3; i < harker.speakingHistory.length; i++) {
+          history += harker.speakingHistory[i];
+        }
+        if (history >= 2) {
+          harker.speaking = true;
+          harker.emit('speaking');
+        }
+      } else if (currentVolume < threshold && harker.speaking) {
+        for (var i = 0; i < harker.speakingHistory.length; i++) {
+          history += harker.speakingHistory[i];
+        }
+        if (history == 0) {
+          harker.speaking = false;
+          harker.emit('stopped_speaking');
+        }
+      }
+      harker.speakingHistory.shift();
+      harker.speakingHistory.push(0 + (currentVolume > threshold));
+
+      looper();
+    }, interval);
+  };
+  looper();
+
+
+  return harker;
+}
+
+},{"wildemitter":2}],24:[function(require,module,exports){
 exports.lines = function (sdp) {
     return sdp.split('\r\n').filter(function (line) {
         return line.length > 0;
@@ -9041,6 +9150,6 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":8,"webrtcsupport":4,"wildemitter":2}]},{},[1])(1)
+},{"util":8,"webrtcsupport":6,"wildemitter":2}]},{},[1])(1)
 });
 ;

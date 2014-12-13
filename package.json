@@ -12,7 +12,7 @@
     "wildemitter": "1.x",
     "socket.io-client": "0.9.16",
     "attachmediastream": "1.0.1",
-    "webrtc": "1.11.x",
+    "webrtc": "1.12.x",
     "mockconsole": "0.0.1"
   },
   "devDependencies": {

@@ -10,7 +10,7 @@
   "dependencies": {
     "webrtcsupport": "^1.0.0",
     "wildemitter": "1.x",
-    "socket.io-client": "0.9.16",
+    "socket.io-client": "1.2.1",
     "attachmediastream": "1.0.1",
     "webrtc": "1.12.x",
     "mockconsole": "0.0.1"

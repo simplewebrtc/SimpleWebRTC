@@ -64,7 +64,7 @@ function SimpleWebRTC(opts) {
     connection = this.connection = io.connect(this.config.url, this.config.socketio);
 
     connection.on('connect', function () {
-        self.emit('connectionReady', connection.socket.sessionid);
+        self.emit('connectionReady', connection.io.engine.id);
         self.sessionReady = true;
         self.testReadiness();
     });
@@ -86,7 +86,7 @@ function SimpleWebRTC(opts) {
                     type: message.roomType,
                     enableDataChannels: self.config.enableDataChannels && message.roomType !== 'screen',
                     sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
-                    broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.socket.sessionid : null
+                    broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.io.engine.id : null
                 });
             }
             peer.handleMessage(message);
@@ -100,7 +100,7 @@ function SimpleWebRTC(opts) {
     });
 
     connection.on('remove', function (room) {
-        if (room.id !== self.connection.socket.sessionid) {
+        if (room.id !== self.connection.io.engine.id) {
             self.webrtc.removePeers(room.id, room.type);
         }
     });
@@ -206,7 +206,7 @@ function SimpleWebRTC(opts) {
                             OfferToReceiveVideo: false
                         }
                     },
-                    broadcaster: self.connection.socket.sessionid,
+                    broadcaster: self.connection.io.engine.id,
                 });
                 peer.start();
             }
@@ -415,7 +415,7 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
 SimpleWebRTC.prototype.testReadiness = function () {
     var self = this;
     if (this.webrtc.localStream && this.sessionReady) {
-        self.emit('readyToCall', self.connection.socket.sessionid);
+        self.emit('readyToCall', self.connection.io.engine.id);
     }
 };
 

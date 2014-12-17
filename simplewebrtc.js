@@ -75,10 +75,14 @@ function SimpleWebRTC(opts) {
 
         if (message.type === 'offer') {
             if (peers.length) {
-                peer = peers[0];
-            } else {
+                peers.forEach(function (p) {
+                    if (p.sid == message.sid) peer = p;
+                });
+            }
+            if (!peer) {
                 peer = self.webrtc.createPeer({
                     id: message.from,
+                    sid: message.sid,
                     type: message.roomType,
                     enableDataChannels: self.config.enableDataChannels && message.roomType !== 'screen',
                     sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
@@ -88,7 +92,9 @@ function SimpleWebRTC(opts) {
             peer.handleMessage(message);
         } else if (peers.length) {
             peers.forEach(function (peer) {
-                peer.handleMessage(message);
+                if (peer.sid === message.sid) {
+                    peer.handleMessage(message);
+                }
             });
         }
     });

@@ -438,7 +438,48 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":4,"mockconsole":5,"socket.io-client":7,"webrtc":3,"webrtcsupport":6,"wildemitter":2}],2:[function(require,module,exports){
+},{"attachmediastream":6,"mockconsole":5,"socket.io-client":7,"webrtc":2,"webrtcsupport":3,"wildemitter":4}],3:[function(require,module,exports){
+// created by @HenrikJoreteg
+var prefix;
+var isChrome = false;
+var isFirefox = false;
+var ua = window.navigator.userAgent.toLowerCase();
+
+// basic sniffing
+if (ua.indexOf('firefox') !== -1) {
+    prefix = 'moz';
+    isFirefox = true;
+} else if (ua.indexOf('chrome') !== -1) {
+    prefix = 'webkit';
+    isChrome = true;
+}
+
+var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+var MediaStream = window.webkitMediaStream || window.MediaStream;
+var screenSharing = window.location.protocol === 'https:' &&
+    ((window.navigator.userAgent.match('Chrome') && parseInt(window.navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26) ||
+     (window.navigator.userAgent.match('Firefox') && parseInt(window.navigator.userAgent.match(/Firefox\/(.*)/)[1], 10) >= 33));
+var AudioContext = window.webkitAudioContext || window.AudioContext;
+
+
+// export support flags and constructors.prototype && PC
+module.exports = {
+    support: !!PC,
+    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
+    prefix: prefix,
+    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
+    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
+    screenSharing: !!screenSharing,
+    AudioContext: AudioContext,
+    PeerConnection: PC,
+    SessionDescription: SessionDescription,
+    IceCandidate: IceCandidate,
+    MediaStream: MediaStream
+};
+
+},{}],4:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -579,7 +620,19 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
+var l = methods.length;
+var fn = function () {};
+var mockconsole = {};
+
+while (l--) {
+    mockconsole[methods[l]] = fn;
+}
+
+module.exports = mockconsole;
+
+},{}],6:[function(require,module,exports){
 module.exports = function (stream, el, options) {
     var URL = window.URL;
     var opts = {
@@ -618,59 +671,6 @@ module.exports = function (stream, el, options) {
     }
 
     return element;
-};
-
-},{}],5:[function(require,module,exports){
-var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
-var l = methods.length;
-var fn = function () {};
-var mockconsole = {};
-
-while (l--) {
-    mockconsole[methods[l]] = fn;
-}
-
-module.exports = mockconsole;
-
-},{}],6:[function(require,module,exports){
-// created by @HenrikJoreteg
-var prefix;
-var isChrome = false;
-var isFirefox = false;
-var ua = window.navigator.userAgent.toLowerCase();
-
-// basic sniffing
-if (ua.indexOf('firefox') !== -1) {
-    prefix = 'moz';
-    isFirefox = true;
-} else if (ua.indexOf('chrome') !== -1) {
-    prefix = 'webkit';
-    isChrome = true;
-}
-
-var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-var MediaStream = window.webkitMediaStream || window.MediaStream;
-var screenSharing = window.location.protocol === 'https:' &&
-    ((window.navigator.userAgent.match('Chrome') && parseInt(window.navigator.userAgent.match(/Chrome\/(.*) /)[1], 10) >= 26) ||
-     (window.navigator.userAgent.match('Firefox') && parseInt(window.navigator.userAgent.match(/Firefox\/(.*)/)[1], 10) >= 33));
-var AudioContext = window.webkitAudioContext || window.AudioContext;
-
-
-// export support flags and constructors.prototype && PC
-module.exports = {
-    support: !!PC,
-    dataChannel: isChrome || isFirefox || (PC && PC.prototype && PC.prototype.createDataChannel),
-    prefix: prefix,
-    webAudio: !!(AudioContext && AudioContext.prototype.createMediaStreamSource),
-    mediaStream: !!(MediaStream && MediaStream.prototype.removeTrack),
-    screenSharing: !!screenSharing,
-    AudioContext: AudioContext,
-    PeerConnection: PC,
-    SessionDescription: SessionDescription,
-    IceCandidate: IceCandidate,
-    MediaStream: MediaStream
 };
 
 },{}],7:[function(require,module,exports){
@@ -4894,7 +4894,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":9}],3:[function(require,module,exports){
+},{"events":9}],2:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var WildEmitter = require('wildemitter');
@@ -5059,7 +5059,7 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
 
 module.exports = WebRTC;
 
-},{"./peer":10,"localmedia":11,"mockconsole":5,"util":8,"webrtcsupport":6,"wildemitter":2}],12:[function(require,module,exports){
+},{"./peer":10,"localmedia":11,"mockconsole":5,"util":8,"webrtcsupport":3,"wildemitter":4}],12:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5525,7 +5525,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
 
 module.exports = Peer;
 
-},{"rtcpeerconnection":13,"util":8,"webrtcsupport":6,"wildemitter":2}],14:[function(require,module,exports){
+},{"rtcpeerconnection":13,"util":8,"webrtcsupport":3,"wildemitter":4}],14:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (window.navigator.getUserMedia ||
             window.navigator.webkitGetUserMedia ||
@@ -5534,12 +5534,11 @@ var func = (window.navigator.getUserMedia ||
 
 
 module.exports = function (constraints, cb) {
-    var options;
+    var options, error;
     var haveOpts = arguments.length === 2;
     var defaultOpts = {video: true, audio: true};
-    var error;
     var denied = 'PermissionDeniedError';
-    var notSatified = 'ConstraintNotSatisfiedError';
+    var notSatisfied = 'ConstraintNotSatisfiedError';
 
     // make constraints optional
     if (!haveOpts) {
@@ -5552,7 +5551,35 @@ module.exports = function (constraints, cb) {
         // throw proper error per spec
         error = new Error('MediaStreamError');
         error.name = 'NotSupportedError';
-        return cb(error);
+
+        // keep all callbacks async
+        return window.setTimeout(function () {
+            cb(error);
+        }, 0);
+    }
+
+    // make requesting media from non-http sources trigger an error
+    // current browsers silently drop the request instead
+    var protocol = window.location.protocol;
+    if (protocol !== 'http:' && protocol !== 'https:') {
+        error = new Error('MediaStreamError');
+        error.name = 'NotSupportedError';
+
+        // keep all callbacks async
+        return window.setTimeout(function () {
+            cb(error);
+        }, 0);
+    }
+
+    // normalize error handling when no media types are requested
+    if (!constraints.audio && !constraints.video) {
+        error = new Error('MediaStreamError');
+        error.name = 'NoMediaRequestedError';
+
+        // keep all callbacks async
+        return window.setTimeout(function () {
+            cb(error);
+        }, 0);
     }
 
     if (localStorage && localStorage.useFirefoxFakeDevice === "true") {
@@ -5571,7 +5598,7 @@ module.exports = function (constraints, cb) {
             if (err === denied) {
                 error.name = denied;
             } else {
-                error.name = notSatified;
+                error.name = notSatisfied;
             }
         } else {
             // if we get an error object make sure '.name' property is set
@@ -5584,7 +5611,7 @@ module.exports = function (constraints, cb) {
                 if (error[denied]) {
                     err.name = denied;
                 } else {
-                    err.name = notSatified;
+                    err.name = notSatisfied;
                 }
             }
         }
@@ -5871,7 +5898,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":16,"getusermedia":14,"hark":15,"mediastream-gain":17,"mockconsole":5,"util":8,"webrtcsupport":6,"wildemitter":2}],18:[function(require,module,exports){
+},{"getscreenmedia":16,"getusermedia":14,"hark":15,"mediastream-gain":17,"mockconsole":5,"util":8,"webrtcsupport":3,"wildemitter":4}],18:[function(require,module,exports){
 //     Underscore.js 1.7.0
 //     http://underscorejs.org
 //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -7335,20 +7362,7 @@ GainController.prototype.on = function () {
 
 module.exports = GainController;
 
-},{"webrtcsupport":19}],20:[function(require,module,exports){
-var tosdp = require('./lib/tosdp');
-var tojson = require('./lib/tojson');
-
-
-exports.toSessionSDP = tosdp.toSessionSDP;
-exports.toMediaSDP = tosdp.toMediaSDP;
-exports.toCandidateSDP = tosdp.toCandidateSDP;
-
-exports.toSessionJSON = tojson.toSessionJSON;
-exports.toMediaJSON = tojson.toMediaJSON;
-exports.toCandidateJSON = tojson.toCandidateJSON;
-
-},{"./lib/tojson":22,"./lib/tosdp":21}],13:[function(require,module,exports){
+},{"webrtcsupport":19}],13:[function(require,module,exports){
 var _ = require('underscore');
 var util = require('util');
 var webrtc = require('webrtcsupport');
@@ -7957,7 +7971,20 @@ PeerConnection.prototype.getStats = function (cb) {
 
 module.exports = PeerConnection;
 
-},{"sdp-jingle-json":20,"traceablepeerconnection":23,"underscore":18,"util":8,"webrtcsupport":6,"wildemitter":2}],19:[function(require,module,exports){
+},{"sdp-jingle-json":20,"traceablepeerconnection":21,"underscore":18,"util":8,"webrtcsupport":3,"wildemitter":4}],20:[function(require,module,exports){
+var tosdp = require('./lib/tosdp');
+var tojson = require('./lib/tojson');
+
+
+exports.toSessionSDP = tosdp.toSessionSDP;
+exports.toMediaSDP = tosdp.toMediaSDP;
+exports.toCandidateSDP = tosdp.toCandidateSDP;
+
+exports.toSessionJSON = tojson.toSessionJSON;
+exports.toMediaJSON = tojson.toMediaJSON;
+exports.toCandidateJSON = tojson.toCandidateJSON;
+
+},{"./lib/tojson":23,"./lib/tosdp":22}],19:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var isChrome = false;
@@ -8111,7 +8138,7 @@ window.addEventListener('message', function (event) {
     }
 });
 
-},{"getusermedia":14}],21:[function(require,module,exports){
+},{"getusermedia":14}],22:[function(require,module,exports){
 var senders = {
     'initiator': 'sendonly',
     'responder': 'recvonly',
@@ -8328,7 +8355,7 @@ exports.toCandidateSDP = function (candidate) {
     return 'a=candidate:' + sdp.join(' ');
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var parsers = require('./parsers');
 var idCounter = Math.random();
 
@@ -8652,7 +8679,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":2}],24:[function(require,module,exports){
+},{"wildemitter":4}],24:[function(require,module,exports){
 exports.lines = function (sdp) {
     return sdp.split('\r\n').filter(function (line) {
         return line.length > 0;
@@ -8913,7 +8940,7 @@ exports.bandwidth = function (line) {
     return parsed;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 // based on https://github.com/ESTOS/strophe.jingle/
 // adds wildemitter support
 var util = require('util');
@@ -9150,6 +9177,6 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":8,"webrtcsupport":6,"wildemitter":2}]},{},[1])(1)
+},{"util":8,"webrtcsupport":3,"wildemitter":4}]},{},[1])(1)
 });
 ;

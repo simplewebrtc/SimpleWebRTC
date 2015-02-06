@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>SimpleWebRTC.js from &amp;yet</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="WebRTC, SimpleWebRTC, Talky, Talky.io, library, JavaScript, Node.js">
+
+    <link rel="stylesheet" type="text/css" href="//cloud.typography.com/7773252/764742/css/fonts.css" />
+    <link rel="stylesheet" href="css/style.min.css">
+
+    <link rel="icon" type="image/png" href="img/favicon.png">
+  </head>
+
+  <body>
+    <div class="content" role="main">
+      <div class="github-fork">
+        <a href="https://github.com/HenrikJoreteg/SimpleWebRTC" class="button" alt="Fork me on Github">Fork me on Github</a>
+      </div>
+
+      <section>
+        <h1 class="logo"><span>simple</span><span>WebRTC</span></h1>
+        <p>Sometimes, the basic usage is not enough. You need more control than. Let's talk about this. We use alot of this on <a href="https://talky.io">Talky</a>. Other are not supported by all browsers yet or we have not found a nice API that we want to use.</p>
+
+        <h2>Do not use the default sandbox signaling server in production</h2>
+        <p>The signaling server is a server that helps the two browsers exchange a small amount of information they need to connect to each other in a secure manner.</p>
+        <p>We provide a sandbox signaling server so it easy to get started. However, installing <a href="https://github.com/andyet/signalmaster">Signalmaster</a> is one of the first things to do when you want to dive deeper. Just point the url attribute in the SimpleWebRTC constructor:</p>
+        <pre><code>var webrtc = new SimpleWebRTC({
+  // the id/element dom element that will hold "our" video
+  localVideoEl: 'localVideo',
+  // the id/element dom element that will hold remote videos
+  remoteVideosEl: 'remotesVideos',
+  // immediately ask for camera access
+  autoRequestMedia: true,
+  url: 'https://example.com/'
+});</code></pre>
+
+        <h2>Pimp your video element</h2>
+
+        <h2>Show more information about the state of the connection</h2>
+
+        <h2>Show audio levels</h2>
+
+        <h2>All about muting</h2>
+
+        <h2>Connectiong quality</h2>
+
+        <h2>Selecting a microphone and camera</h2>
+
+        <h2>Share your screen</h2>
+
+        <h2>Join without a camera or microphone</a>
+        
+        <h2>Upgrade an audiochat to a videochat</a>
+
+        <h2>Text chat</h2>
+
+        <h2>Data channels</h2>
+
+        <h2>File transfer</h2>
+
+        <h2>Let's talk about TURN servers...</h2>
+
+        <h2>Fail, with grace</h2>
+
+        <h2>A word about mobile apps</h2>
+
+        <h2>Full Mesh or Full Mess? Advanced Multiparty</h2>
+        
+        <h2>Recording a conference</h2>
+
+
+      </section>
+    <footer role="contentinfo">
+      <a href="http://andyet.com" target="_blank" title="Made by &amp;yet"></a>
+    </footer>
+  </div>
+
+  <script src="js/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+</body>
+</html>

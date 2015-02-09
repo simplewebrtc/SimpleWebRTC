@@ -68,4 +68,8 @@ Join the SimpleWebRTC discussion list:
 
 http://lists.andyet.com/mailman/listinfo/simplewebrtc
 
+or the Gitter channel:
+
+https://gitter.im/HenrikJoreteg/SimpleWebRTC
+
 ## API

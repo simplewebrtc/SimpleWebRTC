@@ -88,6 +88,7 @@ function SimpleWebRTC(opts) {
                     sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
                     broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.socket.sessionid : null
                 });
+                self.emit('createdPeer', peer);
             }
             peer.handleMessage(message);
         } else if (peers.length) {
@@ -208,6 +209,7 @@ function SimpleWebRTC(opts) {
                     },
                     broadcaster: self.connection.socket.sessionid,
                 });
+                self.emit('createdPeer', peer);
                 peer.start();
             }
         });
@@ -326,6 +328,7 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
                                 }
                             }
                         });
+                        self.emit('createdPeer', peer);
                         peer.start();
                     }
                 }

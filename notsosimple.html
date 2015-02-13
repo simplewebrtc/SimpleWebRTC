@@ -24,7 +24,7 @@
         <h1 class="logo"><span>simple</span><span>WebRTC</span></h1>
         <p>Sometimes, the basic usage is not enough. You need more control than. Let's talk about this. We use alot of this on <a href="https://talky.io">Talky</a>. Other are not supported by all browsers yet or we have not found a nice API that we want to use.</p>
 
-        <h2>Do not use the default sandbox signaling server in production</h2>
+        <a name='sandbox-server'><h2>Do not use the default sandbox signaling server in production</h2></a>
         <p>The signaling server is a server that helps the two browsers exchange a small amount of information they need to connect to each other in a secure manner.</p>
         <p>We provide a sandbox signaling server so it easy to get started. However, installing <a href="https://github.com/andyet/signalmaster">Signalmaster</a> is one of the first things to do when you want to dive deeper. Just point the url attribute in the SimpleWebRTC constructor:</p>
         <pre><code>var webrtc = new SimpleWebRTC({
@@ -38,7 +38,51 @@
 });</code></pre>
 
         <h2>Pimp your video element</h2>
+        <p>Most of the time, you want to wrap your video element in a container, e.g. to add overlays instead of just having raw unstyled video elements in your remote video container.</p>
+        <p>To do this, you need to supress adding them to the remote video container by passing an empty string for the container id:</p>
+        <pre><code>var webrtc = new SimpleWebRTC({
+  localVideoEl: 'localVideo',
+  remoteVideosEl: '' // empty string
+});</code></pre>
+        <p>Then, you need to hook the <i>videoAdded</i> event. It is called with the video element and the peer session as an argument:</p>
+        <pre><code>// a peer video has been added
+webrtc.on('videoAdded', function (video, peer) {
+    console.log('video added', peer);
+    var remotes = document.getElementById('remotes');
+    if (remotes) {
+        var container = document.createElement('div');
+        container.className = 'videoContainer';
+        container.id = 'container_' + webrtc.getDomId(peer);
+        container.appendChild(video);
 
+        // suppress contextmenu
+        video.oncontextmenu = function () { return false; };
+
+        remotes.appendChild(container);
+    }
+});</code></pre>
+        <p>You create div element, set a className so you can style all video containers using CSS and add an id so you can remove that video element later on.</p>
+        <pre><code>// a peer video was removed
+webrtc.on('videoRemoved', function (video, peer) {
+    console.log('video removed ', peer);
+    var remotes = document.getElementById('remotes');
+    var el = document.getElementById(peer ? 'container_' + webrtc.getDomId(peer) : 'localScreenContainer');
+    if (remotes && el) {
+        remotes.removeChild(el);
+    }
+});</code></pre>
+        <p>Lets add a little CSS so you can create overlays in the next step:</p>
+        <pre><code>.videoContainer {
+    position: relative;
+    width: 200px;
+    height: 150px;
+}
+.videoContainer video {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+</code></pre>
         <h2>Show more information about the state of the connection</h2>
 
         <h2>Show audio levels</h2>

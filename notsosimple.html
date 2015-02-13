@@ -24,7 +24,7 @@
         <h1 class="logo"><span>simple</span><span>WebRTC</span></h1>
         <p>Sometimes, the basic usage is not enough. You need more control than. Let's talk about this. We use alot of this on <a href="https://talky.io">Talky</a>. Other are not supported by all browsers yet or we have not found a nice API that we want to use.</p>
 
-        <a name='sandbox-server'><h2>Do not use the default sandbox signaling server in production</h2></a>
+        <h2 id="sandbox-server">Do not use the default sandbox signaling server in production</h2>
         <p>The signaling server is a server that helps the two browsers exchange a small amount of information they need to connect to each other in a secure manner.</p>
         <p>We provide a sandbox signaling server so it easy to get started. However, installing <a href="https://github.com/andyet/signalmaster">Signalmaster</a> is one of the first things to do when you want to dive deeper. Just point the url attribute in the SimpleWebRTC constructor:</p>
         <pre><code>var webrtc = new SimpleWebRTC({
@@ -37,7 +37,7 @@
   url: 'https://example.com/'
 });</code></pre>
 
-        <h2>Pimp your video element</h2>
+        <h2 id="basic-overlay">Pimp your video element</h2>
         <p>Most of the time, you want to wrap your video element in a container, e.g. to add overlays instead of just having raw unstyled video elements in your remote video container.</p>
         <p>To do this, you need to supress adding them to the remote video container by passing an empty string for the container id:</p>
         <pre><code>var webrtc = new SimpleWebRTC({
@@ -83,7 +83,7 @@ webrtc.on('videoRemoved', function (video, peer) {
     height: 100%;
 }
 </code></pre>
-        <h2>Show more information about the state of the connection</h2>
+        <h2 id="connstates">Show more information about the state of the connection</h2>
 
         <h2>Show audio levels</h2>
 

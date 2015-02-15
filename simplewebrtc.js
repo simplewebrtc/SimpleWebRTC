@@ -78,6 +78,7 @@ function SimpleWebRTC(opts) {
                 peers.forEach(function (p) {
                     if (p.sid == message.sid) peer = p;
                 });
+                if (!peer) peer = peers[0]; // fallback for old protocol versions
             }
             if (!peer) {
                 peer = self.webrtc.createPeer({

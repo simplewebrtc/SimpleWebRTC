@@ -94,7 +94,11 @@ function SimpleWebRTC(opts) {
             peer.handleMessage(message);
         } else if (peers.length) {
             peers.forEach(function (peer) {
-                if (peer.sid === message.sid) {
+                if (message.sid) {
+                    if (peer.sid === message.sid) {
+                        peer.handleMessage(message);
+                    }
+                } else {
                     peer.handleMessage(message);
                 }
             });

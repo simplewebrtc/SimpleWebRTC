@@ -81,12 +81,47 @@ webrtc.on('videoRemoved', function (video, peer) {
     position: absolute;
     width: 100%;
     height: 100%;
-}
-</code></pre>
+}</code></pre>
         <p>See the <a href="/demo.html">demo page</a> for a complete example.</p>
         <h2 id="connstates">Show more information about the state of the connection</h2>
-
-        <h2>Show audio levels</h2>
+        <p>The way the <a href="//w3c.github.io/webrtc-pc/">RTCPeerConnection API</a> works you get the stream (and therefore the video element) before the P2P connection is fully established. Therefore it's a good idea to display information about the state of the connection as done on the <a href="/demo.html">demo page</a>. Just extend the previous example a little bit by adding the following piece of code in the videoAdded event:</p>
+        <pre><code>// show the ice connection state
+    if (peer && peer.pc) {
+        var connstate = document.createElement('div');
+        connstate.className = 'connectionstate';
+        container.appendChild(connstate);
+        peer.pc.on('iceConnectionStateChange', function (event) {
+            switch (peer.pc.iceConnectionState) {
+            case 'checking': 
+                $(connstate).text('Connecting to peer...');
+                break;
+            case 'connected':
+            case 'completed': // on caller side
+                $(connstate).text('Connection established.');
+                break;
+            case 'disconnected':
+                $(connstate).text('Disconnected.');
+                break;
+            case 'failed':
+                $(connstate).text('Connection failed.');
+                break;
+            case 'closed':
+                $(connstate).text('Connection closed.');
+                break;
+            }
+        });
+    }
+</code></pre>
+        <p>This code adds an overlay inside the video container that visualized the connection state. Whenever the connection state changes, the callback for the iceConnectionStateChange will be called and you can inspect the new state of the connection. Note that some events like <i>connected</i> or <i>disconnected</i> can be called multiple times when there are short interruptions in connectivity. Now let's just add another bit of CSS:</p>
+        <pre><code>.connectionstate {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    text-align: center;
+    color: #fff
+}</code></pre>
+        <p>This positions the displayed at the top of the video container, centers it and makes it white. Of course, you can display it any other way you want, it just depends on your CSS magic.</p>
+        <h2 id="audiolevels">Show audio levels</h2>
 
         <h2>All about muting</h2>
 
@@ -108,7 +143,7 @@ webrtc.on('videoRemoved', function (video, peer) {
         
         <h2>Integrate it: reveal.js</h2>
 
-        <h2>Let's talk about TURN servers...</h2>
+        <h2 id="turn">Let's talk about TURN servers...</h2>
 
         <h2>Fail, with grace</h2>
 

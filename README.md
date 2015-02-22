@@ -62,6 +62,10 @@ webrtc.on('readyToCall', function () {
 
 Note that you will most likely also need to run your own TURN servers. See http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/ for a basic tutorial. 
 
+## It's not always that simple...
+
+Sometimes you need to do more advanced stuff. See http://simplewebrtc.com/notsosimple.html for some examples.
+
 ## Got questions?
 
 Join the SimpleWebRTC discussion list: 

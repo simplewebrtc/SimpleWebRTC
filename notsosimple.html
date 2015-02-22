@@ -122,7 +122,58 @@ webrtc.on('videoRemoved', function (video, peer) {
 }</code></pre>
         <p>This positions the displayed at the top of the video container, centers it and makes it white. Of course, you can display it any other way you want, it just depends on your CSS magic.</p>
         <h2 id="audiolevels">Show audio levels</h2>
-
+        <p>Another thing that is nice to show is the audio level of a participant. Due to <a href="https://code.google.com/p/chromium/issues/detail?id=121673">some restrictions in Chrome</a>, it is currently only available from local mediastreams and not from MediaStreams received via a WebRTC peerconnections.</p>
+        <p>We are going to use <a href="https://github.com/otalk/hark">hark</a>, an awesome Javascript module, to extract the audio level from the MediaStream with the WebAudio API. One of the advantage of this over other techniques (like querying the PeerConnections getStats method) is that it does not require an established peer-to-peer connection and therefore can be used in a screen that allows the users to check their microphone before joining a conference (see <a href="https://talky.io/">the haircheck screen on Talky for a example</a>).</p>
+        <p>Since we will have different sources for the volume, let's start with a helper function that changes the height of a volume div element that is overlayed ontop of the video element:</p>
+        <pre><code>// helper function to show the volume
+function showVolume(el, volume) {
+    if (!el) return;
+    if (volume < -45) { // vary between -45 and -20
+        el.style.height = '0px';
+    } else if (volume > -20) {
+        el.style.height = '100%';
+    } else {
+        el.style.height = '' + Math.floor((volume + 100) * 100 / 25 - 220) + '%';
+    }
+}</code></pre>
+        <p>See the <a href="https://github.com/otalk/hark#understanding-dbvolume-threshold">hark documentation</a> for the meaning of the volume parameter and play around with the parameters a little.</p>
+        <p>Next, add a little bit of CSS:</p>
+<pre><code>.volumeBar {
+    position: absolute;
+    width: 5px;
+    height: 0px;
+    right: 0px;
+    bottom: 0px;
+    background-color: #12acef;
+}</pre></code>
+        <p>And we need to create this volume bar element when creating the remote video, so add the following piece of code in the videoAdded element:</p>
+<pre><code>
+    // show the remote volume
+    var vol = document.createElement('div');
+    vol.id = 'volume_' + peer.id;
+    vol.className = 'volumeBar';
+    video.onclick = function () {
+        video.style.width = video.videoWidth + 'px';
+        video.style.height = video.videoHeight + 'px';
+    };
+    container.appendChild(vol);
+</pre></code>
+        <p>See the <a href="/demo.html">demo</a> for the full code. If you test this make sure you open the page in two different windows, not tabs, since browsers limit the number of times callbacks are executed in background pages.</p>
+        <p>Now, hook it up with the localStream. SimpleWebRTC includes hark and lets you subscribe to a <i>volumeChange</i> event:</p>
+        <pre><code>// local volume has changed
+webrtc.on('volumeChange', function (volume, treshold) {
+    showVolume(document.getElementById('localVolume'), volume);
+});</code></pre>
+        <p>Now you should get a nice little vertical bar when you speak. Isn't that awesome?</p>
+        <p>Showing the volume of remote participants is a little more tricky due to the Chrome bug. Under the hood, this involves WebRTC datachannels and transferring the local volume to your peers. But everything is nicely hidden by SimpleWebRTC, so all you need is this little piece of Javascript:</p>
+        <pre><code>// listen for dataChannel messages
+webrtc.on('channelMessage', function (peer, label, data) {
+    if (data.type == 'volume') {
+        showVolume(document.getElementById('volume_' + peer.id), data.volume);
+    }
+});</code></pre>
+        <p>Note: future versions of SimpleWebRTC might expose this as a 'remoteVolume' element so you do not need to care whether the data source is a datachannel or proper WebAudio integration.</p>
+        <p>That's it. Showing the remote volume helps you visually identify noisy participants and allows you to mute them. Which is shown in the next section.</p>
         <h2>All about muting</h2>
 
         <h2>Connection quality</h2>

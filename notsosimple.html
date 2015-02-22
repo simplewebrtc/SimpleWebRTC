@@ -86,7 +86,8 @@ webrtc.on('videoRemoved', function (video, peer) {
         <p>See the <a href="/demo.html">demo page</a> for a complete example.</p>
         <h2 id="connstates">Show more information about the state of the connection</h2>
         <p>The way the <a href="//w3c.github.io/webrtc-pc/">RTCPeerConnection API</a> works you get the stream (and therefore the video element) before the P2P connection is fully established. Therefore it's a good idea to display information about the state of the connection as done on the <a href="/demo.html">demo page</a>. Just extend the previous example a little bit by adding the following piece of code in the videoAdded event:</p>
-        <pre><code>// show the ice connection state
+        <pre><code>
+    // show the ice connection state
     if (peer && peer.pc) {
         var connstate = document.createElement('div');
         connstate.className = 'connectionstate';
@@ -124,7 +125,7 @@ webrtc.on('videoRemoved', function (video, peer) {
         <p>This positions the displayed at the top of the video container, centers it and makes it white. Of course, you can display it any other way you want, it just depends on your CSS magic.</p>
         <h2 id="audiolevels">Show audio levels</h2>
         <p>Another thing that is nice to show is the audio level of a participant. Due to <a href="https://code.google.com/p/chromium/issues/detail?id=121673">some restrictions in Chrome</a>, it is currently only available from local mediastreams and not from MediaStreams received via a WebRTC peerconnections.</p>
-        <p>We are going to use <a href="https://github.com/otalk/hark">hark</a>, an awesome Javascript module, to extract the audio level from the MediaStream with the WebAudio API. One of the advantage of this over other techniques (like querying the PeerConnections getStats method) is that it does not require an established peer-to-peer connection and therefore can be used in a screen that allows the users to check their microphone before joining a conference (see <a href="https://talky.io/">the haircheck screen on Talky for a example</a>).</p>
+        <p>We are going to use <a href="https://github.com/otalk/hark">hark</a>, an awesome Javascript module, to extract the audio level from the MediaStream with the WebAudio API. One of the advantage of this over other techniques (like querying the PeerConnections getStats method) is that it does not require an established peer-to-peer connection and therefore can be used in a screen that allows the users to check their microphone before joining a conference (see <a href="https://talky.io/">the haircheck screen</a> on Talky for an example</a>).</p>
         <p>Since we will have different sources for the volume, let's start with a helper function that changes the height of a volume div element that is overlayed ontop of the video element:</p>
         <pre><code>// helper function to show the volume
 function showVolume(el, volume) {

@@ -187,7 +187,7 @@ webrtc.on('channelMessage', function (peer, label, data) {
         <p>Turning video on and off works similar, use the <i>.pauseVideo()</i> and <i>.resumeVideo()</i> methods to control the video:</p>
         <pre><code>webrtc.pauseVideo();
 webrtc.resumeVideo();</pre></code>
-        <p>Now, if you want to mute your audio and not send video there is a shortcut for that. The <i>.pause()</i> and <i>.resume()</i> methods. Unfortunately, this modifies both your muted state and your sendingVideo state, so make sure you keep track of those states.</p>
+        <p>Now, if you want to mute your audio and not send video there is a shortcut for that. The <i>.pause()</i> and <i>.resume()</i> methods. Unfortunately, this modifies both your muted and video send state, so make sure you keep track of those states.</p>
         <p>Internally, the mute methods work by changing the audio or video tracks <i>.enabled</i> flag. Setting this flag to false causes WebRTC implementations to send silence (for audio) and black frames (for video). This requires relatively little bandwidth.</p>
         <p>So now you are no longer sending audio and video. Wouldn't it be nice if the remote side was notified of that so it could do something more useful than displaying a black frame?</p>
         <p>Whenever you mute or unmute someone, a message is sent via the signaling channel. Listening for this message is easy:</p>

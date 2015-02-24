@@ -25,6 +25,8 @@
         <p>Sometimes, the basic usage is not enough. You need more control than. Let's talk about this. <a href="https://andyet.com/">We</a> use alot of the things shown here on <a href="https://talky.io">Talky</a>.</p>
         <p>Some use cases are not supported by all browsers yet or we have not found a nice API that we want to use.</p>
 
+
+
         <h2 id="sandbox-server">Do not use the default sandbox signaling server in production</h2>
         <p>The signaling server is a server that helps the two browsers exchange a small amount of information they need to connect to each other in a secure manner.</p>
         <p>We provide a sandbox signaling server so it easy to get started. However, installing <a href="https://github.com/andyet/signalmaster">Signalmaster</a> is one of the first things to do when you want to dive deeper. Then just point the url attribute in the SimpleWebRTC constructor to your server url:</p>
@@ -37,6 +39,8 @@
   autoRequestMedia: true,
   url: 'https://example.com/'
 });</code></pre>
+
+
 
         <h2 id="basic-overlay">Add style your video element</h2>
         <p>Most of the time, you want to wrap your video element in a container, e.g. to add overlays instead of just having raw unstyled video elements in your remote video container.</p>
@@ -84,6 +88,8 @@ webrtc.on('videoRemoved', function (video, peer) {
     height: 100%;
 }</code></pre>
         <p>See the <a href="/demo.html">demo page</a> for a complete example.</p>
+
+
         <h2 id="connstates">Show more information about the state of the connection</h2>
         <p>The way the <a href="//w3c.github.io/webrtc-pc/">RTCPeerConnection API</a> works you get the stream (and therefore the video element) before the P2P connection is fully established. Therefore it's a good idea to display information about the state of the connection as done on the <a href="/demo.html">demo page</a>. Just extend the previous example a little bit by adding the following piece of code in the videoAdded event:</p>
         <pre><code>
@@ -123,6 +129,9 @@ webrtc.on('videoRemoved', function (video, peer) {
     color: #fff
 }</code></pre>
         <p>This positions the displayed at the top of the video container, centers it and makes it white. Of course, you can display it any other way you want, it just depends on your CSS magic.</p>
+
+
+
         <h2 id="audiolevels">Show audio levels</h2>
         <p>Another thing that is nice to show is the audio level of a participant. Due to <a href="https://code.google.com/p/chromium/issues/detail?id=121673">some restrictions in Chrome</a>, it is currently only available from local mediastreams and not from MediaStreams received via a WebRTC peerconnections.</p>
         <p>We are going to use <a href="https://github.com/otalk/hark">hark</a>, an awesome Javascript module, to extract the audio level from the MediaStream with the WebAudio API. One of the advantage of this over other techniques (like querying the PeerConnections getStats method) is that it does not require an established peer-to-peer connection and therefore can be used in a screen that allows the users to check their microphone before joining a conference (see <a href="https://talky.io/">the haircheck screen</a> on Talky for an example</a>).</p>
@@ -176,6 +185,8 @@ webrtc.on('channelMessage', function (peer, label, data) {
 });</code></pre>
         <p>Note: future versions of SimpleWebRTC might expose this as a 'remoteVolume' element so you do not need to care whether the data source is a datachannel or proper WebAudio integration.</p>
         <p>That's it. Showing the remote volume helps you visually identify noisy participants and allows you to mute them. Which is shown in the next section.</p>
+
+
 
         <h2 id="mute">All about muting</h2>
         <p>There are a number of usecases where you want to mute either your own audio/video stream or the stream of a remote participant. Let's look at those in detail.<p>
@@ -255,13 +266,16 @@ webrtc.on('videoOff', function () {
     // local video just turned off
 });</pre></code>
         <p>By the way, if you are looking for a way to mute a remote participant that is even easier. Just set the <i>video</i> element volume to 0.</p>
-        <h2>Connection quality</h2>
 
-        <h2>Selecting a microphone and camera</h2>
+
 
         <h2>Share your screen</h2>
 
+        <h2>Selecting a microphone and camera</h2>
+
         <h2>Join without a camera or microphone</a>
+
+        <h2>Connection quality</h2>
         
         <h2>Upgrade an audiochat to a videochat</a>
 

@@ -19,6 +19,7 @@
                 width: 70%;
                 bottom: 5px;
                 height: 5px;
+                display: none;
             }
             .connectionstate {
                 position: absolute;
@@ -95,6 +96,7 @@
             // we got access to the camera
             webrtc.on('localStream', function (stream) {
                 $('form>button').attr('disabled', null);
+                $('#localVolume').show();
             });
             // we did not get access to the camera
             webrtc.on('localMediaError', function (err) {

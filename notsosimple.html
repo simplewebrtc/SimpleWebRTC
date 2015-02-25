@@ -173,13 +173,10 @@ webrtc.on('volumeChange', function (volume, treshold) {
 });</code></pre>
         <p>Now you should get a nice volume meter when you speak. Isn't that awesome?</p>
         <p>Showing the volume of remote participants is a little more tricky due to the Chrome bug. Under the hood, this involves WebRTC datachannels and transferring the local volume to your peers. But everything is nicely hidden by SimpleWebRTC, so all you need is this little piece of Javascript:</p>
-        <pre><code>// listen for dataChannel messages
-webrtc.on('channelMessage', function (peer, label, data) {
-    if (data.type == 'volume') {
-        showVolume(document.getElementById('volume_' + peer.id), data.volume);
-    }
+        <pre><code>// remote volume has changed
+webrtc.on('remoteVolumeChange', function (peer, volume) {
+    showVolume(document.getElementById('volume_' + peer.id), volume);
 });</code></pre>
-        <p>Note: future versions of SimpleWebRTC might expose this as a 'remoteVolume' element so you do not need to care whether the data source is a datachannel or proper WebAudio integration.</p>
         <p>That's it. Showing the remote volume helps you visually identify noisy participants and allows you to mute them.</p>
 
 

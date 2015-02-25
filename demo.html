@@ -13,13 +13,12 @@
                 width: 100%;
                 height: 100%;
             }
-            .volumeBar {
+            .volume {
                 position: absolute;
-                width: 5px;
-                height: 0px;
-                right: 0px;
-                bottom: 0px;
-                background-color: #12acef;
+                left: 15%;
+                width: 70%;
+                bottom: 2px;
+                height: 10px;
             }
             .connectionstate {
                 position: absolute;
@@ -47,7 +46,7 @@
         <hr>
         <div class="videoContainer">
             <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
-            <div id="localVolume" class="volumeBar"></div>
+            <meter id="localVolume" class="volume" min="-45" max="-20" high="-25" low="-40"></meter>
         </div>
         <div id="localScreenContainer" class="videoContainer">
         </div>
@@ -87,14 +86,11 @@
             });
 
             function showVolume(el, volume) {
+                console.log('showVolume', volume, el);
                 if (!el) return;
-                if (volume < -45) { // vary between -45 and -20
-                    el.style.height = '0px';
-                } else if (volume > -20) {
-                    el.style.height = '100%';
-                } else {
-                    el.style.height = '' + Math.floor((volume + 100) * 100 / 25 - 220) + '%';
-                }
+                if (volume < -45) volume = -45; // -45 to -20 is
+                if (volume > -20) volume = -20; // a good range
+                el.value = volume;
             }
             webrtc.on('channelMessage', function (peer, label, data) {
                 if (data.type == 'volume') {
@@ -138,14 +134,20 @@
                     // suppress contextmenu
                     video.oncontextmenu = function () { return false; };
 
-                    // show the remote volume
-                    var vol = document.createElement('div');
-                    vol.id = 'volume_' + peer.id;
-                    vol.className = 'volumeBar';
+                    // resize the video on click
                     video.onclick = function () {
                         video.style.width = video.videoWidth + 'px';
                         video.style.height = video.videoHeight + 'px';
                     };
+
+                    // show the remote volume
+                    var vol = document.createElement('meter');
+                    vol.id = 'volume_' + peer.id;
+                    vol.className = 'volume';
+                    vol.min = -45;
+                    vol.max = -20;
+                    vol.low = -40;
+                    vol.high = -25;
                     container.appendChild(vol);
                     
                     // show the ice connection state

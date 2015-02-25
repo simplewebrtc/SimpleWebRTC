@@ -183,6 +183,7 @@ function SimpleWebRTC(opts) {
         self.webrtc.sendToAll('mute', {name: 'video'});
     });
 
+    // screensharing events
     this.webrtc.on('localScreen', function (stream) {
         var item,
             el = document.createElement('video'),
@@ -229,6 +230,12 @@ function SimpleWebRTC(opts) {
             }
         });
         */
+    });
+
+    this.webrtc.on('channelMessage', function (peer, label, data) {
+        if (data.type == 'volume') {
+            self.emit('remoteVolumeChange', peer, data.volume);
+        }
     });
 
     if (this.config.autoRequestMedia) this.startLocalVideo();

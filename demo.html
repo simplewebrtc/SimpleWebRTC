@@ -17,8 +17,8 @@
                 position: absolute;
                 left: 15%;
                 width: 70%;
-                bottom: 2px;
-                height: 10px;
+                bottom: 5px;
+                height: 5px;
             }
             .connectionstate {
                 position: absolute;
@@ -130,8 +130,8 @@
 
                     // resize the video on click
                     video.onclick = function () {
-                        video.style.width = video.videoWidth + 'px';
-                        video.style.height = video.videoHeight + 'px';
+                        container.style.width = video.videoWidth + 'px';
+                        container.style.height = video.videoHeight + 'px';
                     };
 
                     // show the remote volume

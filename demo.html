@@ -86,17 +86,11 @@
             });
 
             function showVolume(el, volume) {
-                console.log('showVolume', volume, el);
                 if (!el) return;
                 if (volume < -45) volume = -45; // -45 to -20 is
                 if (volume > -20) volume = -20; // a good range
                 el.value = volume;
             }
-            webrtc.on('channelMessage', function (peer, label, data) {
-                if (data.type == 'volume') {
-                    showVolume(document.getElementById('volume_' + peer.id), data.volume);
-                }
-            });
 
             // we got access to the camera
             webrtc.on('localStream', function (stream) {
@@ -192,6 +186,10 @@
             // local volume has changed
             webrtc.on('volumeChange', function (volume, treshold) {
                 showVolume(document.getElementById('localVolume'), volume);
+            });
+            // remote volume has changed
+            webrtc.on('remoteVolumeChange', function (peer, volume) {
+                showVolume(document.getElementById('volume_' + peer.id), volume);
             });
 
             // Since we use this twice we put it here

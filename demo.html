@@ -104,7 +104,7 @@
 
             // we got access to the camera
             webrtc.on('localStream', function (stream) {
-                $('form>button').attr('disabled', null);
+                document.querySelector('form>button').removeAttribute('disabled');
                 $('#localVolume').show();
             });
             // we did not get access to the camera
@@ -163,20 +163,20 @@
                         peer.pc.on('iceConnectionStateChange', function (event) {
                             switch (peer.pc.iceConnectionState) {
                             case 'checking': 
-                                $(connstate).text('Connecting to peer...');
+                                connstate.innerText = 'Connecting to peer...';
                                 break;
                             case 'connected':
                             case 'completed': // on caller side
-                                $(connstate).text('Connection established.');
+                                connstate.innerText = 'Connection established.';
                                 break;
                             case 'disconnected':
-                                $(connstate).text('Disconnected.');
+                                connstate.innerText = 'Disconnected.';
                                 break;
                             case 'failed':
-                                $(connstate).text('Connection failed.');
+                                connstate.innerText = 'Connection failed.';
                                 break;
                             case 'closed':
-                                $(connstate).text('Connection closed.');
+                                connstate.innerText = 'Connection closed.';
                                 break;
                             }
                         });
@@ -205,9 +205,9 @@
 
             // Since we use this twice we put it here
             function setRoom(name) {
-                $('form').remove();
-                $('#title').text(name);
-                $('#subTitle').text('Link to join: ' + location.href);
+                document.querySelector('form').remove();
+                document.getElementById('title').innerText = 'Room: ' + name;
+                document.getElementById('subTitle').innerText =  'Link to join: ' + location.href;
                 $('body').addClass('active');
             }
 
@@ -231,12 +231,12 @@
                 });
             }
 
-            var button = $('#screenShareButton'),
+            var button = document.getElementById('screenShareButton'),
                 setButton = function (bool) {
-                    button.text(bool ? 'share screen' : 'stop sharing');
+                    button.innerText = bool ? 'share screen' : 'stop sharing';
                 };
             if (!webrtc.capabilities.screenSharing) {
-                button.attr('disabled', 'disabled');
+                button.disabled = 'disabled';
             }
             webrtc.on('localScreenRemoved', function () {
                 setButton(true);

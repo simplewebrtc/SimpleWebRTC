@@ -24,6 +24,12 @@ function SimpleWebRTC(opts) {
                 video: true,
                 audio: true
             },
+            receiveMedia: { // FIXME: remove old chrome <= 37 constraints format
+                mandatory: {
+                    OfferToReceiveAudio: true,
+                    OfferToReceiveVideo: true
+                }
+            },
             localVideo: {
                 autoplay: true,
                 mirror: true,
@@ -335,8 +341,8 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
                             enableDataChannels: self.config.enableDataChannels && type !== 'screen',
                             receiveMedia: {
                                 mandatory: {
-                                    OfferToReceiveAudio: type !== 'screen',
-                                    OfferToReceiveVideo: true
+                                    OfferToReceiveAudio: type !== 'screen' && self.config.receiveMedia.mandatory.OfferToReceiveAudio,
+                                    OfferToReceiveVideo: self.config.receiveMedia.mandatory.OfferToReceiveVideo
                                 }
                             }
                         });

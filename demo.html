@@ -2,6 +2,9 @@
 <html>
     <head>
         <title>SimpleWebRTC Demo</title>
+        <link rel="stylesheet" type="text/css" href="//cloud.typography.com/7773252/764742/css/fonts.css" />
+        <link rel="stylesheet" href="css/style.min.css">
+        <link rel="icon" type="image/png" href="img/favicon.png">
         <style>
             .videoContainer {
                 position: relative;
@@ -34,7 +37,10 @@
         </style>
     </head>
     <body>
-        <h1 id="title">Start a room</h1>
+        <h1 class="logo"><span>simple</span><span>WebRTC</span></h1>
+        <h2>You can build cool stuff with WebRTC in five minutes.</h2>
+
+        <h3 id="title">Start a room</h3>
         <form id="createRoom">
             <input id="sessionInput"/>
             <button disabled type="submit">Create it!</button>
@@ -200,7 +206,7 @@
             // Since we use this twice we put it here
             function setRoom(name) {
                 $('form').remove();
-                $('h1').text(name);
+                $('#title').text(name);
                 $('#subTitle').text('Link to join: ' + location.href);
                 $('body').addClass('active');
             }

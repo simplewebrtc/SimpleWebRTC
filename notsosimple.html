@@ -334,31 +334,39 @@ peer.on('fileTransfer', function (metadata, receiver) {
     });
     filelist.appendChild(item);
 });</code></pre>
-        <p>This event is called with some metadata about the file (such as the filename and the size) and a receiver object. This receiver object emits two events: progress and receivedFile:
+        <p>The <i>filetransfer</i> event is called with some metadata about the file (such as the filename and the size) and a receiver object. This receiver object emits two events: <i>progress</i> and <i>receivedFile</i>:
         <ul>
-            <li>progress is called whenever receiving data from the peer. It can be hooked up to a HTML5 &lt;progress&gt; element quite nicely as shown in the demo.</li>
-            <li>receivedFile is called when the transfer is complete. Its arguments are a blob object of the file and the metadata. The file can then be easily made available for download by creating an &lt;a&gt; element and setting the href attribute to a url created with URL.createObjectURL(file)</li>
+            <li><i>progress</i> is called whenever receiving data from the peer. It can be hooked up to a HTML5 &lt;progress&gt; element quite nicely as shown in the demo.</li>
+            <li><i>receivedFile</i> is called when the transfer is complete. Its arguments are a blob object of the file and the metadata. The file can then be easily made available for download by creating an &lt;a&gt; element and setting the href attribute to a url created with URL.createObjectURL(file)</li>
         </ul>
         <p>That was easy, wasn't it? Lets look at sending the file next.</p>
 
         <p>First, we need the user to select a file to transfer. This is done with an &lt;input&gt; element:</p>
         <pre><code>// select a file
-    var fileinput = document.createElement('input');
-    fileinput.type = 'file';</pre>
+var fileinput = document.createElement('input');
+fileinput.type = 'file';</code></pre>
         <p>We then need to listen for the change event on that filelistener:</p>
         <pre><code>// send a file
-    fileinput.addEventListener('change', function() {
-        fileinput.disabled = true;
+fileinput.addEventListener('change', function() {
+    fileinput.disabled = true;
 
-        var file = fileinput.files[0];
-        var sender = peer.sendFile(file);</code></pre>
-        <p>Actually, that's it. Most of the work is again making a nice UI for it. The sender object returned by sendFile emits two events:</p>
+    var file = fileinput.files[0];
+    var sender = peer.sendFile(file);
+});</code></pre>
+        <p>Actually, that's it. Most of the work is again making a nice UI for it. The sender object returned by sendFile emits three events:</p>
         <ul>
-            <li>progress</li>
-            <li>sentFile</li>
+            <li><i>progress</i>,</li>
+            <li><i>sentFile</i>,</li>
+            <li><i>complete</i>.</li>
         </ul>
-        <p>progress can once again be hooked up to a progress bar. sentFile indicates that the sender considers the transfer to be complete. Due to internal buffering
+        <p><i>progress</i> can again be hooked up to a progress bar. <i>sentFile</i> indicates that the sender considers the transfer to be complete. Due to internal buffering this may sometimes happen before the receiver has received the complete file. Therefore it is not safe to close the connection before receiving the <i>complete</i> event.</p>
+
+        <p>Building a nice filetransfer application with this is pretty easy. Note that the demo does not fall back to using TURN servers. While that is pretty much required for doing voice-over-ip, for filetransfer it might actually be better to relay encrypted file chunks via third parties.</p>
         
+        <p><b>TODO</b>: describe the protocol used to transfer files. File data is sent in chunks, prefixed by a single metadata object that is serialized JSON and contains at minimum the filename and size. The datachannels <i>protocol</i> field is set to <i>https://simplewebrtc.com/protocol/filetransfer#inband-v1</i>.</p>
+        
+
+
         <h2>Integrate it: reveal.js</h2>
 
         <h2 id="turn">Let's talk about TURN servers...</h2>

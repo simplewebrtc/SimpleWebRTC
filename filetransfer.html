@@ -125,6 +125,10 @@ webrtc.on('createdPeer', function (peer) {
             // we allow only one filetransfer at a time
             fileinput.removeAttribute('disabled');
         });
+        // receiver has actually received the file
+        sender.on('complete', function () {
+            // safe to disconnect now
+        });
         filelist.appendChild(item);
     }, false);
     fileinput.disabled = 'disabled';

@@ -104,7 +104,8 @@
 
             // we got access to the camera
             webrtc.on('localStream', function (stream) {
-                document.querySelector('form>button').removeAttribute('disabled');
+                var button = document.querySelector('form>button');
+                if (button) button.removeAttribute('disabled');
                 $('#localVolume').show();
             });
             // we did not get access to the camera

@@ -101,20 +101,20 @@ webrtc.on('videoRemoved', function (video, peer) {
         peer.pc.on('iceConnectionStateChange', function (event) {
             switch (peer.pc.iceConnectionState) {
             case 'checking': 
-                $(connstate).text('Connecting to peer...');
+                connstate.innerText = 'Connecting to peer...';
                 break;
             case 'connected':
             case 'completed': // on caller side
-                $(connstate).text('Connection established.');
+                connstate.innerText = 'Connection established.';
                 break;
             case 'disconnected':
-                $(connstate).text('Disconnected.');
+                connstate.innerText = 'Disconnected.';
                 break;
             case 'failed':
-                $(connstate).text('Connection failed.');
+                connstate.innerText = 'Connection failed.';
                 break;
             case 'closed':
-                $(connstate).text('Connection closed.');
+                connstate.innerText = 'Connection closed.';
                 break;
             }
         });
@@ -232,7 +232,7 @@ webrtc.on('unmute', function (data) { // hide muted symbol
     display: none
     position: absolute
     z-index: 1
-    color: $blue
+    color: #12acef
 
 .muted
     left: 0px
@@ -276,8 +276,97 @@ webrtc.on('videoOff', function () {
 
         <h2>Data channels</h2>
 
-        <h2>File transfer</h2>
+
+
+        <h2 id="filetransfer">Filetransfer</h2>
+        <p>Filetransfer refers to sending a file to a single peer. If you want to share the same file with multiple participants, uploading it to a server is most likely a better way to do it. Or implementing something like <a href="https://webtorrent.io">Bittorrent over WebRTC</a>. Using the following technique to share a file with multiple participants works, but will be limited by the upload speed.</p>
+        <p>Let's start with a modified version of the basic SimpleWebRTC HTML structure:</p>
+        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;script src=&quot;//simplewebrtc.com/latest.js&quot;&gt;&lt;/script&gt; 
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div id=&quot;remotes&quot;&gt;&lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        <p>Next, lets create the SimpleWebRTC object. This time, we don't want audio or video, so we set autoRequestMedia to false and also tweak the receive options:</p>
+        <pre><code>var webrtc = new SimpleWebRTC({
+    // we don't do video
+    localVideoEl: '',
+    remoteVideosEl: '',
+    // dont ask for camera access
+    autoRequestMedia: false
+    // dont negotiate media
+    receiveMedia: {
+        mandatory: {
+            OfferToReceiveAudio: false,
+            OfferToReceiveVideo: false
+        }
+    }
+});</code></pre>
+        <p>Since the readyToJoin callback relies on having access to the camera we just ignore it and join the room directly:</p>
+        <code><pre>// join without waiting for media
+webrtc.joinRoom('your awesome room name');</code></pre>
+        <p>This will join the room and create a connection with every peer that joins. So let's wait for a peer to join:</p>
+        <pre><code>// called when a peer is created
+webrtc.on('createdPeer', function (peer) {
+    console.log('createdPeer', peer);
+}</code></pre>
+        <p>See the <a href="filetransfer.html">filetransfer demo</a> for the full implementation. Now we can do two things with this peer:</p>
+        <ul>
+            <li>send them a file and</li>
+            <li>receive a file from them.</li>
+        </ul>
+        <p>Let's look at the receive part first:</p>
+        <pre><code>// receiving an incoming filetransfer
+peer.on('fileTransfer', function (metadata, receiver) {
+    console.log('incoming filetransfer', metadata.name, metadata);
+    receiver.on('progress', function (bytesReceived) {
+        console.log('receive progress', bytesReceived, 'out of', metadata.size);
+    });
+    // get notified when file is done
+    receiver.on('receivedFile', function (file, metadata) {
+        console.log('received file', metadata.name, metadata.size);
+
+        // close the channel
+        receiver.channel.close();
+    });
+    filelist.appendChild(item);
+});</code></pre>
+        <p>The <i>filetransfer</i> event is called with some metadata about the file (such as the filename and the size) and a receiver object. This receiver object emits two events: <i>progress</i> and <i>receivedFile</i>:
+        <ul>
+            <li><i>progress</i> is called whenever receiving data from the peer. It can be hooked up to a HTML5 &lt;progress&gt; element quite nicely as shown in the demo.</li>
+            <li><i>receivedFile</i> is called when the transfer is complete. Its arguments are a blob object of the file and the metadata. The file can then be easily made available for download by creating an &lt;a&gt; element and setting the href attribute to a url created with URL.createObjectURL(file)</li>
+        </ul>
+        <p>That was easy, wasn't it? Lets look at sending the file next.</p>
+
+        <p>First, we need the user to select a file to transfer. This is done with an &lt;input&gt; element:</p>
+        <pre><code>// select a file
+var fileinput = document.createElement('input');
+fileinput.type = 'file';</code></pre>
+        <p>We then need to listen for the change event on that filelistener:</p>
+        <pre><code>// send a file
+fileinput.addEventListener('change', function() {
+    fileinput.disabled = true;
+
+    var file = fileinput.files[0];
+    var sender = peer.sendFile(file);
+});</code></pre>
+        <p>Actually, that's it. Most of the work is again making a nice UI for it. The sender object returned by sendFile emits three events:</p>
+        <ul>
+            <li><i>progress</i>,</li>
+            <li><i>sentFile</i>,</li>
+            <li><i>complete</i>.</li>
+        </ul>
+        <p><i>progress</i> can again be hooked up to a progress bar. <i>sentFile</i> indicates that the sender considers the transfer to be complete. Due to internal buffering this may sometimes happen before the receiver has received the complete file. Therefore it is not safe to close the connection before receiving the <i>complete</i> event.</p>
+
+        <p>Building a nice filetransfer application with this is pretty easy. Note that the demo does not fall back to using TURN servers. While that is pretty much required for doing voice-over-ip, for filetransfer it might actually be better to relay encrypted file chunks via third parties.</p>
         
+        <p><b>TODO</b>: describe the protocol used to transfer files. File data is sent in chunks, prefixed by a single metadata object that is serialized JSON and contains at minimum the filename and size. The datachannels <i>protocol</i> field is set to <i>https://simplewebrtc.com/protocol/filetransfer#inband-v1</i>.</p>
+        
+
+
         <h2>Integrate it: reveal.js</h2>
 
         <h2 id="turn">Let's talk about TURN servers...</h2>

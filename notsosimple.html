@@ -111,7 +111,6 @@ webrtc.on('videoRemoved', function (video, peer) {
                 connstate.innerText = 'Disconnected.';
                 break;
             case 'failed':
-                connstate.innerText = 'Connection failed.';
                 break;
             case 'closed':
                 connstate.innerText = 'Connection closed.';
@@ -129,6 +128,27 @@ webrtc.on('videoRemoved', function (video, peer) {
     color: #fff
 }</code></pre>
         <p>This positions the displayed at the top of the video container, centers it and makes it white. Of course, you can display it any other way you want, it just depends on your CSS magic.</p>
+        <p>The <i>failed</i> state is somewhat special. In Chrome, this can only occur on the initiating side whereas in Firefox it can happen on both sides. SimpleWebRTC abstracts this by providing two events for this:</p> 
+        <pre><code>// local p2p/ice failure
+webrtc.on('iceFailed', function (peer) {
+    var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
+    console.log('local fail', connstate);
+    if (connstate) {
+        connstate.innerText = 'Connection failed.';
+        fileinput.disabled = 'disabled';
+    }
+});
+
+// remote p2p/ice failure
+webrtc.on('connectivityError', function (peer) {
+    var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
+    console.log('remote fail', connstate);
+    if (connstate) {
+        connstate.innerText = 'Connection failed.';
+        fileinput.disabled = 'disabled';
+    }
+});</code></pre>
+        <p>For the purpose of the sample, this is just handled by showing it to the user.</p>
 
 
 
@@ -262,22 +282,6 @@ webrtc.on('videoOff', function () {
 
 
 
-        <h2>Share your screen</h2>
-
-        <h2>Selecting a microphone and camera</h2>
-
-        <h2>Join without a camera or microphone</a>
-
-        <h2>Connection quality</h2>
-        
-        <h2>Upgrade an audiochat to a videochat</a>
-
-        <h2>Text chat</h2>
-
-        <h2>Data channels</h2>
-
-
-
         <h2 id="filetransfer">Filetransfer</h2>
         <p>Filetransfer refers to sending a file to a single peer. If you want to share the same file with multiple participants, uploading it to a server is most likely a better way to do it. Or implementing something like <a href="https://webtorrent.io">Bittorrent over WebRTC</a>. Using the following technique to share a file with multiple participants works, but will be limited by the upload speed.</p>
         <p>Let's start with a modified version of the basic SimpleWebRTC HTML structure:</p>
@@ -366,6 +370,20 @@ fileinput.addEventListener('change', function() {
         <p><b>TODO</b>: describe the protocol used to transfer files. File data is sent in chunks, prefixed by a single metadata object that is serialized JSON and contains at minimum the filename and size. The datachannels <i>protocol</i> field is set to <i>https://simplewebrtc.com/protocol/filetransfer#inband-v1</i>.</p>
         
 
+
+        <h2>Share your screen</h2>
+
+        <h2>Selecting a microphone and camera</h2>
+
+        <h2>Join without a camera or microphone</a>
+
+        <h2>Connection quality</h2>
+        
+        <h2>Upgrade an audiochat to a videochat</a>
+
+        <h2>Text chat</h2>
+
+        <h2>Data channels</h2>
 
         <h2>Integrate it: reveal.js</h2>
 

@@ -155,8 +155,7 @@ webrtc.on('createdPeer', function (peer) {
                 connstate.innerText = 'Disconnected.';
                 break;
             case 'failed':
-                connstate.innerText = 'Connection failed.';
-                fileinput.disabled = 'disabled';
+                // not handled here
                 break;
             case 'closed':
                 connstate.innerText = 'Connection closed.';
@@ -209,6 +208,26 @@ webrtc.on('createdPeer', function (peer) {
         });
         filelist.appendChild(item);
     });
+});
+
+// local p2p/ice failure
+webrtc.on('iceFailed', function (peer) {
+    var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
+    console.log('local fail', connstate);
+    if (connstate) {
+        connstate.innerText = 'Connection failed.';
+        fileinput.disabled = 'disabled';
+    }
+});
+
+// remote p2p/ice failure
+webrtc.on('connectivityError', function (peer) {
+    var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
+    console.log('remote fail', connstate);
+    if (connstate) {
+        connstate.innerText = 'Connection failed.';
+        fileinput.disabled = 'disabled';
+    }
 });
 
 function setRoom(name) {

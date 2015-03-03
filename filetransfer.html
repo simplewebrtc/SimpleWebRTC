@@ -28,6 +28,22 @@ li .filename {
 .peerContainer {
     margin-bottom: 1em;
 }
+
+.p2pChecking {
+    background-color: #ffeed7;
+}
+.p2pConnected, .p2pCompleted {
+    background-color: #e8f7ef;
+}
+.p2pFailed {
+    background-color: #ffe3eb
+}
+.p2pDisconnected {
+    background-color: #ffeed7;
+}
+.p2pClosed {
+    background-color: #f5f7f8;
+}
         </style>
     </head>
     <body>
@@ -140,8 +156,11 @@ webrtc.on('createdPeer', function (peer) {
         connstate.className = 'connectionstate';
         container.appendChild(connstate);
         peer.pc.on('iceConnectionStateChange', function (event) {
-            console.log('state', peer.id, peer.pc.iceConnectionState);
-            switch (peer.pc.iceConnectionState) {
+            var state = peer.pc.iceConnectionState;
+            console.log('state', state);
+            container.className = 'peerContainer p2p' + state.substr(0, 1).toUpperCase()
+                + state.substr(1);
+            switch (state) {
             case 'checking': 
                 connstate.innerText = 'Connecting to peer...';
                 break;

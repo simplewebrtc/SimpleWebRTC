@@ -24,6 +24,12 @@ function SimpleWebRTC(opts) {
                 video: true,
                 audio: true
             },
+            receiveMedia: { // FIXME: remove old chrome <= 37 constraints format
+                mandatory: {
+                    OfferToReceiveAudio: true,
+                    OfferToReceiveVideo: true
+                }
+            },
             localVideo: {
                 autoplay: true,
                 mirror: true,
@@ -78,6 +84,7 @@ function SimpleWebRTC(opts) {
                 peers.forEach(function (p) {
                     if (p.sid == message.sid) peer = p;
                 });
+                //if (!peer) peer = peers[0]; // fallback for old protocol versions
             }
             if (!peer) {
                 peer = self.webrtc.createPeer({
@@ -88,11 +95,16 @@ function SimpleWebRTC(opts) {
                     sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
                     broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.io.engine.id : null
                 });
+                self.emit('createdPeer', peer);
             }
             peer.handleMessage(message);
         } else if (peers.length) {
             peers.forEach(function (peer) {
-                if (peer.sid === message.sid) {
+                if (message.sid) {
+                    if (peer.sid === message.sid) {
+                        peer.handleMessage(message);
+                    }
+                } else {
                     peer.handleMessage(message);
                 }
             });
@@ -177,6 +189,7 @@ function SimpleWebRTC(opts) {
         self.webrtc.sendToAll('mute', {name: 'video'});
     });
 
+    // screensharing events
     this.webrtc.on('localScreen', function (stream) {
         var item,
             el = document.createElement('video'),
@@ -208,6 +221,7 @@ function SimpleWebRTC(opts) {
                     },
                     broadcaster: self.connection.io.engine.id,
                 });
+                self.emit('createdPeer', peer);
                 peer.start();
             }
         });
@@ -222,6 +236,12 @@ function SimpleWebRTC(opts) {
             }
         });
         */
+    });
+
+    this.webrtc.on('channelMessage', function (peer, label, data) {
+        if (data.type == 'volume') {
+            self.emit('remoteVolumeChange', peer, data.volume);
+        }
     });
 
     if (this.config.autoRequestMedia) this.startLocalVideo();
@@ -321,11 +341,12 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
                             enableDataChannels: self.config.enableDataChannels && type !== 'screen',
                             receiveMedia: {
                                 mandatory: {
-                                    OfferToReceiveAudio: type !== 'screen',
-                                    OfferToReceiveVideo: true
+                                    OfferToReceiveAudio: type !== 'screen' && self.config.receiveMedia.mandatory.OfferToReceiveAudio,
+                                    OfferToReceiveVideo: self.config.receiveMedia.mandatory.OfferToReceiveVideo
                                 }
                             }
                         });
+                        self.emit('createdPeer', peer);
                         peer.start();
                     }
                 }

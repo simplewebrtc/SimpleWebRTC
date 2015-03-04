@@ -1,5 +1,7 @@
 # SimpleWebRTC - World's easiest WebRTC lib
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/HenrikJoreteg/SimpleWebRTC?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 Want to see it in action? Check out the demo: https://talky.io/
 
@@ -60,10 +62,18 @@ webrtc.on('readyToCall', function () {
 
 Note that you will most likely also need to run your own TURN servers. See http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/ for a basic tutorial. 
 
+## It's not always that simple...
+
+Sometimes you need to do more advanced stuff. See http://simplewebrtc.com/notsosimple.html for some examples.
+
 ## Got questions?
 
 Join the SimpleWebRTC discussion list: 
 
 http://lists.andyet.com/mailman/listinfo/simplewebrtc
+
+or the Gitter channel:
+
+https://gitter.im/HenrikJoreteg/SimpleWebRTC
 
 ## API

@@ -100,7 +100,7 @@ webrtc.on('videoRemoved', function (video, peer) {
         container.appendChild(connstate);
         peer.pc.on('iceConnectionStateChange', function (event) {
             switch (peer.pc.iceConnectionState) {
-            case 'checking': 
+            case 'checking':
                 connstate.innerText = 'Connecting to peer...';
                 break;
             case 'connected':
@@ -128,7 +128,7 @@ webrtc.on('videoRemoved', function (video, peer) {
     color: #fff
 }</code></pre>
         <p>This positions the displayed at the top of the video container, centers it and makes it white. Of course, you can display it any other way you want, it just depends on your CSS magic.</p>
-        <p>The <i>failed</i> state is somewhat special. In Chrome, this can only occur on the initiating side whereas in Firefox it can happen on both sides. SimpleWebRTC abstracts this by providing two events for this:</p> 
+        <p>The <i>failed</i> state is somewhat special. In Chrome, this can only occur on the initiating side whereas in Firefox it can happen on both sides. SimpleWebRTC abstracts this by providing two events for this:</p>
         <pre><code>// local p2p/ice failure
 webrtc.on('iceFailed', function (peer) {
     var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
@@ -288,7 +288,7 @@ webrtc.on('videoOff', function () {
         <pre><code>&lt;!DOCTYPE html&gt;
 &lt;html&gt;
     &lt;head&gt;
-        &lt;script src=&quot;//simplewebrtc.com/latest.js&quot;&gt;&lt;/script&gt; 
+        &lt;script src=&quot;//simplewebrtc.com/latest.js&quot;&gt;&lt;/script&gt;
     &lt;/head&gt;
     &lt;body&gt;
         &lt;div id=&quot;remotes&quot;&gt;&lt;/div&gt;
@@ -366,19 +366,87 @@ fileinput.addEventListener('change', function() {
         <p><i>progress</i> can again be hooked up to a progress bar. <i>sentFile</i> indicates that the sender considers the transfer to be complete. Due to internal buffering this may sometimes happen before the receiver has received the complete file. Therefore it is not safe to close the connection before receiving the <i>complete</i> event.</p>
 
         <p>Building a nice filetransfer application with this is pretty easy. Note that the demo does not fall back to using TURN servers. While that is pretty much required for doing voice-over-ip, for filetransfer it might actually be better to relay encrypted file chunks via third parties.</p>
-        
+
         <p><b>TODO</b>: describe the protocol used to transfer files. File data is sent in chunks, prefixed by a single metadata object that is serialized JSON and contains at minimum the filename and size. The datachannels <i>protocol</i> field is set to <i>https://simplewebrtc.com/protocol/filetransfer#inband-v1</i>.</p>
-        
+
 
 
         <h2>Share your screen</h2>
+
+        <p>Sharing your screen is simple, but requires a small amount of work outside of your application. Browsers support this in different ways. Capturing screen media requires your application to be running on https.</p>
+
+        <h4>Chrome</h4>
+        <p>Chrome exposes APIs for screen sharing through the <a href="https://developer.chrome.com/extensions/desktopCapture" target="_blank">desktopCapture extension API</a>. <a href="https://github.com/HenrikJoreteg/getScreenMedia/">getScreenMedia</a> contains a <a href="https://github.com/HenrikJoreteg/getScreenMedia/tree/master/chrome-extension-sample">Chrome extension sample</a> for enabling screen capture in Chrome.</p>
+        <p>To run the extension for your application, you just have to <a href="https://developer.chrome.com/extensions/getstarted#unpacked">load the extension</a> example, and modify the manifest file to match your development url:</p>
+        <pre><code>"content_scripts": [ {
+    "js": [ "content.js" ],
+    "matches": [ "https://localhost:*/*" ]
+  }]
+});</code></pre>
+
+        <p>Older versions of Chrome used a flag called <i>enable-usermedia-screen-capture</i>. This is no longer the supported mechanism for screen capture in Chrome, but is still used in Chromium Embedded Framework and Node Webkit applications.</p>
+
+        <h4>Firefox</h4>
+        <p>Firefox enables screen media capturing through the <i>media.getusermedia.screensharing.allowed_domains</i> config setting. This can be modified automatically via an add-on, or it can be modified manually by navigating to <i>about:config</i> in Firefox. Modifying the setting manually to add <i>localhost</i> is easiest for development.
+        <p><a href="https://github.com/HenrikJoreteg/getScreenMedia/">getScreenMedia</a> also contains a <a href="https://github.com/HenrikJoreteg/getScreenMedia/tree/master/firefox-extension-sample">Firefox extension sample</a>. Just modify the <i>boostrap.js</i> to match your domain:</p>
+        <pre><code>var domains = ["simplewebrtc.com"];</code></pre>
+
+        <h4>Starting screen share</h4>
+        <p>Wire up an event handler or action for a user to initiate screen sharing. Here, we have a button to be disabled when screen sharing is unavailable, and to start sharing screen when clicked:</p>
+        <pre><code>var button = document.getElementById('screenShareButton'),
+    setButton = function (bool) {
+        button.innerText = bool ? 'share screen' : 'stop sharing';
+    };
+if (!webrtc.capabilities.screenSharing) {
+    button.disabled = 'disabled';
+}
+webrtc.on('localScreenRemoved', function () {
+    setButton(true);
+});
+
+setButton(true);
+
+button.click(function () {
+    if (webrtc.getLocalScreen()) {
+        webrtc.stopScreenShare();
+        setButton(true);
+    } else {
+        webrtc.shareScreen(function (err) {
+            if (err) {
+                setButton(true);
+            } else {
+                setButton(false);
+            }
+        });
+
+    }
+});</code></pre>
+
+        <p>Then, you need to hook the <i>localScreenAdded</i> and <i>localScreenRemoved</i> events for adding and removing the local screen video element to the page:</p>
+
+        <pre><code>// local screen obtained
+webrtc.on('localScreenAdded', function (video) {
+    video.onclick = function () {
+        video.style.width = video.videoWidth + 'px';
+        video.style.height = video.videoHeight + 'px';
+    };
+    document.getElementById('localScreenContainer').appendChild(video);
+    $('#localScreenContainer').show();
+});
+// local screen removed
+webrtc.on('localScreenRemoved', function (video) {
+    document.getElementById('localScreenContainer').removeChild(video);
+    $('#localScreenContainer').hide();
+});</code></pre>
+
+        <p>You can style and show connection states for the screen sharing video elements similar to the examples above for video.</p>
 
         <h2>Selecting a microphone and camera</h2>
 
         <h2>Join without a camera or microphone</a>
 
         <h2>Connection quality</h2>
-        
+
         <h2>Upgrade an audiochat to a videochat</a>
 
         <h2>Text chat</h2>
@@ -394,7 +462,7 @@ fileinput.addEventListener('change', function() {
         <h2>A word about mobile apps</h2>
 
         <h2>Full Mesh or Full Mess? Advanced Multiparty</h2>
-        
+
         <h2>Recording a conference</h2>
 
 

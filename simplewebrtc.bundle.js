@@ -5,8 +5,7 @@ var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');
 var mockconsole = require('mockconsole');
-var io = require('socket.io-client');
-
+var SocketIoConnection = require('./socketioconnection');
 
 function SimpleWebRTC(opts) {
     var self = this;
@@ -14,6 +13,7 @@ function SimpleWebRTC(opts) {
     var config = this.config = {
             url: 'https://signaling.simplewebrtc.com',
             socketio: {/* 'force new connection':true*/},
+            connection: null,
             debug: false,
             localVideoEl: '',
             remoteVideosEl: '',
@@ -68,11 +68,15 @@ function SimpleWebRTC(opts) {
     // call WildEmitter constructor
     WildEmitter.call(this);
 
-    // our socket.io connection
-    connection = this.connection = io.connect(this.config.url, this.config.socketio);
+    // create default SocketIoConnection if it's not passed in
+    if (this.config.connection === null) {
+        connection = this.connection = new SocketIoConnection(this.config);
+    } else {
+        connection = this.connection = this.config.connection;
+    }
 
     connection.on('connect', function () {
-        self.emit('connectionReady', connection.socket.sessionid);
+        self.emit('connectionReady', connection.getSessionid());
         self.sessionReady = true;
         self.testReadiness();
     });
@@ -95,7 +99,7 @@ function SimpleWebRTC(opts) {
                     type: message.roomType,
                     enableDataChannels: self.config.enableDataChannels && message.roomType !== 'screen',
                     sharemyscreen: message.roomType === 'screen' && !message.broadcaster,
-                    broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.socket.sessionid : null
+                    broadcaster: message.roomType === 'screen' && !message.broadcaster ? self.connection.getSessionid() : null
                 });
                 self.emit('createdPeer', peer);
             }
@@ -114,7 +118,7 @@ function SimpleWebRTC(opts) {
     });
 
     connection.on('remove', function (room) {
-        if (room.id !== self.connection.socket.sessionid) {
+        if (room.id !== self.connection.getSessionid()) {
             self.webrtc.removePeers(room.id, room.type);
         }
     });
@@ -221,7 +225,7 @@ function SimpleWebRTC(opts) {
                             OfferToReceiveVideo: false
                         }
                     },
-                    broadcaster: self.connection.socket.sessionid,
+                    broadcaster: self.connection.getSessionid(),
                 });
                 self.emit('createdPeer', peer);
                 peer.start();
@@ -438,7 +442,7 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
 SimpleWebRTC.prototype.testReadiness = function () {
     var self = this;
     if (this.webrtc.localStream && this.sessionReady) {
-        self.emit('readyToCall', self.connection.socket.sessionid);
+        self.emit('readyToCall', self.connection.getSessionid());
     }
 };
 
@@ -459,7 +463,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"attachmediastream":5,"mockconsole":6,"socket.io-client":7,"webrtc":4,"webrtcsupport":3,"wildemitter":2}],2:[function(require,module,exports){
+},{"./socketioconnection":2,"attachmediastream":6,"mockconsole":7,"webrtc":3,"webrtcsupport":5,"wildemitter":4}],4:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based 
 on @visionmedia's Emitter from UI Kit.
@@ -600,7 +604,7 @@ WildEmitter.prototype.getWildcardCallbacks = function (eventName) {
     return result;
 };
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 
@@ -648,7 +652,7 @@ module.exports = {
     getUserMedia: getUserMedia
 };
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = function (stream, el, options) {
     var URL = window.URL;
     var opts = {
@@ -689,7 +693,7 @@ module.exports = function (stream, el, options) {
     return element;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
 var l = methods.length;
 var fn = function () {};
@@ -701,7 +705,32 @@ while (l--) {
 
 module.exports = mockconsole;
 
-},{}],7:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
+var io = require('socket.io-client');
+
+function SocketIoConnection(config) {
+    this.connection = io.connect(config.url, config.socketio);
+}
+
+SocketIoConnection.prototype.on = function (ev, fn) {
+    this.connection.on(ev, fn);
+};
+
+SocketIoConnection.prototype.emit = function () {
+    this.connection.emit.apply(this.connection, arguments);
+};
+
+SocketIoConnection.prototype.getSessionid = function () {
+    return this.connection.socket.sessionid;
+};
+
+SocketIoConnection.prototype.disconnect = function () {
+    return this.connection.disconnect();
+};
+
+module.exports = SocketIoConnection;
+
+},{"socket.io-client":8}],8:[function(require,module,exports){
 /*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
 
 var io = ('undefined' === typeof module ? {} : module.exports);
@@ -4575,7 +4604,7 @@ if (typeof define === "function" && define.amd) {
   define([], function () { return io; });
 }
 })();
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var events = require('events');
 
 exports.isArray = isArray;
@@ -4922,7 +4951,7 @@ exports.format = function(f) {
   return str;
 };
 
-},{"events":9}],4:[function(require,module,exports){
+},{"events":10}],3:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var WildEmitter = require('wildemitter');
@@ -5087,7 +5116,7 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
 
 module.exports = WebRTC;
 
-},{"./peer":10,"localmedia":11,"mockconsole":6,"util":8,"webrtcsupport":3,"wildemitter":2}],12:[function(require,module,exports){
+},{"./peer":11,"localmedia":12,"mockconsole":7,"util":9,"webrtcsupport":5,"wildemitter":4}],13:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -5142,7 +5171,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var process=require("__browserify_process");if (!process.EventEmitter) process.EventEmitter = function () {};
 
 var EventEmitter = exports.EventEmitter = process.EventEmitter;
@@ -5338,7 +5367,7 @@ EventEmitter.listenerCount = function(emitter, type) {
   return ret;
 };
 
-},{"__browserify_process":12}],10:[function(require,module,exports){
+},{"__browserify_process":13}],11:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var PeerConnection = require('rtcpeerconnection');
@@ -5604,7 +5633,7 @@ Peer.prototype.sendFile = function (file) {
 
 module.exports = Peer;
 
-},{"filetransfer":14,"rtcpeerconnection":13,"util":8,"webrtcsupport":3,"wildemitter":2}],15:[function(require,module,exports){
+},{"filetransfer":15,"rtcpeerconnection":14,"util":9,"webrtcsupport":5,"wildemitter":4}],16:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg
 var func = (window.navigator.getUserMedia ||
             window.navigator.webkitGetUserMedia ||
@@ -5699,7 +5728,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var util = require('util');
 var hark = require('hark');
 var webrtc = require('webrtcsupport');
@@ -5977,7 +6006,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":17,"getusermedia":15,"hark":16,"mediastream-gain":18,"mockconsole":6,"util":8,"webrtcsupport":3,"wildemitter":2}],19:[function(require,module,exports){
+},{"getscreenmedia":18,"getusermedia":16,"hark":17,"mediastream-gain":19,"mockconsole":7,"util":9,"webrtcsupport":5,"wildemitter":4}],20:[function(require,module,exports){
 //     Underscore.js 1.8.2
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -7515,7 +7544,7 @@ module.exports = LocalMedia;
   }
 }.call(this));
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var toSDP = require('./lib/tosdp');
 var toJSON = require('./lib/tojson');
 
@@ -7637,7 +7666,7 @@ exports.toCandidateJSON = toJSON.toCandidateJSON;
 exports.toMediaJSON = toJSON.toMediaJSON;
 exports.toSessionJSON = toJSON.toSessionJSON;
 
-},{"./lib/tojson":22,"./lib/tosdp":21}],13:[function(require,module,exports){
+},{"./lib/tojson":23,"./lib/tosdp":22}],14:[function(require,module,exports){
 var _ = require('underscore');
 var util = require('util');
 var webrtc = require('webrtcsupport');
@@ -7930,17 +7959,17 @@ PeerConnection.prototype.offer = function (constraints, cb) {
         function (offer) {
             // does not work for jingle, but jingle.js doesn't need
             // this hack...
+            var expandedOffer = {
+                type: 'offer',
+                sdp: offer.sdp
+            };
             if (self.assumeSetLocalSuccess) {
-                self.emit('offer', offer);
-                cb(null, offer);
+                self.emit('offer', expandedOffer);
+                cb(null, expandedOffer);
             }
             self.pc.setLocalDescription(offer,
                 function () {
                     var jingle;
-                    var expandedOffer = {
-                        type: 'offer',
-                        sdp: offer.sdp
-                    };
                     if (self.config.useJingle) {
                         jingle = SJJ.toSessionJSON(offer.sdp, {
                             role: self._role(),
@@ -8210,17 +8239,17 @@ PeerConnection.prototype._answer = function (constraints, cb) {
                     }
                 }
             }
+            var expandedAnswer = {
+                type: 'answer',
+                sdp: answer.sdp
+            };
             if (self.assumeSetLocalSuccess) {
                 // not safe to do when doing simulcast mangling
-                self.emit('answer', answer);
-                cb(null, answer);
+                self.emit('answer', expandedAnswer);
+                cb(null, expandedAnswer);
             }
             self.pc.setLocalDescription(answer,
                 function () {
-                    var expandedAnswer = {
-                        type: 'answer',
-                        sdp: answer.sdp
-                    };
                     if (self.config.useJingle) {
                         var jingle = SJJ.toSessionJSON(answer.sdp, {
                             role: self._role(),
@@ -8418,7 +8447,7 @@ PeerConnection.prototype.getStats = function (cb) {
 
 module.exports = PeerConnection;
 
-},{"sdp-jingle-json":20,"traceablepeerconnection":23,"underscore":19,"util":8,"webrtcsupport":3,"wildemitter":2}],14:[function(require,module,exports){
+},{"sdp-jingle-json":21,"traceablepeerconnection":24,"underscore":20,"util":9,"webrtcsupport":5,"wildemitter":4}],15:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var util = require('util');
 
@@ -8506,7 +8535,7 @@ module.exports.support = window && window.File && window.FileReader && window.Bl
 module.exports.Sender = Sender;
 module.exports.Receiver = Receiver;
 
-},{"util":8,"wildemitter":2}],17:[function(require,module,exports){
+},{"util":9,"wildemitter":4}],18:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -8623,7 +8652,7 @@ window.addEventListener('message', function (event) {
     }
 });
 
-},{"getusermedia":15}],16:[function(require,module,exports){
+},{"getusermedia":16}],17:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -8753,7 +8782,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":2}],18:[function(require,module,exports){
+},{"wildemitter":4}],19:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -8800,7 +8829,7 @@ GainController.prototype.on = function () {
 
 module.exports = GainController;
 
-},{"webrtcsupport":3}],21:[function(require,module,exports){
+},{"webrtcsupport":5}],22:[function(require,module,exports){
 var SENDERS = require('./senders');
 
 
@@ -9016,7 +9045,7 @@ exports.toCandidateSDP = function (candidate) {
     return 'a=candidate:' + sdp.join(' ');
 };
 
-},{"./senders":24}],22:[function(require,module,exports){
+},{"./senders":25}],23:[function(require,module,exports){
 var SENDERS = require('./senders');
 var parsers = require('./parsers');
 var idCounter = Math.random();
@@ -9222,7 +9251,7 @@ exports.toCandidateJSON = function (line) {
     return candidate;
 };
 
-},{"./parsers":25,"./senders":24}],24:[function(require,module,exports){
+},{"./parsers":26,"./senders":25}],25:[function(require,module,exports){
 module.exports = {
     initiator: {
         incoming: {
@@ -9270,7 +9299,7 @@ module.exports = {
     }
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 exports.lines = function (sdp) {
     return sdp.split('\r\n').filter(function (line) {
         return line.length > 0;
@@ -9531,7 +9560,7 @@ exports.bandwidth = function (line) {
     return parsed;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 // based on https://github.com/ESTOS/strophe.jingle/
 // adds wildemitter support
 var util = require('util');
@@ -9768,6 +9797,6 @@ TraceablePeerConnection.prototype.getStats = function (callback, errback) {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":8,"webrtcsupport":3,"wildemitter":2}]},{},[1])(1)
+},{"util":9,"webrtcsupport":5,"wildemitter":4}]},{},[1])(1)
 });
 ;

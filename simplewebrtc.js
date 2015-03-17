@@ -68,7 +68,7 @@ function SimpleWebRTC(opts) {
 
     // create default SocketIoConnection if it's not passed in
     if (this.config.connection === null) {
-        connection = this.connection = new SocketIoConnection(opts);
+        connection = this.connection = new SocketIoConnection(this.config);
     } else {
         connection = this.connection = this.config.connection;
     }

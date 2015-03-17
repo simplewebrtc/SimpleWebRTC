@@ -8,8 +8,8 @@ SocketIoConnection.prototype.on = function (ev, fn) {
     this.connection.on(ev, fn);
 };
 
-SocketIoConnection.prototype.emit = function (ev) {
-    this.connection.emit(arguments);
+SocketIoConnection.prototype.emit = function () {
+    this.connection.emit.apply(this.connection, arguments);
 };
 
 SocketIoConnection.prototype.getSessionid = function () {

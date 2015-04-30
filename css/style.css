@@ -20,6 +20,7 @@ html {
   font-size: 100%;
 }
 body {
+  margin: 0;
   font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 400;
   font-size: 1em;
@@ -161,7 +162,7 @@ a.button:focus {
 }
 .github-fork {
   position: absolute;
-  top: 0;
+  top: 100%;
   right: 0;
   overflow: hidden;
   width: 20em;
@@ -173,6 +174,20 @@ a.button:focus {
   height: 2.5em;
   -webkit-transform: translate(50%, -50%) rotate(45deg) translate(0, 7em);
   z-index: 2;
+}
+/*
+* Messages
+*/
+.message.kickstarter-flag {
+  padding: 10px;
+  position: relative;
+  background-color: #e7f7fd;
+  font-size: 15px;
+  text-align: center;
+  color: #12acef;
+}
+.message.kickstarter-flag a {
+  font-weight: bold;
 }
 pre {
   margin: 0;

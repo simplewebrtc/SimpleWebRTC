@@ -22,6 +22,7 @@
     "request": "",
     "uglify-js": "2.3.6"
   },
+  "license": "MIT",
   "scripts": {
     "updateLatest": "./scripts/updateLatest.sh"
   }

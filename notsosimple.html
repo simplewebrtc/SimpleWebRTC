@@ -512,6 +512,24 @@ var webrtc = new SimpleWebRTC({
 
         <p>Now, when SimpleWebRTC requests user media from the browser, it will request the specific devices selected by the user.</p>
 
+        <h2 id="fail">Fail, with grace</h2>
+        <p>Sometimes, connections fail. While there is little you can do about that, you can make some educated guesses about the <i>why</i>. Most of the time, this is caused by one of the peers being on a restriced network. In that case (and assuming that you are using a TURN server) the PeerConnection will not have gathered any candidates of type relay. SimpleWebRTC makes very easy to detect by exposing a <i>hadLocalRelayCandidate</i> and <i>hadRemoteRelayCandidate</i> property which can be checked when ICE fails:</p>
+        <pre><code>// local p2p/ice failure
+webrtc.on('iceFailed', function (peer) {
+    var pc = peer.pc;
+    console.log('had local relay candidate', pc.hadLocalRelayCandidate);
+    console.log('had remote relay candidate', pc.hadRemoteRelayCandidate);
+});
+
+// remote p2p/ice failure
+webrtc.on('connectivityError', function (peer) {
+    var pc = peer.pc;
+    console.log('had local relay candidate', pc.hadLocalRelayCandidate);
+    console.log('had remote relay candidate', pc.hadRemoteRelayCandidate);
+});</code></pre>
+        <p>Based on this, you can determine which end of the connection is behind a restricted network.</p>
+        <p>For more details (than you ever wanted to know) watch <a href="http://www.tokbox.com/blog/failed-techtok-with-philipp-hancke/">this talk</a>.
+
         <h2>Join without a camera or microphone</a>
 
         <h2>Connection quality</h2>
@@ -525,8 +543,6 @@ var webrtc = new SimpleWebRTC({
         <h2>Integrate it: reveal.js</h2>
 
         <h2 id="turn">Let's talk about TURN servers...</h2>
-
-        <h2>Fail, with grace</h2>
 
         <h2>A word about mobile apps</h2>
 

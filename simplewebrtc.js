@@ -1,4 +1,4 @@
-var WebRTC = require('webrtc');
+var WebRTC = require('./webrtc');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');

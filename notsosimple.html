@@ -223,7 +223,7 @@ webrtc.resumeVideo();</pre></code>
         <p>Whenever you mute or unmute someone, a message is sent via the signaling channel. Listening for this message is easy:</p>
         <pre><code>// listen for mute and unmute events
 webrtc.on('mute', function (data) { // show muted symbol
-    webrtc.webrtc.getPeers(data.id).forEach(function (peer) {
+    webrtc.getPeers(data.id).forEach(function (peer) {
         if (data.name == 'audio') {
             $('#videocontainer_' + webrtc.getDomId(peer) + ' .muted').show();
         } else if (data.name == 'video') {

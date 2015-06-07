@@ -223,22 +223,22 @@ webrtc.resumeVideo();</pre></code>
         <p>Whenever you mute or unmute someone, a message is sent via the signaling channel. Listening for this message is easy:</p>
         <pre><code>// listen for mute and unmute events
 webrtc.on('mute', function (data) { // show muted symbol
-    webrtc.getPeers(data.id).forEach(function (peer) {
+    webrtc.webrtc.getPeers(data.id).forEach(function (peer) {
         if (data.name == 'audio') {
-            $('#videocontainer_' + app.api.getDomId(peer) + ' .muted').show();
+            $('#videocontainer_' + webrtc.getDomId(peer) + ' .muted').show();
         } else if (data.name == 'video') {
-            $('#videocontainer_' + app.api.getDomId(peer) + ' .paused').show();
-            $('#videocontainer_' + app.api.getDomId(peer) + ' video').hide();
+            $('#videocontainer_' + webrtc.getDomId(peer) + ' .paused').show();
+            $('#videocontainer_' + webrtc.getDomId(peer) + ' video').hide();
         }
     });
 });
 webrtc.on('unmute', function (data) { // hide muted symbol
     webrtc.getPeers(data.id).forEach(function (peer) {
         if (data.name == 'audio') {
-            $('#videocontainer_' + app.api.getDomId(peer) + ' .muted').hide();
+            $('#videocontainer_' + webrtc.getDomId(peer) + ' .muted').hide();
         } else if (data.name == 'video') {
-            $('#videocontainer_' + app.api.getDomId(peer) + ' video').show();
-            $('#videocontainer_' + app.api.getDomId(peer) + ' .paused').hide();
+            $('#videocontainer_' + webrtc.getDomId(peer) + ' video').show();
+            $('#videocontainer_' + webrtc.getDomId(peer) + ' .paused').hide();
         }
     });
 });</pre></code>

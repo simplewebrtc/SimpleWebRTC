@@ -243,7 +243,7 @@ webrtc.on('unmute', function (data) { // hide muted symbol
     });
 });</pre></code>
         <p>This uses jQuery to show and hide mute symbols as overlays ontop the video. Again, those elements need to be created in the videoAdded event:</p>
-        <pre><code>// add muted and paused elements
+        <pre><code>    // add muted and paused elements
     var muted = document.createElement('span');
     vol.className = 'muted';
     container.appendChild(muted);

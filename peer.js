@@ -180,7 +180,13 @@ Peer.prototype.getDataChannel = function (name, opts) {
 Peer.prototype.onIceCandidate = function (candidate) {
     if (this.closed) return;
     if (candidate) {
-        this.send('candidate', candidate);
+        if (localStorage && localStorage.forceWebRTCRelay === "true" &&
+                candidate.candidate && candidate.candidate.candidate &&
+                candidate.candidate.candidate.indexOf('relay') < 0) {
+            this.logger.log('Forcing relay. Ignoring non-relay candidate.');
+        } else {
+            this.send('candidate', candidate);
+        }
     } else {
         this.logger.log("End of candidates.");
     }
@@ -221,7 +227,7 @@ Peer.prototype.handleRemoteStreamAdded = function (event) {
     } else {
         this.stream = event.stream;
         // FIXME: addEventListener('ended', ...) would be nicer
-        // but does not work in firefox 
+        // but does not work in firefox
         this.stream.onended = function () {
             self.end();
         };

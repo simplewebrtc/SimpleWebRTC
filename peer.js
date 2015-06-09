@@ -180,7 +180,14 @@ Peer.prototype.getDataChannel = function (name, opts) {
 Peer.prototype.onIceCandidate = function (candidate) {
     if (this.closed) return;
     if (candidate) {
-        this.send('candidate', candidate);
+        var pcConfig = this.parent.config.peerConnectionConfig;
+        if (webrtc.prefix === 'moz' && pcConfig &&
+                candidate.candidate && candidate.candidate.candidate &&
+                candidate.candidate.candidate.indexOf(pcConfig.iceTransports) < 0) {
+            this.logger.log('Ignoring ice candidate not matching pcConfig iceTransports type: ', pcConfig.iceTransports);
+        } else {
+            this.send('candidate', candidate);
+        }
     } else {
         this.logger.log("End of candidates.");
     }
@@ -221,7 +228,7 @@ Peer.prototype.handleRemoteStreamAdded = function (event) {
     } else {
         this.stream = event.stream;
         // FIXME: addEventListener('ended', ...) would be nicer
-        // but does not work in firefox 
+        // but does not work in firefox
         this.stream.onended = function () {
             self.end();
         };

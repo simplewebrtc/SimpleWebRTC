@@ -180,10 +180,11 @@ Peer.prototype.getDataChannel = function (name, opts) {
 Peer.prototype.onIceCandidate = function (candidate) {
     if (this.closed) return;
     if (candidate) {
-        if (localStorage && localStorage.forceWebRTCRelay === "true" &&
+        var pcConfig = this.parent.config.peerConnectionConfig;
+        if (webrtc.prefix === 'moz' && pcConfig &&
                 candidate.candidate && candidate.candidate.candidate &&
-                candidate.candidate.candidate.indexOf('relay') < 0) {
-            this.logger.log('Forcing relay. Ignoring non-relay candidate.');
+                candidate.candidate.candidate.indexOf(pcConfig.iceTransports) < 0) {
+            this.logger.log('Ignoring ice candidate not matching pcConfig iceTransports type: ', pcConfig.iceTransports);
         } else {
             this.send('candidate', candidate);
         }

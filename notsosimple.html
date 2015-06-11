@@ -530,11 +530,28 @@ webrtc.on('connectivityError', function (peer) {
         <p>Based on this, you can determine which end of the connection is behind a restricted network.</p>
         <p>For more details (than you ever wanted to know) watch <a href="http://www.tokbox.com/blog/failed-techtok-with-philipp-hancke/">this talk</a>.
 
-        <h2>Join without a camera or microphone</a>
+        <h2 id="nicknames">User-friendly nicknames</h2>
+        <p>Sometimes, you want to display a nickname along with the video. That's now pretty simple, just add a 'nick' property to the config when creating the SimpleWebRTC object:</p>
+        <pre><code>var webrtc = new SimpleWebRTC({
+  // the id/element dom element that will hold "our" video
+  localVideoEl: 'localVideo',
+  // the id/element dom element that will hold remote videos
+  remoteVideosEl: 'remotesVideos',
+  // immediately ask for camera access
+  autoRequestMedia: true,
+  nick: 'Jane Doe',
+  url: 'https://example.com/'
+});</code></pre>
+        <p>and evaluate peer.nick in the <i>videoAdded</i> event:
+        <pre><code>webrtc.on('videoAdded', function (video, peer) {
+    console.log('videoAdded', peer.nick);
+});</code></pre>
+
+        <h2>Join without a camera or microphone</h2>
 
         <h2>Connection quality</h2>
 
-        <h2>Upgrade an audiochat to a videochat</a>
+        <h2>Upgrade an audiochat to a videochat</h2>
 
         <h2>Text chat</h2>
 

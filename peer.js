@@ -26,10 +26,12 @@ function Peer(options) {
     this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionConstraints);
     this.pc.on('ice', this.onIceCandidate.bind(this));
     this.pc.on('offer', function (offer) {
+        if (self.parent.config.nick) offer.nick = self.parent.config.nick;
         self.send('offer', offer);
     });
-    this.pc.on('answer', function (offer) {
-        self.send('answer', offer);
+    this.pc.on('answer', function (answer) {
+        if (self.parent.config.nick) answer.nick = self.parent.config.nick;
+        self.send('answer', answer);
     });
     this.pc.on('addStream', this.handleRemoteStreamAdded.bind(this));
     this.pc.on('addChannel', this.handleDataChannelAdded.bind(this));
@@ -101,6 +103,8 @@ Peer.prototype.handleMessage = function (message) {
     if (message.prefix) this.browserPrefix = message.prefix;
 
     if (message.type === 'offer') {
+        if (!this.nick) this.nick = message.payload.nick;
+        delete message.payload.nick;
         // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1064247
         message.payload.sdp = message.payload.sdp.replace('a=fmtp:0 profile-level-id=0x42e00c;packetization-mode=1\r\n', '');
         this.pc.handleOffer(message.payload, function (err) {
@@ -113,6 +117,8 @@ Peer.prototype.handleMessage = function (message) {
             });
         });
     } else if (message.type === 'answer') {
+        if (!this.nick) this.nick = message.payload.nick;
+        delete message.payload.nick;
         this.pc.handleAnswer(message.payload);
     } else if (message.type === 'candidate') {
         this.pc.processIce(message.payload);

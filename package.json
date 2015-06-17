@@ -1,6 +1,6 @@
 {
   "name": "simplewebrtc",
-  "version": "1.18.0",
+  "version": "1.18.1",
   "repository": {
     "type": "git",
     "url": "git@github.com:henrikjoreteg/SimpleWebRTC.git"

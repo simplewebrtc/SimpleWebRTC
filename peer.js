@@ -187,7 +187,7 @@ Peer.prototype.onIceCandidate = function (candidate) {
     if (this.closed) return;
     if (candidate) {
         var pcConfig = this.parent.config.peerConnectionConfig;
-        if (webrtc.prefix === 'moz' && pcConfig &&
+        if (webrtc.prefix === 'moz' && pcConfig && pcConfig.iceTransports &&
                 candidate.candidate && candidate.candidate.candidate &&
                 candidate.candidate.candidate.indexOf(pcConfig.iceTransports) < 0) {
             this.logger.log('Ignoring ice candidate not matching pcConfig iceTransports type: ', pcConfig.iceTransports);

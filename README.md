@@ -62,6 +62,11 @@ webrtc.on('readyToCall', function () {
 
 Note that you will most likely also need to run your own TURN servers. See http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/ for a basic tutorial. 
 
+## Filetransfer
+Sending files between individual participants is supported. See http://simplewebrtc.com/filetransfer.html for a demo.
+
+Note that this is not file sharing between a group which requires a completly different approach.
+
 ## It's not always that simple...
 
 Sometimes you need to do more advanced stuff. See http://simplewebrtc.com/notsosimple.html for some examples.

@@ -1,6 +1,10 @@
 {
   "name": "simplewebrtc",
   "version": "1.19.0",
+  "scripts": {
+    "start": "node server.js",
+    "build": "browserify build"
+  },
   "repository": {
     "type": "git",
     "url": "git@github.com:henrikjoreteg/SimpleWebRTC.git"

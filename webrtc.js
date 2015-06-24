@@ -1,6 +1,5 @@
 var util = require('util');
 var webrtc = require('webrtcsupport');
-var WildEmitter = require('wildemitter');
 var mockconsole = require('mockconsole');
 var localMedia = require('localmedia');
 var Peer = require('./peer');

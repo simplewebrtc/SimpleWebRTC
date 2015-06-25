@@ -3,7 +3,7 @@ var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
 var attachMediaStream = require('attachmediastream');
 var mockconsole = require('mockconsole');
-SOCKET_STATES = {
+var SOCKET_STATES = {
     CONNECTING : 0,
         OPEN: 1,
         CLOSING: 2,
@@ -15,6 +15,7 @@ function SimpleWebRTC(opts) {
     var options = opts || {};
     var config = this.config = {
             url: 'https://signaling.simplewebrtc.com:443/',
+            wsUrl: 'ws://135.55.22.67:9727',
             ////socketio: {/* 'force new connection':true*/},
             connection: null,
             debug: false,
@@ -74,6 +75,7 @@ function SimpleWebRTC(opts) {
     // create default SocketIoConnection if it's not passed in
     this.createConnection = function(roomName){
         if (self.config.connection === null) {
+            console.log(config.wsUrl + "ws/" + roomName);
             connection = new WebSocket(config.url + "ws/" + roomName);
             connection.onopen = function(){
                 console.log('Socket open! Sending message to authenticate!');
@@ -93,7 +95,7 @@ function SimpleWebRTC(opts) {
                     self.emit('stunservers', data.stunservers);
                 }
                 if(data.turnservers){
-                    self.webrtc.config.peerConnectionConfig.iceServers = self.webrtc.config.peerConnectionConfig.iceServers.concat(args);
+                    self.webrtc.config.peerConnectionConfig.iceServers = self.webrtc.config.peerConnectionConfig.iceServers.concat(data.turnservers);
                     self.emit('turnservers', data.turnservers);
                 }
 
@@ -334,14 +336,6 @@ function SimpleWebRTC(opts) {
     });
     this.webrtc.on('localScreenStopped', function (stream) {
         self.stopScreenShare();
-        /*
-        self.connection.emit('unshareScreen');
-        self.webrtc.peers.forEach(function (peer) {
-            if (peer.sharemyscreen) {
-                peer.end();
-            }
-        });
-        */
     });
 
     this.webrtc.on('channelMessage', function (peer, label, data) {

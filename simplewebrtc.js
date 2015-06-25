@@ -80,7 +80,7 @@ function SimpleWebRTC(opts) {
             };
 
             connection.onerror = function(err){
-                console.log("Socket error occured")
+                console.log("Socket error occured");
             };
 
             connection.onclose = function(){
@@ -88,6 +88,15 @@ function SimpleWebRTC(opts) {
             };
 
             connection.onConnect = function (data) {
+                if(data.stunservers){
+                    self.webrtc.config.peerConnectionConfig.iceServers = data.stunservers;
+                    self.emit('stunservers', data.stunservers);
+                }
+                if(data.turnservers){
+                    self.webrtc.config.peerConnectionConfig.iceServers = self.webrtc.config.peerConnectionConfig.iceServers.concat(args);
+                    self.emit('turnservers', data.turnservers);
+                }
+
                 connection.sessionid = data.sessionid;
                 self.emit('connectionReady', data.sessionid);
                 self.sessionReady = true;
@@ -136,17 +145,6 @@ function SimpleWebRTC(opts) {
                 }
             };
 
-            connection.onStun = function (args) {
-                // resets/overrides the config
-                self.webrtc.config.peerConnectionConfig.iceServers = args;
-                self.emit('stunservers', args);
-            };
-            connection.onTurn = function (args) {
-                // appends to the config
-                self.webrtc.config.peerConnectionConfig.iceServers = self.webrtc.config.peerConnectionConfig.iceServers.concat(args);
-                self.emit('turnservers', args);
-            };
-
             connection.onJoin = function(data){
                 var roomDescription = data.roomDescription;
                 var err = data.err;
@@ -157,8 +155,8 @@ function SimpleWebRTC(opts) {
                         client,
                         type,
                         peer;
-                    for (id in roomDescription.clients) {
-                        client = roomDescription.clients[id];
+                    for (id in roomDescription) {
+                        client = roomDescription[id];
                         for (type in client) {
                             if (client[type]) {
                                 peer = self.webrtc.createPeer({
@@ -226,7 +224,7 @@ function SimpleWebRTC(opts) {
                         break;
                     default : console.log("Unknown socket event");
                 }
-            }
+            };
         } else {
             connection = this.connection = this.config.connection;
         }

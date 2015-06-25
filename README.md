@@ -1,5 +1,12 @@
 # SimpleWebRTC - World's easiest WebRTC lib
 
+This repository is a fork of HenrikJoreteg's awesome SimpleWebRTC repository. The program removes everything dependent on socket.io. And make the library more general for websockets that are available for most Server languages such as Golang, Java, C++, Python and Ruby.
+
+The library also removed create and join action. The join action is triggered upon establishing the websocket connection.
+
+Server automatically creates room or join user into the room upon visiting a url with room path.
+
+
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/HenrikJoreteg/SimpleWebRTC?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 

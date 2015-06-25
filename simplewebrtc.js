@@ -75,7 +75,7 @@ function SimpleWebRTC(opts, roomName) {
 
     // create default SocketIoConnection if it's not passed in
     if (self.config.connection === null) {
-        self.connection = new WebSocket(config.wsUrl + "ws/" + room);
+        self.connection = new WebSocket(config.wsUrl + "/ws/" + room);
         self.connection.onopen = function(){
             console.log('Socket open! Sending message to authenticate!');
         };

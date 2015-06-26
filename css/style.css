@@ -161,7 +161,7 @@ a.button:focus {
 }
 .github-fork {
   position: absolute;
-  top: 100%;
+  top: 0;
   right: 0;
   overflow: hidden;
   width: 20em;

@@ -11928,3 +11928,19 @@ module.exports = keys;
 },{"lodash._getnative":48,"lodash.isarguments":49,"lodash.isarray":33}]},{},[1])(1)
 });
 ;
+
+SimpleWebRTC.prototype.sendMessage= function(msg, event , peer, opts){
+    this.webrtc.peers.forEach(function (peer) {
+        if (peer.enableDataChannels) {
+            var dc =  peer.getDataChannel('messagechannel');
+            peer.emit('addChannel', dc);
+            dc.onopen = sendData;
+            if (dc.readyState === 'open')   sendData(dc);
+            return true;
+        }
+
+       function sendData(dc) {
+                       dc = dc.send?dc:dc.srcElement;
+                     dc.send(JSON.stringify({type: 'message', message:msg }));
+    });
+};

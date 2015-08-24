@@ -16,7 +16,6 @@ function SimpleWebRTC(opts, roomName) {
     var options = opts || {};
     var config = this.config = {
             url: 'https://signaling.simplewebrtc.com:443/',
-            wsUrl: 'ws://135.55.22.67:9727',
             ////socketio: {/* 'force new connection':true*/},
             connection: null,
             debug: false,

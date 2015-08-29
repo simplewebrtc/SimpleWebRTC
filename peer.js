@@ -11,6 +11,9 @@ var INBAND_FILETRANSFER_V1 = 'https://simplewebrtc.com/protocol/filetransfer#inb
 function Peer(options) {
     var self = this;
 
+    // call emitter constructor
+    WildEmitter.call(this);
+
     this.id = options.id;
     this.parent = options.parent;
     this.type = options.type || 'video';
@@ -69,9 +72,6 @@ function Peer(options) {
             self.pc.addStream(stream);
         });
     }
-
-    // call emitter constructor
-    WildEmitter.call(this);
 
     this.on('channelOpen', function (channel) {
         if (channel.protocol === INBAND_FILETRANSFER_V1) {

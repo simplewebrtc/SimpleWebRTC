@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SimpleWebRTC Demo</title>
+    </head>
+    <body>
+        <h1 id="title">Start a room</h1>
+        <style>
+            .videoContainer {
+                position: relative;
+                width: 200px;
+                height: 100px;
+            }
+            .videoContainer video {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+        <p id="subTitle"></p>
+        <form id="createRoom">
+            <input id="sessionInput"/>
+            <button type="submit">Create it!</button>
+        </form>
+        <div class="videoContainer">
+            <audio id="localAudio" oncontextmenu="return false;" controls></video>
+        </div>
+        <div id="remotes"></div>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script src="https://simplewebrtc.com/latest.js"></script>
+        <script>
+            // grab the room from the URL
+            var room = location.search && location.search.split('?')[1];
+
+            // create our webrtc connection
+            var webrtc = new SimpleWebRTC({
+                // the id/element dom element that will hold "our" video
+                localVideoEl: 'localAudio',
+                // the id/element dom element that will hold remote videos
+                remoteVideosEl: '',
+                // immediately ask for camera access
+                autoRequestMedia: true,
+                debug: false,
+                detectSpeakingEvents: true,
+                enableDataChannels: false,
+                autoAdjustMic: false,
+                media: {
+                    audio: true,
+                    video: false
+                },
+                receiveMedia: {
+                    mandatory: {
+                        OfferToReceiveAudio: true,
+                        OfferToReceiveVideo: false
+                    }
+                }
+            });
+
+            // when it's ready, join if we got a room from the URL
+            webrtc.on('readyToCall', function () {
+                // you can name it anything
+                if (room) webrtc.joinRoom(room);
+            });
+            webrtc.on('localMediaError', function () {
+                console.log('local media error');
+            });
+
+            // called when a peer is created
+            webrtc.on('createdPeer', function (peer) {
+                console.log('createdPeer', peer);
+                var remotes = document.getElementById('remotes');
+                if (!remotes) return;
+                var container = document.createElement('div');
+                container.className = 'peerContainer';
+                container.id = 'container_' + webrtc.getDomId(peer);
+
+                // show the peer id
+                var peername = document.createElement('div');
+                peername.className = 'peerName';
+                peername.appendChild(document.createTextNode('Peer: ' + peer.id));
+                container.appendChild(peername);
+
+                /*
+                // show the peer nickname
+                var nickname = document.createElement('div');
+                nickname.className = 'nick';
+                container.appendChild(nickname);
+                */
+
+                // show the ice connection state
+                if (peer && peer.pc) {
+                    var connstate = document.createElement('div');
+                    connstate.className = 'connectionstate';
+                    container.appendChild(connstate);
+                    peer.pc.on('iceConnectionStateChange', function (event) {
+                        var state = peer.pc.iceConnectionState;
+                        console.log('state', state);
+                        container.className = 'peerContainer p2p' + state.substr(0, 1).toUpperCase()
+                            + state.substr(1);
+                        switch (state) {
+                        case 'checking': 
+                            //nickname.appendChild(document.createTextNode('Nick: ' + peer.nick));
+                            connstate.innerText = 'Connecting to peer...';
+                            break;
+                        case 'connected':
+                        case 'completed': // on caller side
+                            connstate.innerText = 'Connection established.';
+                            audio.srcObject = peer.stream;
+                            break;
+                        case 'disconnected':
+                            connstate.innerText = 'Disconnected.';
+                            break;
+                        case 'failed':
+                            // not handled here
+                            break;
+                        case 'closed':
+                            connstate.innerText = 'Connection closed.';
+                            container.remove();
+                            break;
+                        }
+                    });
+                }
+                var audio = document.createElement('audio');
+                audio.controls = true;
+                container.appendChild(audio);
+
+                remotes.appendChild(container);
+            });
+
+            // Since we use this twice we put it here
+            function setRoom(name) {
+                $('form').remove();
+                $('h1').text(name);
+                $('#subTitle').text('Link to join: ' + location.href);
+                $('body').addClass('active');
+            }
+
+            if (room) {
+                setRoom(room);
+            } else {
+                $('form').submit(function () {
+                    var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
+                    webrtc.createRoom(val, function (err, name) {
+                        console.log(' create room cb', arguments);
+                    
+                        var newUrl = location.pathname + '?' + name;
+                        if (!err) {
+                            history.replaceState({foo: 'bar'}, null, newUrl);
+                            setRoom(name);
+                        } else {
+                            console.log(err);
+                        }
+                    });
+                    return false;          
+                });
+            }
+        </script>
+    </body>
+</html>

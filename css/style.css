@@ -18,6 +18,7 @@
 }
 html {
   font-size: 100%;
+  background: transparent url("/img/header.png") no-repeat center 0;
 }
 body {
   margin: 0;
@@ -177,17 +178,6 @@ a.button:focus {
 /*
 * Messages
 */
-.message.kickstarter-flag {
-  padding: 10px;
-  position: relative;
-  background-color: #e7f7fd;
-  font-size: 15px;
-  text-align: center;
-  color: #12acef;
-}
-.message.kickstarter-flag a {
-  font-weight: bold;
-}
 pre {
   margin: 0;
   white-space: pre-wrap;

@@ -1,3 +1,4 @@
+# To build the project: run : node build.js
 # SimpleWebRTC - World's easiest WebRTC lib
 
 This repository is a fork of HenrikJoreteg's awesome SimpleWebRTC repository. The program removes everything dependent on socket.io. And make the library more general for websockets that are available for most Server languages such as Golang, Java, C++, Python and Ruby.

@@ -11,6 +11,9 @@ var INBAND_FILETRANSFER_V1 = 'https://simplewebrtc.com/protocol/filetransfer#inb
 function Peer(options) {
     var self = this;
 
+    // call emitter constructor
+    WildEmitter.call(this);
+
     this.id = options.id;
     this.parent = options.parent;
     this.type = options.type || 'video';
@@ -70,9 +73,6 @@ function Peer(options) {
         });
     }
 
-    // call emitter constructor
-    WildEmitter.call(this);
-
     this.on('channelOpen', function (channel) {
         if (channel.protocol === INBAND_FILETRANSFER_V1) {
             channel.onmessage = function (event) {
@@ -105,8 +105,6 @@ Peer.prototype.handleMessage = function (message) {
     if (message.type === 'offer') {
         if (!this.nick) this.nick = message.payload.nick;
         delete message.payload.nick;
-        // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1064247
-        message.payload.sdp = message.payload.sdp.replace('a=fmtp:0 profile-level-id=0x42e00c;packetization-mode=1\r\n', '');
         this.pc.handleOffer(message.payload, function (err) {
             if (err) {
                 return;

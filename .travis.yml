@@ -1,0 +1,19 @@
+sudo: false
+language: node_js
+node_js:
+- 0.10
+
+before_script:
+  - ./node_modules/travis-multirunner/setup.sh
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+
+script:
+  - npm test
+
+after_failure:
+  - for file in *.log; do echo $file; echo "======================"; cat $file; done || true
+
+notifications:
+  email:
+  - 

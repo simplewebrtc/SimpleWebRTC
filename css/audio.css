@@ -208,7 +208,6 @@ hr {
 /* Stream */
 
 .peerContainer.local {
-  width: 35%;
   float: left;
 }
 
@@ -290,7 +289,6 @@ hr {
 }
 
 #remotes .peerContainer {
-  width: calc(50% - 2px);
   margin-bottom: 6px;
   padding: 5px;
   float: left;
@@ -333,6 +331,7 @@ audio {
 }
 
 
+/*
 .p2pChecking {
   background-color: #ffeed7;
 }
@@ -348,6 +347,7 @@ audio {
 .p2pClosed {
   background-color: #f5f7f8;
 }
+*/
 
 /* Clearfix */
 

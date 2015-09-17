@@ -1,0 +1,362 @@
+/*----------------------------------------------
+*
+* SimpleWebRTC audio-only demo
+*
+*---------------------------------------------*/
+
+/* Reset */
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+  display: block
+}
+
+body {
+  line-height: 1;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Base styles */
+
+*, *:after, *:before {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+::-moz-selection, ::selection {
+  background-color: $blue-light;
+  color: white;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.4
+  color: #444;;
+}
+
+h1 {
+  margin-bottom: 40px;
+  font-size: 3em;
+  font-weight: 700;
+}
+
+h2 {
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+h3 {
+  margin-bottom: 10px;
+  font-size: .9em;
+  font-weight: 300;
+}
+
+p {
+  margin-bottom: 1.25em;
+  font-size: .9;
+}
+
+a {
+  color: #12acef;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+hr {
+  border: none;
+  border-bottom: 1px solid #e6eaed;
+}
+
+.content {
+  width: 700px;
+  margin: 5em auto;
+  padding: 20px;
+}
+
+/* Buttons */
+
+.button {
+  border: none;
+  display: inline-block;
+  border-radius: 3px;
+  padding: 15px 20px;
+  background-color: #12acef;
+  font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: inherit;
+  font-weight: 500;
+  text-align: center;
+  color: white;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  -webkit-appearence: none;
+  transition: background .3s ease-in;
+  -webkit-transition: background .3s ease-in;
+}
+
+.button:hover {
+  background-color: #59c5f4;
+}
+
+.button:focus {
+  outline: none;
+}
+
+.button-small {
+  padding: 6px 10px 7px;
+  font-size: .9em;
+}
+
+/* Form inputs */
+
+.form-input {
+  padding: 15px;
+  border-radius: 3px;
+  border: 1px solid #e6eaed;
+  font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: inherit;
+}
+
+.form-input:focus {
+  border-color: #74ddff;
+  transition: all .2s ease-in;
+  outline: none;
+}
+
+.form-input:disabled {
+  background-color: #eee;
+}
+
+/* Main logo headline */
+
+.logo {
+  font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  text-align: center;
+}
+
+.logo span:first-of-type { color: #ec008c; }
+.logo span:last-of-type  { color: #12acef; }
+
+/* Create a room input */
+
+#createRoom {
+  margin: 40px 0;
+  text-align: center;
+}
+
+#createRoom .form-input {
+  min-width: 300px;
+  max-width: 100%;
+  margin-right: 5px;
+}
+
+#createRoom ~ .peerContainer {
+  display: none;
+}
+
+/* Stream */
+
+.peerContainer.local {
+  width: 35%;
+  float: left;
+}
+
+.local-details {
+  margin-bottom: 15px;
+  padding: 5px;
+  position: relative;
+  border: 1px solid #e6eaed;
+}
+
+.nick {
+  padding: 5px;
+  min-height: 28px;
+}
+
+.avatar {
+  height: 160px;
+  display: block;
+  background: #eee;
+  border: none;
+}
+
+.button-mute {
+  width: 30px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: #828c8f url('icons.svg') no-repeat center 5px;
+  text-indent: -9999em;
+}
+
+.button-mute.muted {
+  background-color: #ec008c;
+  background-position: center -28px;
+}
+
+.local-controls {
+  visibility: hidden;
+  padding: 15px 10px;
+  background: #f7f7f7;
+  text-align: center;
+}
+
+.local-controls p {
+  margin: 12px 0 10px;
+  font-size: .9em;
+}
+
+.remote-details {
+  margin-bottom: 15px;
+  padding: 5px;
+  position: relative;
+  border: 1px solid #e6eaed;
+}
+
+#nickInput {
+  width: 100%;
+  padding: 3px 5px 5px;
+  border: 1px solid transparent;
+  font-size: 1em;
+  outline: none;
+}
+
+#nickInput:focus {
+  border-color: #74ddff;
+}
+
+#selectfile {
+  width: 80%;
+  margin: 5px auto 0;
+}
+
+/* Remote streams */
+
+#remotes {
+  width: 65%;
+  padding-left: 20px;
+  float: left;
+}
+
+#remotes .peerContainer {
+  width: calc(50% - 2px);
+  margin-bottom: 6px;
+  padding: 5px;
+  float: left;
+}
+
+#remotes .peerContainer video {
+  display: none;
+}
+
+#remotes .peerContainer:nth-child(odd) {
+  margin-right: 2px;
+}
+
+#remotes .peerContainer:nth-child(even) {
+  margin-left: 2px;
+}
+
+.peerName {
+  padding: 5px;
+  padding-bottom: 8px;
+  font-size: .8em;
+}
+
+.connectionstate {
+  padding: 10px 5px 5px;
+  font-size: .8em;
+}
+
+audio {
+  display: none;
+}
+
+/* mirroring for local snapshot */
+#snapshot {
+  transform: scaleX(-1)
+}
+
+#snapshotvideo {
+  display: none;
+}
+
+
+.p2pChecking {
+  background-color: #ffeed7;
+}
+.p2pConnected, .p2pCompleted {
+  background-color: #e8f7ef;
+}
+.p2pFailed {
+  background-color: #ffe3eb
+}
+.p2pDisconnected {
+  background-color: #ffeed7;
+}
+.p2pClosed {
+  background-color: #f5f7f8;
+}
+
+/* Clearfix */
+
+.cf:before,
+.cf:after {
+  content: " ";
+  display: table;
+}
+
+.cf:after {
+  clear: both;
+}

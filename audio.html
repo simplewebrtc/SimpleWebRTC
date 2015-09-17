@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SimpleWebRTC Audio Demo</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="WebRTC, SimpleWebRTC, Talky, Talky.io">
+
+        <link rel="stylesheet" type="text/css" href="//cloud.typography.com/7773252/764742/css/fonts.css" />
+        <link rel="stylesheet" href="css/audio.css" />
+        <link rel="icon" type="image/png" href="img/favicon.png">
+    </head>
+    <body>
+        <div class="content cf">
+            <h1 class="logo"><span>simple</span><span>WebRTC</span></h1>
+            <h2 id="title"></h2>
+            <form id="createRoom">
+                <input id="sessionInput" class="form-input" placeholder="Enter a room name" disabled/>
+                <button disabled type="submit" class="button">Create room</button>
+            </form>
+            <p id="subTitle"></p>
+
+            <div class='peerContainer local'>
+                <div class="local-details">
+                    <input id="nickInput" placeholder="Set your name"/>
+                    <audio id="localAudio" controls oncontextmenu="return false;" disabled></audio>
+                    <img id="snapshot" class="avatar"/>
+                    <video id="snapshotvideo" class="avatar"></video> 
+                    <!-- add class of 'muted' when so -->
+                    <a class="button button-small button-mute">Mute</a>
+                </div>
+                <div class="local-controls">
+                    <button class="button button-small" id="snapshotButton">Take a snapshot</button>
+                </div>
+            </div>
+            <div id="remotes"></div>
+        </div>
+
+        <script src="latest.js"></script>
+        <script src="audio.js"></script>
+    </body>
+</html>

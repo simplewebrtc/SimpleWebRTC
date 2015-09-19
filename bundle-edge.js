@@ -5510,7 +5510,14 @@ Peer.prototype.handleMessage = function (message) {
     } else if (message.type === 'unmute') {
         this.parent.emit('unmute', {id: message.from, name: message.payload.name});
     } else if (message.type === 'endOfCandidates') {
-        console.log('remote end of candidates', message);
+        // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
+        // shim this will only be called in Edge.
+        var mLines = this.pc.pc.peerconnection.mLines || this.pc.pc.peerconnection.tracks || [];
+        mLines.forEach(function (mLine) {
+            if (mLine.iceTransport) {
+                mLine.iceTransport.addRemoteCandidate({});
+            }
+        });
     }
 };
 
@@ -7438,12 +7445,6 @@ if (typeof window === 'undefined' || !window.navigator) {
           cand = {};
         }
         track.iceTransport.addRemoteCandidate(cand);
-
-        // dirty hack to make sure end-of-candidates is called in firefox
-        // also slightly better than chrome ice-tcp hack.
-        window.setTimeout(function() {
-          track.iceTransport.addRemoteCandidate({});
-        }, 5000);
       }
       if (arguments.length > 1 && typeof arguments[1] === 'function') {
         window.setTimeout(arguments[1], 0);

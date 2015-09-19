@@ -7437,15 +7437,13 @@ if (typeof window === 'undefined' || !window.navigator) {
         if (cand.type === 'endOfCandidates') {
           cand = {};
         }
-        // dirty hack to make chrome work.
-        if (cand.protocol === 'tcp' && cand.port === 0) {
-          cand = {};
-          window.setTimeout(function() {
-            track.iceTransport.addRemoteCandidate(cand);
-          }, 5000);
-          return;
-        }
         track.iceTransport.addRemoteCandidate(cand);
+
+        // dirty hack to make sure end-of-candidates is called in firefox
+        // also slightly better than chrome ice-tcp hack.
+        window.setTimeout(function() {
+          track.iceTransport.addRemoteCandidate({});
+        }, 5000);
       }
       if (arguments.length > 1 && typeof arguments[1] === 'function') {
         window.setTimeout(arguments[1], 0);

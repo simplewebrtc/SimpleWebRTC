@@ -162,11 +162,6 @@ webrtc.on('connectivityError', function (peer) {
     }
 });
 
-// override because of problem with gatherer
-webrtc.on('stunservers', function (args) {
-    webrtc.webrtc.config.peerConnectionConfig.iceServers = [];
-});
-
 function setRoom(name) {
     document.querySelector('form#createRoom').remove();
     document.getElementById('title').innerText = 'Room: ' + name;

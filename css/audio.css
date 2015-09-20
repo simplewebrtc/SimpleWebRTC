@@ -238,6 +238,7 @@ hr {
   right: 10px;
   background: #828c8f url('icons.svg') no-repeat center 5px;
   text-indent: -9999em;
+  visibility: hidden;
 }
 
 .button-mute.muted {

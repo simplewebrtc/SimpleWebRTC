@@ -35,6 +35,7 @@ webrtc.on('localStream', function(stream) {
 
     var track = stream.getAudioTracks()[0];
     var btn = document.querySelector('.local .button-mute');
+    btn.style.visibility = 'visible';
     btn.onclick = function() {
         track.enabled = !track.enabled;
         btn.className = 'button button-small button-mute' + (track.enabled ? '' : ' muted');

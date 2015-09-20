@@ -5513,6 +5513,7 @@ Peer.prototype.handleMessage = function (message) {
         // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
         // shim this will only be called in Edge.
         var mLines = this.pc.pc.peerconnection.mLines || this.pc.pc.peerconnection.tracks || [];
+        console.log('remote end of candidates', mLines);
         mLines.forEach(function (mLine) {
             if (mLine.iceTransport) {
                 mLine.iceTransport.addRemoteCandidate({});
@@ -6844,10 +6845,8 @@ if (typeof window === 'undefined' || !window.navigator) {
         }
       };
       iceTransport.onicestatechange = function() {
-        /*
         console.log(self._peerConnectionId,
             'ICE state change', iceTransport.state);
-        */
         self._updateIceConnectionState(iceTransport.state);
       };
 
@@ -9666,10 +9665,8 @@ if (typeof window === 'undefined' || !window.navigator) {
         }
       };
       iceTransport.onicestatechange = function() {
-        /*
         console.log(self._peerConnectionId,
             'ICE state change', iceTransport.state);
-        */
         self._updateIceConnectionState(iceTransport.state);
       };
 

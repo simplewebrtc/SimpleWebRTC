@@ -50,7 +50,7 @@ webrtc.on('readyToCall', function () {
                     webrtc.sendToAll('avatar', {avatar: avatar});
                 }
                 if (nick) {
-                    webrtc.sendToAll('nickname', {nick: nickname});
+                    webrtc.sendToAll('nickname', {nick: nick});
                 }
             }, 1000);
         });

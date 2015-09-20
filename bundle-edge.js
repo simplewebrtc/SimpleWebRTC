@@ -5527,7 +5527,7 @@ Peer.prototype.handleMessage = function (message) {
                     //console.log('and no errors were thrown');
                 }
             });
-        }, 100);
+        }, 1000);
     }
 };
 

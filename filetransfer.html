@@ -240,6 +240,7 @@ webrtc.on('createdPeer', function (peer) {
 // local p2p/ice failure
 webrtc.on('iceFailed', function (peer) {
     var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
+    var fileinput = document.querySelector('#container_' + webrtc.getDomId(peer) + ' input');
     console.log('local fail', connstate);
     if (connstate) {
         connstate.innerText = 'Connection failed.';
@@ -250,6 +251,7 @@ webrtc.on('iceFailed', function (peer) {
 // remote p2p/ice failure
 webrtc.on('connectivityError', function (peer) {
     var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
+    var fileinput = document.querySelector('#container_' + webrtc.getDomId(peer) + ' input');
     console.log('remote fail', connstate);
     if (connstate) {
         connstate.innerText = 'Connection failed.';

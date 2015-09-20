@@ -5517,9 +5517,9 @@ Peer.prototype.handleMessage = function (message) {
         mLines.forEach(function (mLine) {
             console.log('icetransport for', mLine, mLine.iceTransport);
             if (mLine.iceTransport) {
-                window.setTimeout(function() {
-                    mLine.iceTransport.addRemoteCandidate({});
-                }, 500);
+                console.log('iceTransport is set...');
+                mLine.iceTransport.addRemoteCandidate({});
+                console.log('and no errors were thrown');
             }
         });
     }

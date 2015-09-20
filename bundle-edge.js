@@ -7443,6 +7443,7 @@ if (typeof window === 'undefined' || !window.navigator) {
         if (cand.type === 'endOfCandidates') {
           cand = {};
         }
+        if (cand.type.toLowerCase() === 'tcp') return;
         track.iceTransport.addRemoteCandidate(cand);
       }
       if (arguments.length > 1 && typeof arguments[1] === 'function') {

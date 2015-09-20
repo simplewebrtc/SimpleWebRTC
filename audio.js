@@ -279,10 +279,10 @@ if (room) {
         webrtc.createRoom(room, function (err, name) {
             console.log('create room cb', arguments);
         
-            var newUrl = location.pathname + '?' + name;
+            var newUrl = location.pathname + '?' + room;
             if (!err) {
                 history.replaceState({foo: 'bar'}, null, newUrl);
-                setRoom(name);
+                setRoom(room);
             } else {
                 console.log(err);
             }

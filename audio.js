@@ -29,6 +29,9 @@ webrtc.on('localStream', function(stream) {
     localAudio.disabled = false;
     localAudio.volume = 0;
     //localAudio.srcObject = stream; 
+    if (hasCameras) {
+        document.querySelector('.local-controls').style.visibility = 'visible';
+    }
 
     var track = stream.getAudioTracks()[0];
     var btn = document.querySelector('.local .button-mute');
@@ -296,9 +299,6 @@ if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevic
     .then(function (devices) {
         var cameras = devices.filter(function(device) { return device.kind === 'videoinput'; });
         hasCameras = cameras.length;
-        if (cameras.length > 0) {
-            document.querySelector('.local-controls').style.visibility = 'visible';
-        }
         var mics = devices.filter(function(device) { return device.kind === 'audioinput'; });
         if (mics.length) {
             // do we want a button the user has to click before this happens?

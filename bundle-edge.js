@@ -5517,7 +5517,9 @@ Peer.prototype.handleMessage = function (message) {
         mLines.forEach(function (mLine) {
             console.log('icetransport for', mLine, mLine.iceTransport);
             if (mLine.iceTransport) {
-                console.log('iceTransport is set...');
+                console.log('iceTransport is set and has #', mLine.iceTransport.getRemoteCandidates().length,
+                            'remote candidates and #', mline.iceTransport.iceGatherer.getLocalCandidates().length,
+                            'local candidates');
                 mLine.iceTransport.addRemoteCandidate({});
                 console.log('and no errors were thrown');
             }

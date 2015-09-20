@@ -5512,18 +5512,20 @@ Peer.prototype.handleMessage = function (message) {
     } else if (message.type === 'endOfCandidates') {
         // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
         // shim this will only be called in Edge.
-        var mLines = this.pc.pc.peerconnection.mLines || this.pc.pc.peerconnection.tracks || [];
-        console.log('remote end of candidates', mLines);
-        mLines.forEach(function (mLine) {
-            console.log('icetransport for', mLine, mLine.iceTransport);
-            if (mLine.iceTransport) {
-                console.log('iceTransport is set and has #', mLine.iceTransport.getRemoteCandidates().length,
-                            'remote candidates and #', mLine.iceTransport.iceGatherer.getLocalCandidates().length,
-                            'local candidates');
-                mLine.iceTransport.addRemoteCandidate({});
-                console.log('and no errors were thrown');
-            }
-        });
+        window.setTimeout(function() {
+            var mLines = self.pc.pc.peerconnection.mLines || self.pc.pc.peerconnection.tracks || [];
+            console.log('remote end of candidates', mLines);
+            mLines.forEach(function (mLine) {
+                console.log('icetransport for', mLine, mLine.iceTransport);
+                if (mLine.iceTransport) {
+                    console.log('iceTransport is set and has #', mLine.iceTransport.getRemoteCandidates().length,
+                                'remote candidates and #', mLine.iceTransport.iceGatherer.getLocalCandidates().length,
+                                'local candidates');
+                    mLine.iceTransport.addRemoteCandidate({});
+                    console.log('and no errors were thrown');
+                }
+            });
+        }, 100);
     }
 };
 

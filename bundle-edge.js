@@ -5515,6 +5515,7 @@ Peer.prototype.handleMessage = function (message) {
         var mLines = this.pc.pc.peerconnection.mLines || this.pc.pc.peerconnection.tracks || [];
         console.log('remote end of candidates', mLines);
         mLines.forEach(function (mLine) {
+            console.log('icetransport for', mLine, mLine.iceTransport);
             if (mLine.iceTransport) {
                 mLine.iceTransport.addRemoteCandidate({});
             }

@@ -5512,16 +5512,13 @@ Peer.prototype.handleMessage = function (message) {
     } else if (message.type === 'endOfCandidates') {
         // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
         // shim this will only be called in Edge.
-        /*
         var mLines = this.pc.pc.peerconnection.mLines || this.pc.pc.peerconnection.tracks || [];
-        console.log('remote end of candidates', mLines);
         mLines.forEach(function (mLine) {
-            console.log('icetransport for', mLine, mLine.iceTransport);
             if (mLine.iceTransport) {
                 mLine.iceTransport.addRemoteCandidate({});
+                console.log('iceTransport', mLine.iceTransport);
             }
         });
-        */
     }
 };
 
@@ -7447,9 +7444,6 @@ if (typeof window === 'undefined' || !window.navigator) {
           cand = {};
         }
         track.iceTransport.addRemoteCandidate(cand);
-        window.setTimeout(function() {
-          track.iceTransport.addRemoteCandidate({});
-        }, 5000);
       }
       if (arguments.length > 1 && typeof arguments[1] === 'function') {
         window.setTimeout(arguments[1], 0);

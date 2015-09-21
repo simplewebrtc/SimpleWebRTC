@@ -1,5 +1,5 @@
 // grab the room from the URL
-var room = location.search && location.search.split('?')[1];
+var room = window.parent.location && window.parent.location.search.split('?')[1];
 
 var nick;
 var avatar;
@@ -169,7 +169,7 @@ webrtc.on('connectivityError', function (peer) {
 function setRoom(name) {
     document.querySelector('form#createRoom').remove();
     document.getElementById('title').innerText = 'Room: ' + name;
-    document.getElementById('subTitle').innerText =  'Link to join: ' + location.href;
+    document.getElementById('subTitle').innerText =  'Link to join: ' + window.parent.location.href;
 }
 
 function generateRoomName() {
@@ -283,9 +283,9 @@ if (room) {
         webrtc.createRoom(room, function (err, name) {
             console.log('create room cb', arguments);
         
-            var newUrl = location.pathname + '?' + room;
+            var newUrl = window.parent.location.pathname + '?' + room;
             if (!err) {
-                history.replaceState({foo: 'bar'}, null, newUrl);
+                window.parent.history.replaceState({foo: 'bar'}, null, newUrl);
                 setRoom(room);
             } else {
                 console.log(err);

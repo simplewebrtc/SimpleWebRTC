@@ -333,6 +333,10 @@ audio {
   display: none;
 }
 
+#supportWarning,#microphoneWarning {
+  display: none;
+}
+
 /*
 .p2pChecking {
   background-color: #ffeed7;

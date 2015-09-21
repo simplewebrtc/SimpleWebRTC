@@ -295,7 +295,11 @@ if (room) {
     };
 }
 
-if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+if (!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.RTCPeerConnection)) {
+    // FIXME: show "sorry, get a modern browser" (recommending Edge)
+    document.getElementById('supportWarning').style.display = 'block';
+    document.querySelector('form#createRoom>button').disabled = true;
+} else if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
     navigator.mediaDevices.enumerateDevices()
     .then(function (devices) {
         var cameras = devices.filter(function(device) { return device.kind === 'videoinput'; });
@@ -305,11 +309,8 @@ if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevic
             // do we want a button the user has to click before this happens?
             if (room) webrtc.startLocalVideo();
         } else {
-            console.log('no microphones');
-            // FIXME: show error
+            document.getElementById('microphoneWarning').style.display = 'block';
+            document.querySelector('form#createRoom>button').disabled = true;
         }
     });
-} else {
-    // FIXME: show "sorry, get a modern browser" (recommending Edge)
 }
-

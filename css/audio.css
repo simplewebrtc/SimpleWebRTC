@@ -333,6 +333,16 @@ audio {
   display: none;
 }
 
+#countdown {
+  display: none;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  text-align: center;
+  font-size: 36pt;
+  color: white;
+}
+
 #supportWarning,#microphoneWarning {
   display: none;
 }

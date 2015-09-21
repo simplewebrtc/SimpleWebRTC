@@ -212,8 +212,16 @@ function getSnapshot() {
             video.onloadeddata = function() {
                 img.style.display = 'none';
                 video.style.display = 'block';
-                // wait 2 seconds
-                window.setTimeout(function() {
+                var wait = 3; // countdown
+                var countdown = function() {
+                    if (wait > 0) {
+                        document.getElementById('countdown').style.display = 'block';
+                        document.getElementById('countdown').textContent = wait;
+                        wait--;
+                        window.setTimeout(countdown, 1000);
+                        return;
+                    }
+                    document.getElementById('countdown').style.display = 'none';
                     var w = 320;
                     var h = 240;
                     canvasEl.width = w;
@@ -236,7 +244,8 @@ function getSnapshot() {
                     var url = canvasEl.toDataURL('image/jpg');
                     var data = url.match(/data:([^;]*);(base64)?,([0-9A-Za-z+/]+)/);
                     resolve(url);
-                }, 2000);
+                };
+                countdown();
             };
         })
         .catch(reject);

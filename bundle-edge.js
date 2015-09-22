@@ -7440,10 +7440,10 @@ if (typeof window === 'undefined' || !window.navigator) {
             this._toCandidateJSON(candidate.candidate) : {};
         // dirty hack to make simplewebrtc work.
         // FIXME: need another dirty hack to avoid adding candidates after this
+        if (cand.protocol.toLowerCase() === 'tcp' && cand.port === 0) return;
         if (cand.type === 'endOfCandidates') {
           cand = {};
         }
-        if (cand.protocol.toLowerCase() === 'tcp' && cand.port === 0) return;
         track.iceTransport.addRemoteCandidate(cand);
       }
       if (arguments.length > 1 && typeof arguments[1] === 'function') {

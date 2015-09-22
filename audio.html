@@ -8,8 +8,8 @@
         <meta name="description" content="WebRTC, SimpleWebRTC, Talky, Talky.io">
 
         <link rel="stylesheet" type="text/css" href="//cloud.typography.com/7773252/764742/css/fonts.css" />
-        <link rel="stylesheet" href="css/audio.css" />
         <link rel="stylesheet" href="https://edgeportal.blob.core.windows.net/media/demotemplate.css" />
+        <link rel="stylesheet" href="css/audio.css" />
         <link rel="icon" type="image/png" href="img/favicon.png">
     </head>
     <body>
@@ -28,7 +28,7 @@
                     <p>Error - we can't find a microphone attached to your PC. Please switch to a PC with a recent version of Windows 10 and try again.</p>
                 </div>
             </section>
-            <section>
+            <section id="roomContainer" class="cf">
                 <h2 id="title"></h2>
                 <form id="createRoom">
                     <input id="sessionInput" class="form-input" placeholder="Enter a room name" disabled/>
@@ -52,7 +52,7 @@
                 </div>
                 <div id="remotes"></div>
             </section>
-            <section>
+            <section class="clear">
                 <h2>How it works</h2>
                 <section>
                     <p>First, SimpleWebRTC requests access to your microphone by calling <a href="blogs.windows.com/msedgedev/2015/05/13/announcing-media-capture-functionality-in-microsoft-edge/">getUserMedia()</a>, which returns a MediaStreamTrack object. Then, SimpleWebRTC joins a room on the server and establishes Peer-to-Peer connection with other people at the same URL. In Chrome and Firefox, the <a href="https://www.w3.org/TR/webrtc/">WebRTC PeerConnection API</a> is used. In Microsoft Edge, this API is shimmed using the lower-level ORTC APIs.</p>

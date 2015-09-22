@@ -6,7 +6,7 @@ var avatar;
 var hasCameras = false;
 
 var webrtc = new SimpleWebRTC({
-    url: 'https://api.talky.io', // this will only work from simplewebrtc.com, please use the default sandbox otherwise
+    //url: 'https://api.talky.io', // this will only work from simplewebrtc.com, please use the default sandbox otherwise
     // we don't do video
     localVideoEl: '',
     remoteVideosEl: '',
@@ -84,6 +84,7 @@ webrtc.on('createdPeer', function (peer) {
     // avatar image
     var avatar = document.createElement('img');
     avatar.className = 'avatar';
+    avatar.src = 'img/avatar-default.png';
     d.appendChild(avatar);
 
     // audio element

@@ -3,6 +3,10 @@ language: node_js
 node_js:
 - 0.10
 
+env:
+  matrix:
+    - BROWSER=chrome  BVER=stable
+
 before_script:
   - ./node_modules/travis-multirunner/setup.sh
   - export DISPLAY=:99.0

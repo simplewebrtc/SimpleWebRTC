@@ -5,183 +5,7 @@ var nick;
 var avatar;
 var hasCameras = false;
 
-var webrtc = new SimpleWebRTC({
-    //url: 'https://api.talky.io', // this will only work from simplewebrtc.com, please use the default sandbox otherwise
-    // we don't do video
-    localVideoEl: '',
-    remoteVideosEl: '',
-    autoRequestMedia: false,
-    enableDataChannels: false,
-    media: {
-        audio: true,
-        video: false
-    },
-    receiveMedia: { // FIXME: remove old chrome <= 37 constraints format
-        mandatory: {
-            OfferToReceiveAudio: true,
-            OfferToReceiveVideo: false
-        }
-    },
-});
-
-webrtc.on('localStream', function(stream) {
-    var localAudio = document.getElementById('localAudio');
-    localAudio.disabled = false;
-    localAudio.volume = 0;
-    //localAudio.srcObject = stream; 
-    if (hasCameras) {
-        document.querySelector('.local-controls').style.visibility = 'visible';
-    }
-
-    var track = stream.getAudioTracks()[0];
-    var btn = document.querySelector('.local .button-mute');
-    btn.style.visibility = 'visible';
-    btn.onclick = function() {
-        track.enabled = !track.enabled;
-        btn.className = 'button button-small button-mute' + (track.enabled ? '' : ' muted');
-    };
-});
-
-webrtc.on('readyToCall', function () {
-    if (room) {
-        webrtc.joinRoom(room, function (err, res) {
-            if (err) return;
-            window.setTimeout(function () {
-                if (avatar) {
-                    webrtc.sendToAll('avatar', {avatar: avatar});
-                }
-                if (nick) {
-                    webrtc.sendToAll('nickname', {nick: nick});
-                }
-            }, 1000);
-        });
-    }
-});
-
-// working around weird simplewebrtc behaviour
-webrtc.on('videoAdded', function (video, peer) {
-    document.querySelector('#container_' + webrtc.getDomId(peer) + '>div.remote-details').appendChild(video);
-});
-// called when a peer is created
-webrtc.on('createdPeer', function (peer) {
-    var remotes = document.getElementById('remotes');
-    if (!remotes) return;
-
-    var container = document.createElement('div');
-    container.className = 'peerContainer';
-    container.id = 'container_' + webrtc.getDomId(peer);
-
-    // inner container
-    var d = document.createElement('div');
-    d.className = 'remote-details';
-    container.appendChild(d);
-
-    // nickname
-    var nickname = document.createElement('div');
-    nickname.className = 'nick';
-    d.appendChild(nickname);
-
-    // avatar image
-    var avatar = document.createElement('img');
-    avatar.className = 'avatar';
-    avatar.src = 'img/avatar-default.png';
-    d.appendChild(avatar);
-
-    // audio element
-    // inserted later
-
-    // mute button
-    var mute = document.createElement('a');
-    mute.className = 'button button-small button-mute';
-    mute.appendChild(document.createTextNode('Mute'));
-    mute.style.visibility = 'hidden';
-    d.appendChild(mute);
-
-    mute.onclick = function() {
-      if (peer.videoEl.muted) { // unmute
-        mute.className = 'button button-small button-mute';
-      } else { // mute
-        mute.className = 'button button-small button-mute muted';
-      }
-      peer.videoEl.muted = !peer.videoEl.muted;
-    };
-
-    if (peer && peer.pc) {
-        peer.firsttime = true;
-        peer.pc.on('iceConnectionStateChange', function (event) {
-            var state = peer.pc.iceConnectionState;
-            container.className = 'peerContainer p2p' +
-                state.substr(0, 1).toUpperCase() +
-                state.substr(1);
-            switch (state) {
-            case 'connected':
-            case 'completed':
-                //audio.srcObject = peer.stream;
-                mute.style.visibility = 'visible';
-                if (peer.peertime) {
-                    peer.firsttime = false;
-                    track('iceSuccess', {
-                        session: peer.sid,
-                        peerprefix: peer.browserPrefix,
-                        prefix: webrtc.capabilities.prefix,
-                        version: webrtc.capabilities.browserVersion
-                    });
-                }
-                break;
-            case 'closed':
-                container.remove();
-                break;
-            }
-        });
-    }
-    remotes.appendChild(container);
-});
-
-webrtc.connection.on('message', function (message) {
-    var peers = self.webrtc.getPeers(message.from, message.roomType);
-    if (!peers && peers.length > 0) return;
-    var peer = peers[0];
-
-    // FIXME: also send current avatar and nick to newly joining participants
-    var container = document.getElementById('container_' + webrtc.getDomId(peer));
-    if (message.type === 'nickname') {
-        container.querySelector('.nick').innerText = message.payload.nick;
-    } else if (message.type === 'avatar') {
-        container.querySelector('.avatar').src = message.payload.avatar;
-    } else if (message.type === 'offer') {
-        // update things
-        if (nick) {
-            peer.send('nickname', {nick: nick});
-        }
-        if (avatar) {
-            peer.send('avatar', {avatar: avatar});
-        }
-    }
-});
-
-// local p2p/ice failure
-webrtc.on('iceFailed', function (peer) {
-    console.log('local fail', peer.sid);
-    track('iceFailed', {
-        source: 'local',
-        session: peer.sid,
-        peerprefix: peer.browserPrefix,
-        prefix: webrtc.capabilities.prefix,
-        version: webrtc.capabilities.browserVersion
-    });
-});
-
-// remote p2p/ice failure
-webrtc.on('connectivityError', function (peer) {
-    console.log('remote fail', peer.sid);
-    track('iceFailed', {
-        source: 'remote',
-        session: peer.sid,
-        peerprefix: peer.browserPrefix,
-        prefix: webrtc.capabilities.prefix,
-        version: webrtc.capabilities.browserVersion
-    });
-});
+var webrtc;
 
 // for simplistic metrics gathering
 function track(name, info) {
@@ -309,13 +133,10 @@ if (room) {
     document.getElementById('sessionInput').value = generateRoomName();
     document.querySelector('form#createRoom>button').disabled = false;
     document.getElementById('createRoom').onsubmit = function () {
-        console.log('create room...');
         room = document.getElementById('sessionInput').value;
         room = room.toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
         webrtc.startLocalVideo();
         webrtc.createRoom(room, function (err, name) {
-            console.log('create room cb', arguments);
-        
             var newUrl = window.parent.location.pathname + '?' + room;
             if (!err) {
                 window.parent.history.replaceState({foo: 'bar'}, null, newUrl);
@@ -328,22 +149,202 @@ if (room) {
     };
 }
 
-if (!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.RTCPeerConnection)) {
-    // FIXME: show "sorry, get a modern browser" (recommending Edge)
-    document.getElementById('supportWarning').style.display = 'block';
-    document.querySelector('form#createRoom>button').disabled = true;
-} else if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-    navigator.mediaDevices.enumerateDevices()
-    .then(function (devices) {
-        var cameras = devices.filter(function(device) { return device.kind === 'videoinput'; });
-        hasCameras = cameras.length;
-        var mics = devices.filter(function(device) { return device.kind === 'audioinput'; });
-        if (mics.length) {
-            // do we want a button the user has to click before this happens?
-            if (room) webrtc.startLocalVideo();
-        } else {
-            document.getElementById('microphoneWarning').style.display = 'block';
-            document.querySelector('form#createRoom>button').disabled = true;
+function GUM() {
+    webrtc = new SimpleWebRTC({
+        //url: 'https://api.talky.io', // this will only work from simplewebrtc.com, please use the default sandbox otherwise
+        // we don't do video
+        localVideoEl: '',
+        remoteVideosEl: '',
+        autoRequestMedia: false,
+        enableDataChannels: false,
+        media: {
+            audio: true,
+            video: false
+        },
+        receiveMedia: { // FIXME: remove old chrome <= 37 constraints format
+            mandatory: {
+                OfferToReceiveAudio: true,
+                OfferToReceiveVideo: false
+            }
+        },
+    });
+
+    webrtc.on('localStream', function(stream) {
+        var localAudio = document.getElementById('localAudio');
+        localAudio.disabled = false;
+        localAudio.volume = 0;
+        //localAudio.srcObject = stream; 
+        if (hasCameras) {
+            document.querySelector('.local-controls').style.visibility = 'visible';
+        }
+
+        var track = stream.getAudioTracks()[0];
+        var btn = document.querySelector('.local .button-mute');
+        btn.style.visibility = 'visible';
+        btn.onclick = function() {
+            track.enabled = !track.enabled;
+            btn.className = 'button button-small button-mute' + (track.enabled ? '' : ' muted');
+        };
+    });
+
+    webrtc.on('readyToCall', function () {
+        if (room) {
+            webrtc.joinRoom(room, function (err, res) {
+                if (err) return;
+                window.setTimeout(function () {
+                    if (avatar) {
+                        webrtc.sendToAll('avatar', {avatar: avatar});
+                    }
+                    if (nick) {
+                        webrtc.sendToAll('nickname', {nick: nick});
+                    }
+                }, 1000);
+            });
         }
     });
+
+    // working around weird simplewebrtc behaviour
+    webrtc.on('videoAdded', function (video, peer) {
+        document.querySelector('#container_' + webrtc.getDomId(peer) + '>div.remote-details').appendChild(video);
+    });
+    // called when a peer is created
+    webrtc.on('createdPeer', function (peer) {
+        var remotes = document.getElementById('remotes');
+        if (!remotes) return;
+
+        var container = document.createElement('div');
+        container.className = 'peerContainer';
+        container.id = 'container_' + webrtc.getDomId(peer);
+
+        // inner container
+        var d = document.createElement('div');
+        d.className = 'remote-details';
+        container.appendChild(d);
+
+        // nickname
+        var nickname = document.createElement('div');
+        nickname.className = 'nick';
+        d.appendChild(nickname);
+
+        // avatar image
+        var avatar = document.createElement('img');
+        avatar.className = 'avatar';
+        avatar.src = 'img/avatar-default.png';
+        d.appendChild(avatar);
+
+        // audio element
+        // inserted later
+
+        // mute button
+        var mute = document.createElement('a');
+        mute.className = 'button button-small button-mute';
+        mute.appendChild(document.createTextNode('Mute'));
+        mute.style.visibility = 'hidden';
+        d.appendChild(mute);
+
+        mute.onclick = function() {
+          if (peer.videoEl.muted) { // unmute
+            mute.className = 'button button-small button-mute';
+          } else { // mute
+            mute.className = 'button button-small button-mute muted';
+          }
+          peer.videoEl.muted = !peer.videoEl.muted;
+        };
+
+        if (peer && peer.pc) {
+            peer.firsttime = true;
+            peer.pc.on('iceConnectionStateChange', function (event) {
+                var state = peer.pc.iceConnectionState;
+                container.className = 'peerContainer p2p' +
+                    state.substr(0, 1).toUpperCase() +
+                    state.substr(1);
+                switch (state) {
+                case 'connected':
+                case 'completed':
+                    //audio.srcObject = peer.stream;
+                    mute.style.visibility = 'visible';
+                    if (peer.peertime) {
+                        peer.firsttime = false;
+                        track('iceSuccess', {
+                            session: peer.sid,
+                            peerprefix: peer.browserPrefix,
+                            prefix: webrtc.capabilities.prefix,
+                            version: webrtc.capabilities.browserVersion
+                        });
+                    }
+                    break;
+                case 'closed':
+                    container.remove();
+                    break;
+                }
+            });
+        }
+        remotes.appendChild(container);
+    });
+
+    webrtc.connection.on('message', function (message) {
+        var peers = self.webrtc.getPeers(message.from, message.roomType);
+        if (!peers && peers.length > 0) return;
+        var peer = peers[0];
+
+        // FIXME: also send current avatar and nick to newly joining participants
+        var container = document.getElementById('container_' + webrtc.getDomId(peer));
+        if (message.type === 'nickname') {
+            container.querySelector('.nick').innerText = message.payload.nick;
+        } else if (message.type === 'avatar') {
+            container.querySelector('.avatar').src = message.payload.avatar;
+        } else if (message.type === 'offer') {
+            // update things
+            if (nick) {
+                peer.send('nickname', {nick: nick});
+            }
+            if (avatar) {
+                peer.send('avatar', {avatar: avatar});
+            }
+        }
+    });
+
+    // local p2p/ice failure
+    webrtc.on('iceFailed', function (peer) {
+        console.log('local fail', peer.sid);
+        track('iceFailed', {
+            source: 'local',
+            session: peer.sid,
+            peerprefix: peer.browserPrefix,
+            prefix: webrtc.capabilities.prefix,
+            version: webrtc.capabilities.browserVersion
+        });
+    });
+
+    // remote p2p/ice failure
+    webrtc.on('connectivityError', function (peer) {
+        console.log('remote fail', peer.sid);
+        track('iceFailed', {
+            source: 'remote',
+            session: peer.sid,
+            peerprefix: peer.browserPrefix,
+            prefix: webrtc.capabilities.prefix,
+            version: webrtc.capabilities.browserVersion
+        });
+    });
+
+    if (!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.RTCPeerConnection)) {
+        // FIXME: show "sorry, get a modern browser" (recommending Edge)
+        document.getElementById('supportWarning').style.display = 'block';
+        document.querySelector('form#createRoom>button').disabled = true;
+    } else if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices()
+        .then(function (devices) {
+            var cameras = devices.filter(function(device) { return device.kind === 'videoinput'; });
+            hasCameras = cameras.length;
+            var mics = devices.filter(function(device) { return device.kind === 'audioinput'; });
+            if (mics.length) {
+                // do we want a button the user has to click before this happens?
+                if (room) webrtc.startLocalVideo();
+            } else {
+                document.getElementById('microphoneWarning').style.display = 'block';
+                document.querySelector('form#createRoom>button').disabled = true;
+            }
+        });
+    }
 }

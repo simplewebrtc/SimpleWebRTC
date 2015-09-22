@@ -6,7 +6,7 @@
 
 /* Reset */
 
-html, body, div, span, applet, object, iframe,
+/*html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
 del, dfn, em, img, ins, kbd, q, s, samp,
@@ -25,7 +25,7 @@ time, mark, audio, video {
   font-size: 100%;
   font: inherit;
   vertical-align: baseline;
-}
+}*/
 
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure, 
@@ -33,9 +33,9 @@ footer, header, hgroup, menu, nav, section {
   display: block
 }
 
-body {
+/*body {
   line-height: 1;
-}
+}*/
 
 ol, ul {
   list-style: none;
@@ -58,7 +58,7 @@ table {
 
 /* Base styles */
 
-*, *:after, *:before {
+/**, *:after, *:before {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
@@ -78,8 +78,8 @@ body {
   font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 1em;
   font-weight: 400;
-  line-height: 1.4
-  color: #444;;
+  line-height: 1.4;
+  color: #444;
 }
 
 h1 {
@@ -109,6 +109,10 @@ a {
   color: #12acef;
   text-decoration: none;
   cursor: pointer;
+}*/
+
+.caption, .caption--alt, .subtitle, .title, figure, h3, h4, h5, h6, input, li, p, select, textarea, thead th {
+  max-width: 100%;
 }
 
 hr {
@@ -130,15 +134,12 @@ hr {
   border-radius: 3px;
   padding: 15px 20px;
   background-color: #12acef;
-  font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: inherit;
+  /*font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;*/
+  font-size: 1.4em;
   font-weight: 500;
   text-align: center;
+  line-height: 1.4;
   color: white;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
   cursor: pointer;
   -webkit-appearence: none;
   transition: background .3s ease-in;
@@ -147,6 +148,8 @@ hr {
 
 .button:hover {
   background-color: #59c5f4;
+  color: white;
+  opacity: 1;
 }
 
 .button:focus {
@@ -155,23 +158,28 @@ hr {
 
 .button-small {
   padding: 6px 10px 7px;
-  font-size: .9em;
+  /*font-size: .9em;*/
 }
 
 /* Form inputs */
 
 .form-input {
-  padding: 15px;
+  padding: 10px 15px;
   border-radius: 3px;
   border: 1px solid #e6eaed;
-  font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: inherit;
+  /*font-family: 'Gotham Rounded A', 'Gotham Rounded B', 'Helvetica Neue', Helvetica, Arial, sans-serif;*/
+  /*font-size: .9em;*/
 }
 
+.form-input:hover,
 .form-input:focus {
   border-color: #74ddff;
   transition: all .2s ease-in;
   outline: none;
+}
+
+.form-input:focus {
+  background: #e3f8ff;
 }
 
 .form-input:disabled {
@@ -180,13 +188,21 @@ hr {
 
 /* Main logo headline */
 
-.logo {
+/*.logo {
   font-family: 'Gotham SSm A', 'Gotham SSm B', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   text-align: center;
 }
 
 .logo span:first-of-type { color: #ec008c; }
-.logo span:last-of-type  { color: #12acef; }
+.logo span:last-of-type  { color: #12acef; }*/
+
+/* Room container */
+
+#roomContainer {
+  padding: 3em 0;
+  border-top: 1px solid #e6eaed;
+  border-bottom: 1px solid #e6eaed;
+}
 
 /* Create a room input */
 
@@ -196,6 +212,7 @@ hr {
 }
 
 #createRoom .form-input {
+  height: auto;
   min-width: 300px;
   max-width: 100%;
   margin-right: 5px;
@@ -209,10 +226,12 @@ hr {
 
 .peerContainer.local {
   width: 35%;
+  /*padding-bottom: 2em;*/
   float: left;
 }
 
 .local-details {
+  min-height: 208px;
   margin-bottom: 15px;
   padding: 5px;
   position: relative;
@@ -226,9 +245,12 @@ hr {
 
 .avatar {
   width: 100%;
+  height: auto;
+  margin-top: 0;
   display: block;
   background: #eee;
   border: none;
+  border-radius: 0;
 }
 
 .button-mute {
@@ -238,6 +260,7 @@ hr {
   right: 10px;
   background: #828c8f url('icons.svg') no-repeat center 5px;
   text-indent: -9999em;
+  line-height: 1;
   visibility: hidden;
 }
 
@@ -248,6 +271,7 @@ hr {
 
 .local-controls {
   visibility: hidden;
+  margin-top: 0;
   padding: 15px 10px;
   background: #f7f7f7;
   text-align: center;
@@ -259,7 +283,8 @@ hr {
 }
 
 .remote-details {
-  margin-bottom: 15px;
+  min-height: 183px;
+  margin-bottom: 10px;
   padding: 5px;
   position: relative;
   border: 1px solid #e6eaed;
@@ -269,7 +294,7 @@ hr {
   width: 100%;
   padding: 3px 5px 5px;
   border: 1px solid transparent;
-  font-size: 1em;
+  font-size: 1.4em;
   outline: none;
 }
 
@@ -292,8 +317,9 @@ hr {
 
 #remotes .peerContainer {
   width: calc(50% - 2px);
+  margin-top: 0;
   margin-bottom: 6px;
-  padding: 5px;
+  /*padding: 5px;*/
   float: left;
 }
 
@@ -366,6 +392,10 @@ audio {
 */
 
 /* Clearfix */
+
+.clear {
+  clear: both;
+}
 
 .cf:before,
 .cf:after {

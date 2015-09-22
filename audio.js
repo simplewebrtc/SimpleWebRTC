@@ -212,8 +212,16 @@ function getSnapshot() {
             video.onloadeddata = function() {
                 img.style.display = 'none';
                 video.style.display = 'block';
-                // wait 2 seconds
-                window.setTimeout(function() {
+                var wait = 3; // countdown
+                var countdown = function() {
+                    if (wait > 0) {
+                        document.getElementById('countdown').style.display = 'block';
+                        document.getElementById('countdown').textContent = wait;
+                        wait--;
+                        window.setTimeout(countdown, 1000);
+                        return;
+                    }
+                    document.getElementById('countdown').style.display = 'none';
                     var w = 320;
                     var h = 240;
                     canvasEl.width = w;
@@ -236,7 +244,8 @@ function getSnapshot() {
                     var url = canvasEl.toDataURL('image/jpg');
                     var data = url.match(/data:([^;]*);(base64)?,([0-9A-Za-z+/]+)/);
                     resolve(url);
-                }, 2000);
+                };
+                countdown();
             };
         })
         .catch(reject);
@@ -295,7 +304,11 @@ if (room) {
     };
 }
 
-if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+if (!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.RTCPeerConnection)) {
+    // FIXME: show "sorry, get a modern browser" (recommending Edge)
+    document.getElementById('supportWarning').style.display = 'block';
+    document.querySelector('form#createRoom>button').disabled = true;
+} else if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
     navigator.mediaDevices.enumerateDevices()
     .then(function (devices) {
         var cameras = devices.filter(function(device) { return device.kind === 'videoinput'; });
@@ -305,11 +318,8 @@ if (navigator && navigator.mediaDevices && navigator.mediaDevices.enumerateDevic
             // do we want a button the user has to click before this happens?
             if (room) webrtc.startLocalVideo();
         } else {
-            console.log('no microphones');
-            // FIXME: show error
+            document.getElementById('microphoneWarning').style.display = 'block';
+            document.querySelector('form#createRoom>button').disabled = true;
         }
     });
-} else {
-    // FIXME: show "sorry, get a modern browser" (recommending Edge)
 }
-

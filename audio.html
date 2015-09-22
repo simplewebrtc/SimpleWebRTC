@@ -8,33 +8,63 @@
         <meta name="description" content="WebRTC, SimpleWebRTC, Talky, Talky.io">
 
         <link rel="stylesheet" type="text/css" href="//cloud.typography.com/7773252/764742/css/fonts.css" />
+        <link rel="stylesheet" href="https://edgeportal.blob.core.windows.net/media/demotemplate.css" />
         <link rel="stylesheet" href="css/audio.css" />
         <link rel="icon" type="image/png" href="img/favicon.png">
     </head>
     <body>
         <div class="content cf">
-            <h1 class="logo"><span>simple</span><span>WebRTC</span></h1>
-            <h2 id="title"></h2>
-            <form id="createRoom">
-                <input id="sessionInput" class="form-input" placeholder="Enter a room name" disabled/>
-                <button disabled type="submit" class="button">Create room</button>
-            </form>
-            <p id="subTitle"></p>
+            <section>
+                <h1>SimpleWebRTC</h1>
+                <h3>Use Edge's ORTC API and the WebRTC APIs in Chrome and Firefox to make calls between supported browsers.</h3>
+                <div>
+                    <p>To use this demo, you'll need the most recent version of the Edge browser, Chrome or Firefox , and a microphone attached to your Windows 10 device.</p>
+                    <p>Choose a room name and share the link with people you would like to join, e.g. by sending them the link via chat or email. You can share the link with a small number of people, this is not limited to 1:1 calls.</p>
+                </div>
+                <div id="supportWarning" class="block-note--error">
+                    <p>Warning - Your browser does not support the ORTC or WebRTC APIs. Please switch to a PC with a recent version of Windows 10 and try again.</p>
+                </div>
+                <div id="microphoneWarning" class="block-note--error">
+                    <p>Error - we can't find a microphone attached to your PC. Please switch to a PC with a recent version of Windows 10 and try again.</p>
+                </div>
+            </section>
+            <section id="roomContainer" class="cf">
+                <h2 id="title"></h2>
+                <form id="createRoom">
+                    <input id="sessionInput" class="form-input" placeholder="Enter a room name" disabled/>
+                    <button disabled type="submit" class="button">Create room</button>
+                </form>
+                <p id="subTitle"></p>
 
-            <div class='peerContainer local'>
-                <div class="local-details">
-                    <input id="nickInput" placeholder="Set your name"/>
-                    <audio id="localAudio" controls oncontextmenu="return false;" disabled></audio>
-                    <img id="snapshot" class="avatar"/>
-                    <video id="snapshotvideo" class="avatar"></video> 
-                    <!-- add class of 'muted' when so -->
-                    <a class="button button-small button-mute">Mute</a>
+                <div class='peerContainer local'>
+                    <div class="local-details">
+                        <input id="nickInput" placeholder="Set your name"/>
+                        <audio id="localAudio" controls oncontextmenu="return false;" disabled></audio>
+                        <img id="snapshot" class="avatar"/>
+                        <video id="snapshotvideo" class="avatar"></video> 
+                        <div id='countdown'></div>
+                        <!-- add class of 'muted' when so -->
+                        <a class="button button-small button-mute">Mute</a>
+                    </div>
+                    <div class="local-controls">
+                        <button class="button button-small" id="snapshotButton">Take a snapshot</button>
+                    </div>
                 </div>
-                <div class="local-controls">
-                    <button class="button button-small" id="snapshotButton">Take a snapshot</button>
-                </div>
-            </div>
-            <div id="remotes"></div>
+                <div id="remotes"></div>
+            </section>
+            <section class="clear">
+                <h2>How it works</h2>
+                <section>
+                    <p>First, SimpleWebRTC requests access to your microphone by calling <a href="blogs.windows.com/msedgedev/2015/05/13/announcing-media-capture-functionality-in-microsoft-edge/">getUserMedia()</a>, which returns a MediaStreamTrack object. Then, SimpleWebRTC joins a room on the server and establishes Peer-to-Peer connection with other people at the same URL. In Chrome and Firefox, the <a href="https://www.w3.org/TR/webrtc/">WebRTC PeerConnection API</a> is used. In Microsoft Edge, this API is shimmed using the lower-level ORTC APIs.</p>
+                    <p>All three browsers should be able to talk to each other this way.</p>
+                </section>
+                <section>
+                    <ul>
+                        <li>To find more about &amp;yet and SimpleWebRTC, visit <a href="https://andyet.com/realtime">www.andyet.com</a> and <a href="https://simplewebrtc.com/">simplewebrtc.com</a>.</li>
+                        <li>The ORTC shim used is (hopefully soon) going to be part of the main branch of <a href="https://github.com/webrtc/adapter">adapter.js</a>.</li>
+                    </ul>
+                </section>
+            </section>
         </div>
 
         <script src="bundle-edge.js"></script>

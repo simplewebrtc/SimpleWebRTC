@@ -474,6 +474,9 @@ if (window.mozRTCPeerConnection || navigator.mozGetUserMedia) {
 } else if (window.webkitRTCPeerConnection || navigator.webkitGetUserMedia) {
     prefix = 'webkit';
     version = navigator.userAgent.match(/Chrom(e|ium)/) && parseInt(navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)[2], 10);
+} else if (navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
+    prefix = 'ms'; // not really but...
+    version = navigator.userAgent.match(/Edge\/(\d+).(\d+)$/) && parseInt(navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)[2], 10);
 }
 
 var PC = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;

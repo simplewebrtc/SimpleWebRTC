@@ -103,9 +103,10 @@ webrtc.on('createdPeer', function (peer) {
         mute.className = 'button button-small button-mute muted';
       }
       peer.videoEl.muted = !peer.videoEl.muted;
-    }
+    };
 
     if (peer && peer.pc) {
+        peer.firsttime = true;
         peer.pc.on('iceConnectionStateChange', function (event) {
             var state = peer.pc.iceConnectionState;
             container.className = 'peerContainer p2p' +
@@ -116,6 +117,15 @@ webrtc.on('createdPeer', function (peer) {
             case 'completed':
                 //audio.srcObject = peer.stream;
                 mute.style.visibility = 'visible';
+                if (peer.peertime) {
+                    peer.firsttime = false;
+                    track('iceSuccess', {
+                        session: peer.sid,
+                        peerprefix: peer.browserPrefix,
+                        prefix: webrtc.capabilities.prefix,
+                        version: webrtc.capabilities.browserVersion
+                    });
+                }
                 break;
             case 'closed':
                 container.remove();
@@ -150,21 +160,34 @@ webrtc.connection.on('message', function (message) {
 
 // local p2p/ice failure
 webrtc.on('iceFailed', function (peer) {
-    var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
-    console.log('local fail', connstate);
-    if (connstate) {
-        connstate.innerText = 'Connection failed.';
-    }
+    console.log('local fail', peer.sid);
+    track('iceFailed', {
+        source: 'local',
+        session: peer.sid,
+        peerprefix: peer.browserPrefix,
+        prefix: webrtc.capabilities.prefix,
+        version: webrtc.capabilities.browserVersion
+    });
 });
 
 // remote p2p/ice failure
 webrtc.on('connectivityError', function (peer) {
-    var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
-    console.log('remote fail', connstate);
-    if (connstate) {
-        connstate.innerText = 'Connection failed.';
-    }
+    console.log('remote fail', peer.sid);
+    track('iceFailed', {
+        source: 'remote',
+        session: peer.sid,
+        peerprefix: peer.browserPrefix,
+        prefix: webrtc.capabilities.prefix,
+        version: webrtc.capabilities.browserVersion
+    });
 });
+
+// for simplistic metrics gathering
+function track(name, info) {
+    if (webrtc && webrtc.connection) {
+        webrtc.connection.emit('metrics', name, info || {});
+    }
+}
 
 function setRoom(name) {
     document.querySelector('form#createRoom').remove();

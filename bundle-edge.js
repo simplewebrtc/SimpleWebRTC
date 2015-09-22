@@ -7438,9 +7438,9 @@ if (typeof window === 'undefined' || !window.navigator) {
       if (track) {
         var cand = Object.keys(candidate.candidate).length > 0 ?
             this._toCandidateJSON(candidate.candidate) : {};
+        if (cand.protocol.toLowerCase() === 'tcp' && cand.port === 0 && !(localStrage.debugtcpissue === 'debug')) return;
         // dirty hack to make simplewebrtc work.
-        // FIXME: need another dirty hack to avoid adding candidates after this
-        if (cand.protocol.toLowerCase() === 'tcp' && cand.port === 0) return;
+        // FIXME: remove, no longer needed for simplewebrtc
         if (cand.type === 'endOfCandidates') {
           cand = {};
         }

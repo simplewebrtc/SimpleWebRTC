@@ -258,7 +258,7 @@ hr {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  background: #828c8f url('icons.svg') no-repeat center 5px;
+  background: #828c8f url('../img/icons.svg') no-repeat center 5px;
   text-indent: -9999em;
   line-height: 1;
   visibility: hidden;

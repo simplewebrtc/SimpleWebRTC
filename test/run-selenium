@@ -23,4 +23,4 @@ fi
 echo "Starting browser."
 PATH=$PATH:./node_modules/.bin
 
-node test/tests.js
+node test/selenium/index.js

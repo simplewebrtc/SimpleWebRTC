@@ -263,7 +263,7 @@ function GUM() {
                 case 'completed':
                     //audio.srcObject = peer.stream;
                     mute.style.visibility = 'visible';
-                    if (peer.peertime) {
+                    if (peer.firsttime) {
                         peer.firsttime = false;
                         track('iceSuccess', {
                             session: peer.sid,

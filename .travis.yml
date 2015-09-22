@@ -13,7 +13,7 @@ before_script:
   - sh -e /etc/init.d/xvfb start
 
 script:
-  - npm test
+  - npm test-travis
 
 after_failure:
   - for file in *.log; do echo $file; echo "======================"; cat $file; done || true

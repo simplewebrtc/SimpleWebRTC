@@ -144,8 +144,10 @@ function doJoin(room) {
     });
 }
 
+var queryGum = false;
 if (room) {
     setRoom(room);
+    queryGum = true;
 } else {
     room = generateRoomName();
     document.querySelector('form#createRoom>button').disabled = false;
@@ -349,8 +351,7 @@ function GUM() {
             var mics = devices.filter(function(device) { return device.kind === 'audioinput'; });
             if (mics.length) {
                 document.getElementById('requirements').style.display = 'none';
-                // do we want a button the user has to click before this happens?
-                if (room) webrtc.startLocalVideo();
+                if (queryGum) webrtc.startLocalVideo();
             } else {
                 document.getElementById('microphoneWarning').style.display = 'block';
                 document.querySelector('form#createRoom>button').disabled = true;

@@ -24,7 +24,7 @@ function setRoom(name) {
     if (document.querySelector('form#createRoom')) {
         document.querySelector('form#createRoom').remove();
     }
-    document.getElementById('subtitle').innerText =  'Link to join: ' + window.parent.location.href;
+    document.getElementById('subtitle').textContent =  'Link to join: ' + window.parent.location.href;
 }
 
 function generateRoomName() {
@@ -159,7 +159,7 @@ if (room) {
     document.querySelector('form#createRoom>button').disabled = false;
     document.getElementById('createRoom').onsubmit = function () {
         document.getElementById('createRoom').disabled = true;
-        document.querySelector('form#createRoom>button').innerText = 'Creating conference...';
+        document.querySelector('form#createRoom>button').textContent = 'Creating conference...';
         room = room.toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
         doJoin(room);
         return false; 
@@ -168,7 +168,7 @@ if (room) {
 
 function GUM() {
     webrtc = new SimpleWebRTC({
-        url: 'https://api.talky.io', // this will only work from simplewebrtc.com, please use the default sandbox otherwise
+        //url: 'https://api.talky.io', // this will only work from simplewebrtc.com, please use the default sandbox otherwise
         // we don't do video
         localVideoEl: '',
         remoteVideosEl: '',
@@ -307,7 +307,7 @@ function GUM() {
         // FIXME: also send current avatar and nick to newly joining participants
         var container = document.getElementById('container_' + webrtc.getDomId(peer));
         if (message.type === 'nickname') {
-            container.querySelector('.nick').innerText = message.payload.nick;
+            container.querySelector('.nick').textContent = message.payload.nick;
         } else if (message.type === 'avatar') {
             container.querySelector('.avatar').src = message.payload.avatar;
         } else if (message.type === 'offer') {

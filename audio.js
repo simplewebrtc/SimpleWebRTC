@@ -85,7 +85,7 @@ function getSnapshot() {
                         video,
                         0, 0, w, h
                     );
-                    img.src = dataurl;
+                    img.src = url;
                     img.style.display = 'block';
                     video.style.display = 'none';
                     stream.getTracks().forEach(function(track) {

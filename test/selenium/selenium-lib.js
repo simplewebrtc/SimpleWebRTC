@@ -9,7 +9,7 @@ function buildDriver(browser) {
     var profile = new firefox.Profile();
     profile.setPreference('media.navigator.streams.fake', true);
     var firefoxOptions = new firefox.Options()
-        .setBinary('node_modules/.bin/start-firefox');
+        .setBinary('node_modules/.bin/start-firefox')
         .setProfile(profile);
 
     // Chrome options.

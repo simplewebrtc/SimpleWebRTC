@@ -1,10 +1,6 @@
 'use strict';
 var test = require('tape');
 
-// allow `npm run selenium <url>` usage
-var baseURL = process.argv.length >= 3 ? process.argv[2] : 'https://simplewebrtc.com/demo.html';
-
-console.log('BASE' + baseURL);
 // https://code.google.com/p/selenium/wiki/WebDriverJs
 var seleniumHelpers = require('./selenium-lib');
 var webdriver = require('selenium-webdriver');

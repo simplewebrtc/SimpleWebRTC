@@ -15,7 +15,9 @@ function track(name, info) {
 }
 
 function setRoom(name) {
-    document.querySelector('form#createRoom').remove();
+    if (document.querySelector('form#createRoom')) {
+        document.querySelector('form#createRoom').remove();
+    }
     document.getElementById('subtitle').innerText =  'Link to join: ' + window.parent.location.href;
 }
 
@@ -125,23 +127,33 @@ document.getElementById('nickInput').onkeydown = function(e) {
     return false;
 };
 
+function doJoin(room) {
+    webrtc.startLocalVideo();
+    webrtc.createRoom(room, function (err, name) {
+        var newUrl = window.parent.location.pathname + '?' + room;
+        if (!err) {
+            window.parent.history.replaceState({foo: 'bar'}, null, newUrl);
+            setRoom(room);
+        } else {
+            console.log('error', err, room);
+            if (err === 'taken') {
+                room = generateRoomName();
+                doJoin(room);
+            }
+        }
+    });
+}
+
 if (room) {
     setRoom(room);
 } else {
     room = generateRoomName();
     document.querySelector('form#createRoom>button').disabled = false;
     document.getElementById('createRoom').onsubmit = function () {
+        document.getElementById('createRoom').disabled = true;
+        document.querySelector('form#createRoom>button').innerText = 'Creating conference...';
         room = room.toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
-        webrtc.startLocalVideo();
-        webrtc.createRoom(room, function (err, name) {
-            var newUrl = window.parent.location.pathname + '?' + room;
-            if (!err) {
-                window.parent.history.replaceState({foo: 'bar'}, null, newUrl);
-                setRoom(room);
-            } else {
-                console.log(err);
-            }
-        });
+        doJoin(room);
         return false; 
     };
 }
@@ -336,6 +348,7 @@ function GUM() {
             hasCameras = cameras.length;
             var mics = devices.filter(function(device) { return device.kind === 'audioinput'; });
             if (mics.length) {
+                document.getElementById('requirements').style.display = 'none';
                 // do we want a button the user has to click before this happens?
                 if (room) webrtc.startLocalVideo();
             } else {

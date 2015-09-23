@@ -16,8 +16,7 @@ function track(name, info) {
 
 function setRoom(name) {
     document.querySelector('form#createRoom').remove();
-    document.getElementById('title').innerText = 'Room: ' + name;
-    document.getElementById('subTitle').innerText =  'Link to join: ' + window.parent.location.href;
+    document.getElementById('subtitle').innerText =  'Link to join: ' + window.parent.location.href;
 }
 
 function generateRoomName() {
@@ -129,11 +128,9 @@ document.getElementById('nickInput').onkeydown = function(e) {
 if (room) {
     setRoom(room);
 } else {
-    document.getElementById('sessionInput').disabled = false;
-    document.getElementById('sessionInput').value = generateRoomName();
+    room = generateRoomName();
     document.querySelector('form#createRoom>button').disabled = false;
     document.getElementById('createRoom').onsubmit = function () {
-        room = document.getElementById('sessionInput').value;
         room = room.toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
         webrtc.startLocalVideo();
         webrtc.createRoom(room, function (err, name) {

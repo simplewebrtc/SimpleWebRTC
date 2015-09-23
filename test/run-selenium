@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Installs Chrome or Firefox if missing and sets default browser to
+# chrome stable.
+#
+echo -e "\nPreparing Selenium webdriver tests."
+
+BINDIR=./browsers/bin
+export BROWSER=chrome
+export BVER=stable
+BROWSERBIN=$BINDIR/$BROWSER-$BVER
+if [ ! -x $BROWSERBIN ]; then
+  echo "Installing Chrome"
+  ./node_modules/travis-multirunner/setup.sh
+fi
+export BROWSER=firefox
+export BVER=stable
+BROWSERBIN=$BINDIR/$BROWSER-$BVER
+if [ ! -x $BROWSERBIN ]; then
+  echo "Installing Firefox"
+  ./node_modules/travis-multirunner/setup.sh
+fi
+echo "Starting browser."
+PATH=$PATH:./node_modules/.bin
+
+node test/selenium/index.js

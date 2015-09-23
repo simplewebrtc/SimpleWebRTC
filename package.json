@@ -18,14 +18,20 @@
     "mockconsole": "0.0.1"
   },
   "devDependencies": {
-    "express": "3.x.x",
     "browserify": "2.22.0",
+    "chromedriver": "^2.16.0",
+    "express": "3.x.x",
     "precommit-hook": "0.3.x",
     "request": "",
+    "selenium-webdriver": "^2.46.1",
+    "tape": "^4.0.0",
+    "testling": "^1.7.1",
+    "travis-multirunner": "^2.5.0",
     "uglify-js": "2.3.6"
   },
   "license": "MIT",
   "scripts": {
+    "test-travis": "test/run-selenium",
     "updateLatest": "./scripts/updateLatest.sh"
   }
 }

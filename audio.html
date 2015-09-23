@@ -56,16 +56,13 @@
             </section>
             <section>
                 <h2>Behind the scenes</h2>
-                <section>
-                    <p>First, SimpleWebRTC requests access to your microphone by calling <a href="blogs.windows.com/msedgedev/2015/05/13/announcing-media-capture-functionality-in-microsoft-edge/">getUserMedia()</a>, which returns a MediaStreamTrack object. Then, SimpleWebRTC joins a room on the server and establishes a Peer-to-Peer connection with other people at the same URL. In Chrome and Firefox, the <a href="https://www.w3.org/TR/webrtc/">WebRTC PeerConnection API</a> is used. In Microsoft Edge, this API is shimmed using the lower-level <a href="https://blogs.windows.com/msedgedev/2015/09/18/ortc-api-is-now-available-in-microsoft-edge/">ORTC APIs</a>.</p>
-                    <p>All three browsers should be able to talk to each other this way.</p>
-                </section>
-                <section>
-                    <ul>
-                        <li>To find more about &amp;yet and SimpleWebRTC, visit <a href="https://andyet.com/realtime">www.andyet.com</a> and <a href="https://simplewebrtc.com/">simplewebrtc.com</a>.</li>
-                        <li>The ORTC shim used is (hopefully soon) going to be part of the main branch of <a href="https://github.com/webrtc/adapter">adapter.js</a>.</li>
-                    </ul>
-                </section>
+                <p>This demo is based on a library called SimpleWebRTC. It hides the complexity of the WebRTC and ORTC APIs behind a nice Javascript API, allowing developers to concentrate on adding VoIP functionality as a feature in their application.</p>
+                <p>First, SimpleWebRTC requests access to your microphone by calling <a href="blogs.windows.com/msedgedev/2015/05/13/announcing-media-capture-functionality-in-microsoft-edge/">getUserMedia()</a>, which returns a MediaStreamTrack object. Then, SimpleWebRTC joins a room on the server and establishes a Peer-to-Peer connection with other people at the same URL. In Chrome and Firefox, the <a href="https://www.w3.org/TR/webrtc/">WebRTC PeerConnection API</a> is used. In Microsoft Edge, this API is shimmed using the lower-level <a href="https://blogs.windows.com/msedgedev/2015/09/18/ortc-api-is-now-available-in-microsoft-edge/">ORTC APIs</a>.</p>
+                <p>All three browsers should be able to talk to each other this way.</p>
+                <ul>
+                    <li>To find more about &amp;yet and SimpleWebRTC, visit <a href="https://andyet.com/realtime">www.andyet.com</a> and <a href="https://simplewebrtc.com/">simplewebrtc.com</a>.</li>
+                    <li>The ORTC shim used is (hopefully soon) going to be part of the main branch of <a href="https://github.com/webrtc/adapter">adapter.js</a>.</li>
+                </ul>
             </section>
         </div>
         <script src="audio.js"></script>

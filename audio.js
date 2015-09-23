@@ -1,6 +1,7 @@
 // grab the room from the URL
 var room;
 var framed = window.self !== window.top;
+var hasroom = framed && document.referrer && document.referrer.split('?').length > 0;
 if (framed) {
     room = document.referrer && document.referrer.split('?')[1];
 } else {
@@ -24,7 +25,7 @@ function setRoom(name) {
     if (document.querySelector('form#createRoom')) {
         document.querySelector('form#createRoom').remove();
     }
-    document.getElementById('subtitle').textContent =  'Link to join: ' + (framed ? document.referrer + '?' + name : window.parent.location.href);
+    document.getElementById('subtitle').textContent =  'Link to join: ' + (framed ? document.referrer + (hasroom ? '' : '?' + name) : window.parent.location.href);
 }
 
 function generateRoomName() {

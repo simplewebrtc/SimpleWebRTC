@@ -16,10 +16,9 @@
         <div class="content cf">
             <section>
                 <h1>SimpleWebRTC</h1>
-                <h3>Use Edge's ORTC API and the WebRTC APIs in Chrome and Firefox to make calls between supported browsers.</h3>
+                <h3>Use Edge's ORTC API and the WebRTC APIs in Chrome and Firefox to make conference calls between supported browsers.</h3>
                 <div>
                     <p>To use this demo, you'll need the most recent version of the Edge browser, Chrome or Firefox , and a microphone attached to your Windows 10 device.</p>
-                    <p>Choose a room name and share the link with people you would like to join, e.g. by sending them the link via chat or email. You can share the link with a small number of people, this is not limited to 1:1 calls.</p>
                 </div>
                 <div id="supportWarning" class="block-note--error">
                     <p>Warning - Your browser does not support the ORTC or WebRTC APIs. Please switch to a PC with a recent version of Windows 10 and try again.</p>
@@ -52,6 +51,11 @@
             </section>
             <section class="clear">
                 <h2>How it works</h2>
+                <p>Create a conference and share the link with people you would like to join, e.g. by sending them the link via chat or email. You can share the link with a small number of people, this is not limited to 1:1 calls.</p>
+                <p>Add your name and a snapshot to make it easy to recognize you.</p>
+            </section>
+            <section>
+                <h2>Behind the scenes</h2>
                 <section>
                     <p>First, SimpleWebRTC requests access to your microphone by calling <a href="blogs.windows.com/msedgedev/2015/05/13/announcing-media-capture-functionality-in-microsoft-edge/">getUserMedia()</a>, which returns a MediaStreamTrack object. Then, SimpleWebRTC joins a room on the server and establishes a Peer-to-Peer connection with other people at the same URL. In Chrome and Firefox, the <a href="https://www.w3.org/TR/webrtc/">WebRTC PeerConnection API</a> is used. In Microsoft Edge, this API is shimmed using the lower-level <a href="https://blogs.windows.com/msedgedev/2015/09/18/ortc-api-is-now-available-in-microsoft-edge/">ORTC APIs</a>.</p>
                     <p>All three browsers should be able to talk to each other this way.</p>

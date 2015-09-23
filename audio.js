@@ -85,6 +85,7 @@ function getSnapshot() {
                         video,
                         0, 0, w, h
                     );
+                    img.src = dataurl;
                     img.style.display = 'block';
                     video.style.display = 'none';
                     stream.getTracks().forEach(function(track) {
@@ -108,7 +109,6 @@ document.getElementById('snapshotButton').onclick = function() {
     var p;
     p = getSnapshot();
     p.then(function (dataurl) {
-       document.getElementById('snapshot').src = dataurl;
        avatar = dataurl;
        webrtc.sendToAll('avatar', {avatar: avatar});
    })

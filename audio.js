@@ -1,5 +1,11 @@
 // grab the room from the URL
-var room = window.parent.location && window.parent.location.search.split('?')[1];
+var room;
+var framed = window.self !== window.top;
+if (framed) {
+    room = document.referrer && document.referrer.split('?')[1];
+} else {
+    room = window.parent.location && window.parent.location.search.split('?')[1];
+}
 
 var nick;
 var avatar;
@@ -132,7 +138,7 @@ function doJoin(room) {
     webrtc.createRoom(room, function (err, name) {
         var newUrl = window.parent.location.pathname + '?' + room;
         if (!err) {
-            window.parent.history.replaceState({foo: 'bar'}, null, newUrl);
+            if (!framed) window.parent.history.replaceState({foo: 'bar'}, null, newUrl);
             setRoom(room);
         } else {
             console.log('error', err, room);

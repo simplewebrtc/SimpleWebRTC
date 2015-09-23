@@ -85,14 +85,14 @@ function getSnapshot() {
                         video,
                         0, 0, w, h
                     );
-                    img.src = url;
-                    img.style.display = 'block';
                     video.style.display = 'none';
                     stream.getTracks().forEach(function(track) {
                         track.stop();
                     });
                     var url = canvasEl.toDataURL('image/jpg');
                     var data = url.match(/data:([^;]*);(base64)?,([0-9A-Za-z+/]+)/);
+                    img.src = url;
+                    img.style.display = 'block';
                     resolve(url);
                 };
                 countdown();

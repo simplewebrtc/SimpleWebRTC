@@ -24,7 +24,7 @@ function setRoom(name) {
     if (document.querySelector('form#createRoom')) {
         document.querySelector('form#createRoom').remove();
     }
-    document.getElementById('subtitle').textContent =  'Link to join: ' + window.parent.location.href;
+    document.getElementById('subtitle').textContent =  'Link to join: ' + (framed ? document.referrer + '?' + name) : window.parent.location.href;
 }
 
 function generateRoomName() {
@@ -136,7 +136,7 @@ document.getElementById('nickInput').onkeydown = function(e) {
 function doJoin(room) {
     webrtc.startLocalVideo();
     webrtc.createRoom(room, function (err, name) {
-        var newUrl = window.parent.location.pathname + '?' + room;
+        var newUrl = (framed ? document.referrer : window.parent.location.pathname) + '?' + room;
         if (!err) {
             if (!framed) window.parent.history.replaceState({foo: 'bar'}, null, newUrl);
             setRoom(room);

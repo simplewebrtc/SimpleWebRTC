@@ -102,13 +102,13 @@ function getSnapshot() {
 // if we have a camera, we can use it to take a snapshot
 // should happen on a button click
 document.getElementById('snapshotButton').onclick = function() {
+    document.querySelector('.local-controls').style.visibility = 'hidden';
     var p;
     p = getSnapshot();
     p.then(function (dataurl) {
        document.getElementById('snapshot').src = dataurl;
        avatar = dataurl;
        webrtc.sendToAll('avatar', {avatar: avatar});
-        document.querySelector('.local-controls').style.visibility = 'hidden';
    })
    .catch(function (err) {
    });

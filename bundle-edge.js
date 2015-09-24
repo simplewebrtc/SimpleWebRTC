@@ -7442,11 +7442,7 @@ if (typeof window === 'undefined' || !window.navigator) {
         var cand = Object.keys(candidate.candidate).length > 0 ?
             this._toCandidateJSON(candidate.candidate) : {};
         if (cand.protocol.toLowerCase() === 'tcp' && cand.port === 0) {
-            if (window.self === window.top && localStorage.debugtcpissue !== 'debug') {
-                return;
-            } else {
-                console.log('evil candidate', cand);
-            }
+            return;
         }
         // dirty hack to make simplewebrtc work.
         // FIXME: remove, no longer needed for simplewebrtc

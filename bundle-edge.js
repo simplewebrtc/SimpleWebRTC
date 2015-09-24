@@ -7442,10 +7442,12 @@ if (typeof window === 'undefined' || !window.navigator) {
         var cand = Object.keys(candidate.candidate).length > 0 ?
             this._toCandidateJSON(candidate.candidate) : {};
         if (cand.protocol.toLowerCase() === 'tcp' && cand.port === 0) {
-            if (localStorage.debugtcpissue !== 'debug') {
-                return;
-            } else {
-                console.log('evil candidate', cand);
+            if (window.self === window.top) {
+                if (localStorage.debugtcpissue !== 'debug') {
+                    return;
+                } else {
+                    console.log('evil candidate', cand);
+                }
             }
         }
         // dirty hack to make simplewebrtc work.
@@ -8640,9 +8642,11 @@ module.exports = function (constraints, cb) {
     }
 
     // testing support
+    /*
     if (localStorage && localStorage.useFirefoxFakeDevice === "true") {
         constraints.fake = true;
     }
+    */
 
     navigator.getUserMedia(constraints, function (stream) {
         cb(null, stream);

@@ -1,7 +1,7 @@
 // grab the room from the URL
 var room;
 var framed = window.self !== window.top;
-var hasroom = framed && document.referrer && document.referrer.split('?').length > 0;
+var hasroom = framed && document.referrer && document.referrer.split('?').length > 1;
 if (framed) {
     room = document.referrer && document.referrer.split('?')[1];
 } else {

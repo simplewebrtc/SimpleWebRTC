@@ -36,7 +36,7 @@ function buildDriver(browser) {
 }
 
 function doJoin(driver, room) {
-    return driver.get('file://' + process.cwd() + '/index.html?' + room)
+    return driver.get('file://' + process.cwd() + '/index.html?' + room);
 }
 
 function test3(browserA, browserB, browserC, t) {

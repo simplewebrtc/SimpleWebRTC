@@ -21,7 +21,7 @@ function testP2P(browserA, browserB, t) {
     userA.wait(function () {
         return userA.executeScript('return webrtc.getPeers().length === 1 ' + 
             '&& webrtc.getPeers()[0].pc.iceConnectionState === \'connected\''); 
-    }, 30*1000)
+    }, 30 * 1000)
     .then(function () {
         t.pass('P2P connected');
         userA.quit();

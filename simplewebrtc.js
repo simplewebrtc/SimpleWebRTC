@@ -445,6 +445,7 @@ SimpleWebRTC.prototype.testReadiness = function () {
 };
 
 SimpleWebRTC.prototype.createRoom = function (name, cb) {
+    this.roomName = name;
     if (arguments.length === 2) {
         this.connection.emit('create', name, cb);
     } else {

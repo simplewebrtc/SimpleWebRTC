@@ -61,7 +61,7 @@
         <hr>
         <div>
           <h3>A note on connectivity issues</h3>
-          If you see black videos from peers or the connection state displayed ontop of those videos 
+          If you see black videos from peers or the connection state displayed ontop of those videos
           either hangs in <i>Connecting to peer...</i> or changes to <i>Connection failed</i>, a direct peer-to-peer connection could not be established.
           <br>
           This typically means that a TURN server is required. This <a href="http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/#after-signaling-using-ice-to-cope-with-nats-and-firewalls">tutorial</a> explains the problem.
@@ -155,7 +155,7 @@
                     vol.low = -40;
                     vol.high = -25;
                     container.appendChild(vol);
-                    
+
                     // show the ice connection state
                     if (peer && peer.pc) {
                         var connstate = document.createElement('div');
@@ -163,7 +163,7 @@
                         container.appendChild(connstate);
                         peer.pc.on('iceConnectionStateChange', function (event) {
                             switch (peer.pc.iceConnectionState) {
-                            case 'checking': 
+                            case 'checking':
                                 connstate.innerText = 'Connecting to peer...';
                                 break;
                             case 'connected':
@@ -240,7 +240,7 @@
                     var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
                     webrtc.createRoom(val, function (err, name) {
                         console.log(' create room cb', arguments);
-                    
+
                         var newUrl = location.pathname + '?' + name;
                         if (!err) {
                             history.replaceState({foo: 'bar'}, null, newUrl);
@@ -249,7 +249,7 @@
                             console.log(err);
                         }
                     });
-                    return false;          
+                    return false;
                 });
             }
 
@@ -266,7 +266,7 @@
 
             setButton(true);
 
-            button.click(function () {
+            button.onclick = function () {
                 if (webrtc.getLocalScreen()) {
                     webrtc.stopScreenShare();
                     setButton(true);
@@ -278,9 +278,9 @@
                             setButton(false);
                         }
                     });
-                    
+
                 }
-            });
+            };
         </script>
     </body>
 </html>

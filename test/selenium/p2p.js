@@ -10,7 +10,7 @@ function doJoin(driver, room) {
 }
 
 function testP2P(browserA, browserB, t) {
-    var room = 'testing_' + Math.floor(Math.random()*100000);
+    var room = 'testing_' + Math.floor(Math.random() * 100000);
 
     var userA = seleniumHelpers.buildDriver(browserA);
     doJoin(userA, room);
@@ -19,8 +19,9 @@ function testP2P(browserA, browserB, t) {
     doJoin(userB, room);
 
     userA.wait(function () {
-        return userA.executeScript('return webrtc.getPeers().length === 1 ' + 
-            '&& webrtc.getPeers()[0].pc.iceConnectionState === \'connected\''); 
+        return userA.executeScript(function () {
+            return window.webrtc.getPeers().length === 1 && window.webrtc.getPeers()[0].pc.iceConnectionState === 'connected';
+        });
     }, 30 * 1000)
     .then(function () {
         t.pass('P2P connected');

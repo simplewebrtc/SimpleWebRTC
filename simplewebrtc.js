@@ -261,9 +261,9 @@ SimpleWebRTC.prototype = Object.create(WildEmitter.prototype, {
 SimpleWebRTC.prototype.leaveRoom = function () {
     if (this.roomName) {
         this.connection.emit('leave');
-        this.webrtc.peers.forEach(function (peer) {
-            peer.end();
-        });
+        while(this.webrtc.peers.length>0){
+            this.webrtc.peers[0].end();
+        }
         if (this.getLocalScreen()) {
             this.stopScreenShare();
         }

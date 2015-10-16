@@ -58,7 +58,7 @@ function test3(browserA, browserB, browserC, t) {
             '});' +
             'return connected === 2;' +
             '})()');
-    }, 15*1000)
+    }, 15 * 1000)
     .then(function () {
         //return userA.sleep(2000);
     })

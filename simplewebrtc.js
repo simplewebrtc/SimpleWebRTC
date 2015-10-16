@@ -439,7 +439,7 @@ SimpleWebRTC.prototype.stopScreenShare = function () {
 
 SimpleWebRTC.prototype.testReadiness = function () {
     var self = this;
-    if (this.webrtc.localStream && this.sessionReady) {
+    if (this.webrtc.localStreams.length > 0 && this.sessionReady) {
         self.emit('readyToCall', self.connection.getSessionid());
     }
 };

@@ -28,7 +28,7 @@ function buildDriver(browser) {
         .addArguments('use-fake-ui-for-media-stream');
         // use-file-for-fake-audio-capture -- see https://code.google.com/p/chromium/issues/detail?id=421054
 
-  return new webdriver.Builder()
+    return new webdriver.Builder()
       .forBrowser(browser || process.env.BROWSER || 'firefox')
       .setFirefoxOptions(firefoxOptions)
       .setChromeOptions(chromeOptions)
@@ -40,7 +40,7 @@ function doJoin(driver, room) {
 }
 
 function test3(browserA, browserB, browserC, t) {
-    var room = 'testing_' + Math.floor(Math.random()*100000);
+    var room = 'testing_' + Math.floor(Math.random() * 100000);
 
     var userA = buildDriver(browserA);
     doJoin(userA, room);
@@ -52,13 +52,13 @@ function test3(browserA, browserB, browserC, t) {
     doJoin(userC, room);
     userA.wait(function () {
         return userA.executeScript('return (function() {' +
-            'var connected = 0;' + 
+            'var connected = 0;' +
             'webrtc.getPeers().forEach(function (peer) {' +
-            '  if (peer.pc.iceConnectionState === \'connected\' || peer.pc.iceConnectionState === \'completed\') connected++;' + 
+            '  if (peer.pc.iceConnectionState === \'connected\' || peer.pc.iceConnectionState === \'completed\') connected++;' +
             '});' +
             'return connected === 2;' +
             '})()');
-    }, 15*1000)
+    }, 15 * 1000)
     .then(function () {
         //return userA.sleep(2000);
     })

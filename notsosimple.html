@@ -543,7 +543,16 @@ webrtc.on('connectivityError', function (peer) {
     console.log('videoAdded', peer.nick);
 });</code></pre>
 
-        <h2>Join without a camera or microphone</h2>
+        <h2 id="nomicnocam">Join without a camera or microphone</h2>
+        <p>Sometimes, your users don't have a camera or microphone attached. And you still want them to join the room so they can listen to others. There are two ways to handle this:</p>
+        <ul>
+          <li>determine the available device types using <i>navigator.mediaDevices.enumerateDevices</i> (see <a href=˝https://webrtc.github.io/samples/src/content/devices/input-output/">here</a>) and set the media options accordingly</li>
+          <li>handle <i>localMediaError</i> after trying to call getUserMedia.</li>
+        </ul>
+        <p>SimpleWebRTC typically waits for media before joining the room. If you do not have media, you will have to manually call <i>joinRoom</i> as the <i>readyToCall</i> event will not be called:
+        <code><pre>// join without waiting for media
+webrtc.joinRoom('your awesome room name');</code></pre>
+        <p>Note that you need to be careful about UX since the videoAdded will not be triggered on the remote side.</p>
 
         <h2>Connection quality</h2>
 

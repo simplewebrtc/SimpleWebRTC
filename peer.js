@@ -110,7 +110,7 @@ Peer.prototype.handleMessage = function (message) {
                 return;
             }
             // auto-accept
-            self.pc.answer(self.receiveMedia, function (err, sessionDescription) {
+            self.pc.answer(function (err, sessionDescription) {
                 //self.send('answer', sessionDescription);
             });
         });

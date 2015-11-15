@@ -13,7 +13,7 @@ SocketIoConnection.prototype.emit = function () {
 };
 
 SocketIoConnection.prototype.getSessionid = function () {
-    return this.connection.socket.sessionid;
+    return this.connection.id;
 };
 
 SocketIoConnection.prototype.disconnect = function () {

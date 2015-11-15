@@ -9,7 +9,7 @@ function SimpleWebRTC(opts) {
     var self = this;
     var options = opts || {};
     var config = this.config = {
-            url: 'https://signaling.simplewebrtc.com:443/',
+            url: 'https://sandbox.simplewebrtc.com:443/',
             socketio: {/* 'force new connection':true*/},
             connection: null,
             debug: false,
@@ -328,6 +328,7 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
     var self = this;
     this.roomName = name;
     this.connection.emit('join', name, function (err, roomDescription) {
+        console.log('join CB', err, roomDescription);
         if (err) {
             self.emit('error', err);
         } else {

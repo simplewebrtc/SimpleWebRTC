@@ -8,13 +8,13 @@
   "main": "./simplewebrtc.js",
   "description": "World's easiest webrtc",
   "dependencies": {
-    "filetransfer": "^2.0.0",
-    "localmedia": "^1.0.2",
-    "rtcpeerconnection": "^3.0.6",
-    "webrtcsupport": "^1.2.4",
+    "filetransfer": "^2.0.4",
+    "localmedia": "^2.0.0",
+    "rtcpeerconnection": "^4.0.0",
+    "webrtcsupport": "^2.2.0",
     "wildemitter": "1.x",
     "socket.io-client": "^1.3.7",
-    "attachmediastream": "1.0.1",
+    "attachmediastream": "^1.3.5",
     "mockconsole": "0.0.1"
   },
   "devDependencies": {

@@ -24,11 +24,9 @@ function SimpleWebRTC(opts) {
                 video: true,
                 audio: true
             },
-            receiveMedia: { // FIXME: remove old chrome <= 37 constraints format
-                mandatory: {
-                    OfferToReceiveAudio: true,
-                    OfferToReceiveVideo: true
-                }
+            receiveMedia: {
+                offerToReceiveAudio: 1,
+                offerToReceiveVideo: 1
             },
             localVideo: {
                 autoplay: true,
@@ -218,10 +216,8 @@ function SimpleWebRTC(opts) {
                     sharemyscreen: true,
                     enableDataChannels: false,
                     receiveMedia: {
-                        mandatory: {
-                            OfferToReceiveAudio: false,
-                            OfferToReceiveVideo: false
-                        }
+                        offerToReceiveAudio: 0,
+                        offerToReceiveVideo: 0
                     },
                     broadcaster: self.connection.getSessionid(),
                 });
@@ -344,10 +340,8 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
                             type: type,
                             enableDataChannels: self.config.enableDataChannels && type !== 'screen',
                             receiveMedia: {
-                                mandatory: {
-                                    OfferToReceiveAudio: type !== 'screen' && self.config.receiveMedia.mandatory.OfferToReceiveAudio,
-                                    OfferToReceiveVideo: self.config.receiveMedia.mandatory.OfferToReceiveVideo
-                                }
+                                offerToReceiveAudio: type !== 'screen' && self.config.receiveMedia.offerToReceiveAudio ? 1 : 0,
+                                offerToReceiveVideo: self.config.receiveMedia.offerToReceiveVideo
                             }
                         });
                         self.emit('createdPeer', peer);

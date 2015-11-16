@@ -132,7 +132,7 @@ Peer.prototype.handleMessage = function (message) {
     } else if (message.type === 'endOfCandidates') {
         // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
         // shim this will only be called in Edge.
-        var mLines = this.pc.pc.peerconnection.mLines || this.pc.pc.peerconnection.tracks || [];
+        var mLines = this.pc.pc.peerconnection.transceivers || [];
         mLines.forEach(function (mLine) {
             if (mLine.iceTransport) {
                 mLine.iceTransport.addRemoteCandidate({});

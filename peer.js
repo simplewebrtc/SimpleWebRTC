@@ -28,6 +28,9 @@ function Peer(options) {
     // Create an RTCPeerConnection via the polyfill
     this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionConstraints);
     this.pc.on('ice', this.onIceCandidate.bind(this));
+    this.pc.on('endOfCandidates', function (event) {
+        self.send('endOfCandidates', event);
+    });
     this.pc.on('offer', function (offer) {
         if (self.parent.config.nick) offer.nick = self.parent.config.nick;
         self.send('offer', offer);
@@ -126,6 +129,15 @@ Peer.prototype.handleMessage = function (message) {
         this.parent.emit('mute', {id: message.from, name: message.payload.name});
     } else if (message.type === 'unmute') {
         this.parent.emit('unmute', {id: message.from, name: message.payload.name});
+    } else if (message.type === 'endOfCandidates') {
+        // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
+        // shim this will only be called in Edge.
+        var mLines = this.pc.pc.peerconnection.transceivers || [];
+        mLines.forEach(function (mLine) {
+            if (mLine.iceTransport) {
+                mLine.iceTransport.addRemoteCandidate({});
+            }
+        });
     }
 };
 

@@ -14,7 +14,7 @@ Want to see it in action? Check out the demo: https://talky.io/
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="http://simplewebrtc.com/latest.js"></script> 
+        <script src="http://simplewebrtc.com/latest-v2.js"></script> 
         <style>
             #remoteVideos video {
                 height: 150px;

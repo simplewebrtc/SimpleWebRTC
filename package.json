@@ -26,7 +26,7 @@
     "selenium-webdriver": "^2.46.1",
     "tape": "^4.0.0",
     "testling": "^1.7.1",
-    "travis-multirunner": "^2.5.0",
+    "travis-multirunner": "^3.0.0",
     "uglify-js": "2.3.6"
   },
   "license": "MIT",

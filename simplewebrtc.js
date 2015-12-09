@@ -437,10 +437,8 @@ SimpleWebRTC.prototype.testReadiness = function () {
     if (this.sessionReady) {
         if (!this.config.media.video && !this.config.media.audio) {
             self.emit('readyToCall', self.connection.getSessionid());
-        } else {
-            if (this.webrtc.localStreams.length > 0) {
-                self.emit('readyToCall', self.connection.getSessionid());
-            }
+        } else if (this.webrtc.localStreams.length > 0) {
+            self.emit('readyToCall', self.connection.getSessionid());
         }
     }
 };

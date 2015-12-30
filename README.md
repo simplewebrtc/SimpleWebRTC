@@ -99,7 +99,7 @@ https://gitter.im/HenrikJoreteg/SimpleWebRTC
   - `string url` - *required* url for signaling server. Defaults to signaling
   server URL which can be used for development. You must use your own signaling
   server for production.
-  - `object sockio` - *optional* object to be passed as options to the signaling
+  - `object socketio` - *optional* object to be passed as options to the signaling
   server connection.
   - `Connection connection` - *optional* connection object for signaling. See
   `Connection` below. Defaults to a new SocketIoConnection

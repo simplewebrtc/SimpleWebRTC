@@ -14,7 +14,7 @@ Want to see it in action? Check out the demo: https://talky.io/
 <!DOCTYPE html>
 <html>
     <head>
-        <script src="http://simplewebrtc.com/latest-v2.js"></script>
+        <script src="https://simplewebrtc.com/latest-v2.js"></script>
         <style>
             #remoteVideos video {
                 height: 150px;
@@ -58,18 +58,26 @@ webrtc.on('readyToCall', function () {
 ### Available options
 
 
-`peerConnectionConfig` - Set this to specify your own STUN and TURN servers. By default, SimpleWebRTC uses Google's public STUN server (`stun.l.google.com:19302`), which is intended for public use according to: https://twitter.com/HenrikJoreteg/status/354105684591251456
+`peerConnectionConfig` - Set this to specify your own STUN and TURN servers. By
+default, SimpleWebRTC uses Google's public STUN server
+(`stun.l.google.com:19302`), which is intended for public use according to:
+https://twitter.com/HenrikJoreteg/status/354105684591251456
 
-Note that you will most likely also need to run your own TURN servers. See http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/ for a basic tutorial.
+Note that you will most likely also need to run your own TURN servers. See
+http://www.html5rocks.com/en/tutorials/webrtc/infrastructure/ for a basic
+tutorial.
 
 ## Filetransfer
-Sending files between individual participants is supported. See http://simplewebrtc.com/filetransfer.html for a demo.
+Sending files between individual participants is supported. See
+http://simplewebrtc.com/filetransfer.html for a demo.
 
-Note that this is not file sharing between a group which requires a completly different approach.
+Note that this is not file sharing between a group which requires a completely
+different approach.
 
 ## It's not always that simple...
 
-Sometimes you need to do more advanced stuff. See http://simplewebrtc.com/notsosimple.html for some examples.
+Sometimes you need to do more advanced stuff. See
+http://simplewebrtc.com/notsosimple.html for some examples.
 
 ## Got questions?
 
@@ -88,22 +96,38 @@ https://gitter.im/HenrikJoreteg/SimpleWebRTC
 `new SimpleWebRTC(options)`
 
 - `object options` - options object provided to constructor consisting of:
-  - `string url` - *required* url for signaling server. Defaults to signaling server URL which can be used for development. You must use your own signaling server for production.
-  - `object sockio` - *optional* object to be passed as options to the signaling server connection.
-  - `Connection connection` - *optional* connection object for signaling. See `Connection` below. Defaults to a new SocketIoConnection
+  - `string url` - *required* url for signaling server. Defaults to signaling
+  server URL which can be used for development. You must use your own signaling
+  server for production.
+  - `object sockio` - *optional* object to be passed as options to the signaling
+  server connection.
+  - `Connection connection` - *optional* connection object for signaling. See
+  `Connection` below. Defaults to a new SocketIoConnection
   - `bool debug` - *optional* flag to set the instance to debug mode
-  - `[string|DomElement] locaVidelEl` - ID or Element to contain the local video element
+  - `[string|DomElement] locaVidelEl` - ID or Element to contain the local video
+  element
   - `[string|DomElement] remoteVideosEl` - ID or Element to contain the
   remote video elements
-  - `bool autoRequestMedia` - *optional(=false)* option to automatically request user media. Use `true` to request automatically, or `false` to request media later with `startLocalVideo`
-  - `bool enableDataChannels` *optional(=true)* option to enable/disable data channels (used for volume levels or direct messaging)
-  - `bool autoRemoveVideos` - *optional(=true)* option to automatically remove video elements when streams are stopped.
-  - `bool adjustPeerVolume` - *optional(=false)* option to reduce peer volume when the local participant is speaking
+  - `bool autoRequestMedia` - *optional(=false)* option to automatically request
+  user media. Use `true` to request automatically, or `false` to request media
+  later with `startLocalVideo`
+  - `bool enableDataChannels` *optional(=true)* option to enable/disable data
+  channels (used for volume levels or direct messaging)
+  - `bool autoRemoveVideos` - *optional(=true)* option to automatically remove
+  video elements when streams are stopped.
+  - `bool adjustPeerVolume` - *optional(=false)* option to reduce peer volume
+  when the local participant is speaking
   - `number peerVolumeWhenSpeaking` - *optional(=.0.25)* value used in
   conjunction with `adjustPeerVolume`. Uses values between 0 and 1.
-  - `object media` - media options to be passed to `getUserMedia`. Defaults to `{ video: true, audio: true }`. Valid configurations described [on MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia) with official spec [at w3c](http://w3c.github.io/mediacapture-main/#dom-mediadevices-getusermedia).
-  - `object receiveMedia` - *optional* RTCPeerConnection options. Defaults to `{ offerToReceiveAudio: 1, offerToReceiveVideo: 1 }`.
-  - `object localVideo` - *optional* options for attaching the local video stream to the page. Defaults to
+  - `object media` - media options to be passed to `getUserMedia`. Defaults to
+  `{ video: true, audio: true }`. Valid configurations described
+  [on MDN](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)
+  with official spec
+  [at w3c](http://w3c.github.io/mediacapture-main/#dom-mediadevices-getusermedia).
+  - `object receiveMedia` - *optional* RTCPeerConnection options. Defaults to
+  `{ offerToReceiveAudio: 1, offerToReceiveVideo: 1 }`.
+  - `object localVideo` - *optional* options for attaching the local video
+  stream to the page. Defaults to
   ```javascript
   {
       autoplay: true, // automatically play the video stream on the page
@@ -111,13 +135,17 @@ https://gitter.im/HenrikJoreteg/SimpleWebRTC
       muted: true // mute local video stream to prevent echo
   }
   ```
-  - `object logger` - *optional* alternate logger for the instance; any object that implements `log`, `warn`, and `error` methods.
+  - `object logger` - *optional* alternate logger for the instance; any object
+  that implements `log`, `warn`, and `error` methods.
 
 ### Fields
 
-`capabilities` - the [`webrtcSupport`](https://github.com/HenrikJoreteg/webrtcsupport) object that describes browser capabilities, for convenience
+`capabilities` - the
+[`webrtcSupport`](https://github.com/HenrikJoreteg/webrtcsupport) object that
+describes browser capabilities, for convenience
 
-`config` - the configuration options extended from options passed to the constructor
+`config` - the configuration options extended from options passed to the
+constructor
 
 `connection` - the socket (or alternate) signaling connection
 
@@ -125,57 +153,106 @@ https://gitter.im/HenrikJoreteg/SimpleWebRTC
 
 ### Events
 
-`'connectionReady', sessionId`
+To set up event listeners, use the SimpleWebRTC instance created with the
+constructor. Example:
 
-`'createdPeer', peer`
+```javascript
+var webrtc = new SimpleWebRTC(options);
 
-`'stunservers', stunServers`
+webrtc.on('connectionReady', function (sessionId) {
 
-`'turnservers', turnservers`
+})
+```
 
-`'localScreenAdded', el`
+`'connectionReady', sessionId` - emitted when the signaling connection emits the
+`connect` event, with the unique id for the session.
+
+`'createdPeer', peer` - emitted three times:
+
+- when joining a room with existing peers, once for each peer
+- when a new peer joins a joined room
+- when sharing screen, once for each peer
+
+- `peer` - the object representing the peer and underlying peer connection
+
+`'stunservers', [...args]` - emitted when the signaling connection emits the
+same event
+
+`'turnservers', [...args]` - emitted when the signaling connection emits the
+same event
+
+`'localScreenAdded', el` - emitted after triggering the start of screen sharing
+
+- `el` the element that contains the local screen stream
+
+`leftRoom, roomName` - emitted after successfully leaving the current room,
+ending all peers, and stopping the local screen stream
+
+`videoAdded, videoEl, peer` - emitted when a peer stream is added
+
+- `videoEl` - the video element associated with the stream that was added
+- `peer` - the peer associated with the stream that was added
+
+`videoRemoved, videoEl, peer` - emitted when a peer stream is removed
+
+- `videoEl` - the video element associated with the stream that was removed
+- `peer` - the peer associated with the stream that was removed
 
 ### Methods
 
-`leaveRoom()`
+`leaveRoom()` - leaves the currently joined room and stops local screen share
 
-`disconnect()`
+`disconnect()` - calls `disconnect` on the signaling connection and deletes it
 
-`handlePeerStreamAdded(peer)`
+`shareScreen(callback)` - initiates screen capture request to browser, then
+adds the stream to the conference
 
-`handlePeerStreamRemoved(peer)`
+`getLocalScreen()` - returns the local screen stream
 
-`getDomId(peer)`
+`stopScreenShare()` - stops the screen share stream and removes it from the room
 
-`setVolumeForAll(volume)`
+`testReadiness()` - tests that the connection is ready and that (if media is
+enabled) streams have started
 
-`joinRoom(name, callback)`
+`createRoom(name, callback)` - emits the `create` event on the connection with
+`name` and (if provided) invokes `callback` on response
 
-`getEl(idOrEl)`
+`joinRoom(name, callback)` - joins the conference in room `name`. Callback is
+invoked with `callback(err, roomDescription)` where `roomDescription` is yielded
+by the connection on the `join` event. See signalmaster for more details.
 
-`startLocalVideo()`
+`startLocalVideo()` - starts the local media with the `media` options provided
+in the config passed to the constructor
 
-`stopLocalVideo()`
+`stopLocalVideo()` - stops all local media streams
 
-`getLocalVideoContainer()`
+`setVolumeForAll(volume)` - used to set the volume level for all peers
 
-`getRemoteVideoContainer()`
+- `volume` - the volume level, between 0 and 1
 
-`shareScreen(callback)`
+`handlePeerStreamAdded(peer)` - used internally to attach media stream to the
+DOM and perform other setup
 
-`getLocalScreen()`
+`handlePeerStreamRemoved(peer)` - used internally to remove the video container
+from the DOM and emit `videoRemoved`
 
-`stopScreenShare()`
+`getDomId(peer)` - used internally to get the DOM id associated with a peer
 
-`testReadiness()`
+`getEl(idOrEl)` - helper used internally to get an element where `idOrEl` is
+either an element, or an id of an element
 
-`createRoom(name, callback)`
+`getLocalVideoContainer()` - used internally to get the container that will hold
+the local video element
 
-`sendFile()`
+`getRemoteVideoContainer()` - used internally to get the container that holds
+the remote video elements
 
 ### Connection
 
-By default, SimpleWebRTC uses a Socket.io connection to communicate with the signaling server. However, you can provide an alternate connection object to use. All that your alternate connection need provide are four methods:
+By default, SimpleWebRTC uses a [socket.io](http://socket.io/) connection to
+communicate with the signaling server. However, you can provide an alternate
+connection object to use. All that your alternate connection need provide are
+four methods:
 
 - `on(ev, fn)` - A method to invoke `fn` when event `ev` is triggered
 - `emit()` - A method to send/emit arbitrary arguments on the connection

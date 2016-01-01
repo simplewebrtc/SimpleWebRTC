@@ -199,20 +199,6 @@ ending all peers, and stopping the local screen stream
 
 ### Methods
 
-`leaveRoom()` - leaves the currently joined room and stops local screen share
-
-`disconnect()` - calls `disconnect` on the signaling connection and deletes it
-
-`shareScreen(callback)` - initiates screen capture request to browser, then
-adds the stream to the conference
-
-`getLocalScreen()` - returns the local screen stream
-
-`stopScreenShare()` - stops the screen share stream and removes it from the room
-
-`testReadiness()` - tests that the connection is ready and that (if media is
-enabled) streams have started
-
 `createRoom(name, callback)` - emits the `create` event on the connection with
 `name` and (if provided) invokes `callback` on response
 
@@ -223,11 +209,52 @@ by the connection on the `join` event. See signalmaster for more details.
 `startLocalVideo()` - starts the local media with the `media` options provided
 in the config passed to the constructor
 
+`testReadiness()` - tests that the connection is ready and that (if media is
+enabled) streams have started
+
+`mute()` - mutes the local audio stream for all peers (pauses sending audio)
+
+`unmute()` - unmutes local audio stream for all peers (resumes sending audio)
+
+`pauseVideo()` - pauses sending video to peers
+
+`resumeVideo()` - resumes sending video to all peers
+
+`pause()` - pauses sending audio and video to all peers
+
+`resume()` - resumes sending audio and video to all peers
+
+`sendToAll(messageType, payload)` - broadcasts a message to all peers in the
+room via the signaling channel (websocket)
+
+- `string messageType` - the key for the type of message being sent
+- `object payload` - an arbitrary value or object to send to peers
+
+`sendDirectlyToAll(channelLabel, messageType, payload)` - broadcasts a message
+to all peers in the room via a dataChannel
+
+- `string channelLabel` - the label for the dataChannel to send on
+- `string messageType` - the key for the type of message being sent
+- `object payload` - an arbitrary value or object to send to peers
+
+`getPeers(sessionId, type)` - returns all peers by `sessionId` and/or `type`
+
+`shareScreen(callback)` - initiates screen capture request to browser, then
+adds the stream to the conference
+
+`getLocalScreen()` - returns the local screen stream
+
+`stopScreenShare()` - stops the screen share stream and removes it from the room
+
 `stopLocalVideo()` - stops all local media streams
 
 `setVolumeForAll(volume)` - used to set the volume level for all peers
 
 - `volume` - the volume level, between 0 and 1
+
+`leaveRoom()` - leaves the currently joined room and stops local screen share
+
+`disconnect()` - calls `disconnect` on the signaling connection and deletes it
 
 `handlePeerStreamAdded(peer)` - used internally to attach media stream to the
 DOM and perform other setup

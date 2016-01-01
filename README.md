@@ -158,7 +158,8 @@ constructor. Example:
 
 ```javascript
 var webrtc = new SimpleWebRTC(options);
-    webrtc.on('connectionReady', function (sessionId) {
+webrtc.on('connectionReady', function (sessionId) {
+    // ...
 })
 ```
 

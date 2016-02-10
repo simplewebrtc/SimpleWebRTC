@@ -374,6 +374,7 @@ SimpleWebRTC.prototype.startLocalVideo = function () {
             self.emit('localMediaError', err);
         } else {
             attachMediaStream(stream, self.getLocalVideoContainer(), self.config.localVideo);
+            self.emit('localVideoAdded', stream);
         }
     });
 };

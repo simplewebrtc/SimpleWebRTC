@@ -247,12 +247,9 @@ function SimpleWebRTC(opts) {
     if (this.config.autoRequestMedia) this.startLocalVideo();
 }
 
+SimpleWebRTC.prototype = new WildEmitter();
 
-SimpleWebRTC.prototype = Object.create(WildEmitter.prototype, {
-    constructor: {
-        value: SimpleWebRTC
-    }
-});
+SimpleWebRTC.prototype.constructor = SimpleWebRTC;
 
 SimpleWebRTC.prototype.leaveRoom = function () {
     if (this.roomName) {

@@ -345,7 +345,7 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
                                 offerToReceiveVideo: self.config.receiveMedia.offerToReceiveVideo
                             }
                         });
-                        self.emit('createdPeer', peer);
+                        self.emit('createdPeer', peer, self.roomName);
                         peer.start();
                     }
                 }

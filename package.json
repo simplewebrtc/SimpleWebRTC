@@ -10,7 +10,7 @@
   "dependencies": {
     "filetransfer": "^2.0.4",
     "localmedia": "^2.0.0",
-    "rtcpeerconnection": "^4.0.0",
+    "rtcpeerconnection": "^5.0.0",
     "webrtcsupport": "^2.2.0",
     "wildemitter": "1.x",
     "socket.io-client": "1.3.7",

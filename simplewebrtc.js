@@ -346,7 +346,7 @@ SimpleWebRTC.prototype.joinRoom = function (name, cb) {
                             }
                         });
                         self.emit('createdPeer', peer, self.roomName);
-                        peer.start();
+                        peer.start(self.roomName);
                     }
                 }
             }

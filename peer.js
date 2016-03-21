@@ -209,7 +209,7 @@ Peer.prototype.onIceCandidate = function (candidate) {
     }
 };
 
-Peer.prototype.start = function () {
+Peer.prototype.start = function (roomName) {
     var self = this;
 
     // well, the webrtc api requires that we either
@@ -217,7 +217,7 @@ Peer.prototype.start = function () {
     // b) do a renegotiation later to add the SCTP m-line
     // Let's do (a) first...
     if (this.enableDataChannels) {
-        this.getDataChannel('simplewebrtc');
+        this.getDataChannel(roomName);
     }
 
     this.pc.offer(this.receiveMedia, function (err, sessionDescription) {

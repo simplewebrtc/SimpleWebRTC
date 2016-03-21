@@ -1,0 +1,23 @@
+{
+  "name": "simplewebrtc",
+  "description": "World's easiest webrtc",
+  "main": "./simplewebrtc.bundle.js",
+  "authors": [
+    "csturiale <claudio.sturiale@objectway.it>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/objectway/SimpleWebRTC",
+  "moduleType": [
+    "node"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src/bower_components",
+    "test",
+    "tests"
+  ],
+  "version": "2.1.3"
+}

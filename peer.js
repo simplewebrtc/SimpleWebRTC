@@ -263,7 +263,7 @@ Peer.prototype.handleDataChannelAdded = function (channel) {
     this._observeDataChannel(channel);
 };
 
-Peer.prototype.sendFile = function (file) {
+Peer.prototype.sendFile = function (file, metadata) {
     var sender = new FileTransfer.Sender();
     var dc = this.getDataChannel('filetransfer' + (new Date()).getTime(), {
         protocol: INBAND_FILETRANSFER_V1
@@ -272,7 +272,8 @@ Peer.prototype.sendFile = function (file) {
     dc.onopen = function () {
         dc.send(JSON.stringify({
             size: file.size,
-            name: file.name
+            name: file.name,
+            additionalData : metadata
         }));
         sender.send(file, dc);
     };

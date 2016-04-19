@@ -15,7 +15,8 @@
     "wildemitter": "1.x",
     "socket.io-client": "^1.3.7",
     "attachmediastream": "^1.3.5",
-    "mockconsole": "0.0.1"
+    "mockconsole": "0.0.1",
+    "getscreenmedia": "https://github.com/Objectway/getScreenMedia.git"
   },
   "devDependencies": {
     "browserify": "2.22.0",

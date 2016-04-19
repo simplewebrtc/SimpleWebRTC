@@ -6729,8 +6729,8 @@ module.exports = function (constraints, cb) {
         if (ffver >= 33) {
             constraints = (hasConstraints && constraints) || {
                 video: {
-                    mozMediaSource: 'window',
-                    mediaSource: 'window'
+                    mozMediaSource: 'screen',
+                    mediaSource: 'screen'
                 }
             }
             getUserMedia(constraints, function (err, stream) {

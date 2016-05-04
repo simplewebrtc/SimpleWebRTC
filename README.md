@@ -104,7 +104,7 @@ https://gitter.im/HenrikJoreteg/SimpleWebRTC
   - `Connection connection` - *optional* connection object for signaling. See
   `Connection` below. Defaults to a new SocketIoConnection
   - `bool debug` - *optional* flag to set the instance to debug mode
-  - `[string|DomElement] locaVidelEl` - ID or Element to contain the local video
+  - `[string|DomElement] localVideoEl` - ID or Element to contain the local video
   element
   - `[string|DomElement] remoteVideosEl` - ID or Element to contain the
   remote video elements

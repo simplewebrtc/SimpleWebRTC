@@ -305,10 +305,8 @@ webrtc.on('videoOff', function () {
     autoRequestMedia: false
     // dont negotiate media
     receiveMedia: {
-        mandatory: {
-            OfferToReceiveAudio: false,
-            OfferToReceiveVideo: false
-        }
+        offerToReceiveAudio: 0,
+        offerToReceiveVideo: 0
     }
 });</code></pre>
         <p>Since the readyToJoin callback relies on having access to the camera we just ignore it and join the room directly:</p>

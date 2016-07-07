@@ -204,7 +204,7 @@ ending all peers, and stopping the local screen stream
 
 `joinRoom(name, callback)` - joins the conference in room `name`. Callback is
 invoked with `callback(err, roomDescription)` where `roomDescription` is yielded
-by the connection on the `join` event. See signalmaster for more details.
+by the connection on the `join` event. See [signalmaster](https://github.com/andyet/signalmaster) for more details.
 
 `startLocalVideo()` - starts the local media with the `media` options provided
 in the config passed to the constructor

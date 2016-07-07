@@ -3,7 +3,7 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/HenrikJoreteg/SimpleWebRTC?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-Want to see it in action? Check out the demo: https://talky.io/
+Want to see it in action? Check out the demo: https://simplewebrtc.com/demo.html
 
 
 ## It's so easy:

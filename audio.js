@@ -169,7 +169,6 @@ if (room) {
 
 function GUM() {
     webrtc = new SimpleWebRTC({
-        url: 'https://api.talky.io', // this will only work from simplewebrtc.com, please use the default sandbox otherwise
         // we don't do video
         localVideoEl: '',
         remoteVideosEl: '',

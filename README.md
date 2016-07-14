@@ -184,15 +184,15 @@ same event
 
 - `el` the element that contains the local screen stream
 
-`leftRoom, roomName` - emitted after successfully leaving the current room,
+`'leftRoom', roomName` - emitted after successfully leaving the current room,
 ending all peers, and stopping the local screen stream
 
-`videoAdded, videoEl, peer` - emitted when a peer stream is added
+`'videoAdded', videoEl, peer` - emitted when a peer stream is added
 
 - `videoEl` - the video element associated with the stream that was added
 - `peer` - the peer associated with the stream that was added
 
-`videoRemoved, videoEl, peer` - emitted when a peer stream is removed
+`'videoRemoved', videoEl, peer` - emitted when a peer stream is removed
 
 - `videoEl` - the video element associated with the stream that was removed
 - `peer` - the peer associated with the stream that was removed

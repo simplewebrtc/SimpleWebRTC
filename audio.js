@@ -179,10 +179,8 @@ function GUM() {
             video: false
         },
         receiveMedia: { // FIXME: remove old chrome <= 37 constraints format
-            mandatory: {
-                OfferToReceiveAudio: true,
-                OfferToReceiveVideo: false
-            }
+            offerToReceiveAudio: 1,
+            offerToReceiveVideo: 0
         },
     });
 

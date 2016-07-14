@@ -104,7 +104,7 @@ module.exports = function (stream, el, options) {
     return element;
 };
 
-},{"webrtc-adapter":68}],4:[function(require,module,exports){
+},{"webrtc-adapter":71}],4:[function(require,module,exports){
 
 /**
  * Expose `Backoff`.
@@ -553,148 +553,9 @@ module.exports = function(a, b){
 };
 },{}],10:[function(require,module,exports){
 
-/**
- * Expose `debug()` as the module.
- */
-
-module.exports = debug;
-
-/**
- * Create a debugger with the given `name`.
- *
- * @param {String} name
- * @return {Type}
- * @api public
- */
-
-function debug(name) {
-  if (!debug.enabled(name)) return function(){};
-
-  return function(fmt){
-    fmt = coerce(fmt);
-
-    var curr = new Date;
-    var ms = curr - (debug[name] || curr);
-    debug[name] = curr;
-
-    fmt = name
-      + ' '
-      + fmt
-      + ' +' + debug.humanize(ms);
-
-    // This hackery is required for IE8
-    // where `console.log` doesn't have 'apply'
-    window.console
-      && console.log
-      && Function.prototype.apply.call(console.log, console, arguments);
-  }
-}
-
-/**
- * The currently active debug mode names.
- */
-
-debug.names = [];
-debug.skips = [];
-
-/**
- * Enables a debug mode by name. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} name
- * @api public
- */
-
-debug.enable = function(name) {
-  try {
-    localStorage.debug = name;
-  } catch(e){}
-
-  var split = (name || '').split(/[\s,]+/)
-    , len = split.length;
-
-  for (var i = 0; i < len; i++) {
-    name = split[i].replace('*', '.*?');
-    if (name[0] === '-') {
-      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));
-    }
-    else {
-      debug.names.push(new RegExp('^' + name + '$'));
-    }
-  }
-};
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-debug.disable = function(){
-  debug.enable('');
-};
-
-/**
- * Humanize the given `ms`.
- *
- * @param {Number} m
- * @return {String}
- * @api private
- */
-
-debug.humanize = function(ms) {
-  var sec = 1000
-    , min = 60 * 1000
-    , hour = 60 * min;
-
-  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';
-  if (ms >= min) return (ms / min).toFixed(1) + 'm';
-  if (ms >= sec) return (ms / sec | 0) + 's';
-  return ms + 'ms';
-};
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-debug.enabled = function(name) {
-  for (var i = 0, len = debug.skips.length; i < len; i++) {
-    if (debug.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (var i = 0, len = debug.names.length; i < len; i++) {
-    if (debug.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-/**
- * Coerce `val`.
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
-
-// persist
-
-try {
-  if (window.localStorage) debug.enable(localStorage.debug);
-} catch(e){}
-
-},{}],11:[function(require,module,exports){
-
 module.exports =  require('./lib/');
 
-},{"./lib/":12}],12:[function(require,module,exports){
+},{"./lib/":11}],11:[function(require,module,exports){
 
 module.exports = require('./socket');
 
@@ -706,7 +567,7 @@ module.exports = require('./socket');
  */
 module.exports.parser = require('engine.io-parser');
 
-},{"./socket":13,"engine.io-parser":24}],13:[function(require,module,exports){
+},{"./socket":12,"engine.io-parser":25}],12:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -1415,7 +1276,7 @@ Socket.prototype.filterUpgrades = function (upgrades) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./transport":14,"./transports":15,"component-emitter":8,"debug":21,"engine.io-parser":24,"indexof":33,"parsejson":43,"parseqs":44,"parseuri":23}],14:[function(require,module,exports){
+},{"./transport":13,"./transports":14,"component-emitter":8,"debug":20,"engine.io-parser":25,"indexof":35,"parsejson":43,"parseqs":44,"parseuri":23}],13:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -1576,7 +1437,7 @@ Transport.prototype.onClose = function () {
   this.emit('close');
 };
 
-},{"component-emitter":8,"engine.io-parser":24}],15:[function(require,module,exports){
+},{"component-emitter":8,"engine.io-parser":25}],14:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies
@@ -1633,7 +1494,7 @@ function polling(opts){
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling-jsonp":16,"./polling-xhr":17,"./websocket":19,"xmlhttprequest":20}],16:[function(require,module,exports){
+},{"./polling-jsonp":15,"./polling-xhr":16,"./websocket":18,"xmlhttprequest":19}],15:[function(require,module,exports){
 (function (global){
 
 /**
@@ -1870,7 +1731,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":18,"component-inherit":9}],17:[function(require,module,exports){
+},{"./polling":17,"component-inherit":9}],16:[function(require,module,exports){
 (function (global){
 /**
  * Module requirements.
@@ -2258,7 +2119,7 @@ function unloadHandler() {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./polling":18,"component-emitter":8,"component-inherit":9,"debug":21,"xmlhttprequest":20}],18:[function(require,module,exports){
+},{"./polling":17,"component-emitter":8,"component-inherit":9,"debug":20,"xmlhttprequest":19}],17:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -2505,7 +2366,7 @@ Polling.prototype.uri = function(){
   return schema + '://' + this.hostname + port + this.path + query;
 };
 
-},{"../transport":14,"component-inherit":9,"debug":21,"engine.io-parser":24,"parseqs":44,"xmlhttprequest":20}],19:[function(require,module,exports){
+},{"../transport":13,"component-inherit":9,"debug":20,"engine.io-parser":25,"parseqs":44,"xmlhttprequest":19}],18:[function(require,module,exports){
 /**
  * Module dependencies.
  */
@@ -2745,7 +2606,7 @@ WS.prototype.check = function(){
   return !!WebSocket && !('__initialize' in WebSocket && this.name === WS.prototype.name);
 };
 
-},{"../transport":14,"component-inherit":9,"debug":21,"engine.io-parser":24,"parseqs":44,"ws":79}],20:[function(require,module,exports){
+},{"../transport":13,"component-inherit":9,"debug":20,"engine.io-parser":25,"parseqs":44,"ws":24}],19:[function(require,module,exports){
 // browser shim for xmlhttprequest module
 var hasCORS = require('has-cors');
 
@@ -2783,7 +2644,7 @@ module.exports = function(opts) {
   }
 }
 
-},{"has-cors":32}],21:[function(require,module,exports){
+},{"has-cors":34}],20:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -2932,7 +2793,7 @@ function load() {
 
 exports.enable(load());
 
-},{"./debug":22}],22:[function(require,module,exports){
+},{"./debug":21}],21:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -3131,7 +2992,120 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":41}],23:[function(require,module,exports){
+},{"ms":22}],22:[function(require,module,exports){
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} options
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options){
+  options = options || {};
+  if ('string' == typeof val) return parse(val);
+  return options.long
+    ? long(val)
+    : short(val);
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  var match = /^((?:\d+)?\.?\d+) *(ms|seconds?|s|minutes?|m|hours?|h|days?|d|years?|y)?$/i.exec(str);
+  if (!match) return;
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 's':
+      return n * s;
+    case 'ms':
+      return n;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function short(ms) {
+  if (ms >= d) return Math.round(ms / d) + 'd';
+  if (ms >= h) return Math.round(ms / h) + 'h';
+  if (ms >= m) return Math.round(ms / m) + 'm';
+  if (ms >= s) return Math.round(ms / s) + 's';
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function long(ms) {
+  return plural(ms, d, 'day')
+    || plural(ms, h, 'hour')
+    || plural(ms, m, 'minute')
+    || plural(ms, s, 'second')
+    || ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) return;
+  if (ms < n * 1.5) return Math.floor(ms / n) + ' ' + name;
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
+
+},{}],23:[function(require,module,exports){
 /**
  * Parses an URI
  *
@@ -3173,6 +3147,51 @@ module.exports = function parseuri(str) {
 };
 
 },{}],24:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var global = (function() { return this; })();
+
+/**
+ * WebSocket constructor.
+ */
+
+var WebSocket = global.WebSocket || global.MozWebSocket;
+
+/**
+ * Module exports.
+ */
+
+module.exports = WebSocket ? ws : null;
+
+/**
+ * WebSocket constructor.
+ *
+ * The third `opts` options object gets ignored in web browsers, since it's
+ * non-standard, and throws a TypeError if passed to the constructor.
+ * See: https://github.com/einaros/ws/issues/227
+ *
+ * @param {String} uri
+ * @param {Array} protocols (optional)
+ * @param {Object) opts (optional)
+ * @api public
+ */
+
+function ws(uri, protocols, opts) {
+  var instance;
+  if (protocols) {
+    instance = new WebSocket(uri, protocols);
+  } else {
+    instance = new WebSocket(uri);
+  }
+  return instance;
+}
+
+if (WebSocket) ws.prototype = WebSocket.prototype;
+
+},{}],25:[function(require,module,exports){
 (function (global){
 /**
  * Module dependencies.
@@ -3770,7 +3789,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./keys":25,"after":1,"arraybuffer.slice":2,"base64-arraybuffer":5,"blob":6,"has-binary":31,"utf8":65}],25:[function(require,module,exports){
+},{"./keys":26,"after":1,"arraybuffer.slice":2,"base64-arraybuffer":5,"blob":6,"has-binary":32,"utf8":68}],26:[function(require,module,exports){
 
 /**
  * Gets the keys for an object.
@@ -3791,7 +3810,7 @@ module.exports = Object.keys || function keys (obj){
   return arr;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 var util = require('util');
 
@@ -3879,7 +3898,7 @@ module.exports.support = typeof window !== 'undefined' && window && window.File 
 module.exports.Sender = Sender;
 module.exports.Receiver = Receiver;
 
-},{"util":67,"wildemitter":78}],27:[function(require,module,exports){
+},{"util":70,"wildemitter":81}],28:[function(require,module,exports){
 // getScreenMedia helper by @HenrikJoreteg
 var getUserMedia = require('getusermedia');
 
@@ -4047,7 +4066,7 @@ window.addEventListener('message', function (event) {
     }
 });
 
-},{"getusermedia":28}],28:[function(require,module,exports){
+},{"getusermedia":29}],29:[function(require,module,exports){
 // getUserMedia helper by @HenrikJoreteg used for navigator.getUserMedia shim
 var adapter = require('webrtc-adapter');
 
@@ -4130,7 +4149,7 @@ module.exports = function (constraints, cb) {
     });
 };
 
-},{"webrtc-adapter":68}],29:[function(require,module,exports){
+},{"webrtc-adapter":71}],30:[function(require,module,exports){
 
 /**
  * Returns `this`. Execute this without a "context" (i.e. without it being
@@ -4140,7 +4159,7 @@ module.exports = function (constraints, cb) {
 
 module.exports = (function () { return this; })();
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 var WildEmitter = require('wildemitter');
 
 function getMaxVolume (analyser, fftBins) {
@@ -4270,7 +4289,7 @@ module.exports = function(stream, options) {
   return harker;
 }
 
-},{"wildemitter":78}],31:[function(require,module,exports){
+},{"wildemitter":81}],32:[function(require,module,exports){
 (function (global){
 
 /*
@@ -4332,7 +4351,12 @@ function hasBinary(data) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"isarray":35}],32:[function(require,module,exports){
+},{"isarray":33}],33:[function(require,module,exports){
+module.exports = Array.isArray || function (arr) {
+  return Object.prototype.toString.call(arr) == '[object Array]';
+};
+
+},{}],34:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -4357,7 +4381,7 @@ try {
   module.exports = false;
 }
 
-},{"global":29}],33:[function(require,module,exports){
+},{"global":30}],35:[function(require,module,exports){
 
 var indexOf = [].indexOf;
 
@@ -4368,7 +4392,7 @@ module.exports = function(arr, obj){
   }
   return -1;
 };
-},{}],34:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -4393,12 +4417,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],35:[function(require,module,exports){
-module.exports = Array.isArray || function (arr) {
-  return Object.prototype.toString.call(arr) == '[object Array]';
-};
-
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 /*! JSON v3.2.6 | http://bestiejs.github.io/json3 | Copyright 2012-2013, Kit Cambridge | http://kit.mit-license.org */
 ;(function (window) {
   // Convenience aliases.
@@ -5261,7 +5280,7 @@ module.exports = Array.isArray || function (arr) {
   }
 }(this));
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var util = require('util');
 var hark = require('hark');
 var webrtcSupport = require('webrtcsupport');
@@ -5295,7 +5314,7 @@ function LocalMedia(opts) {
     this._log = this.logger.log.bind(this.logger, 'LocalMedia:');
     this._logerror = this.logger.error.bind(this.logger, 'LocalMedia:');
 
-    this.screenSharingSupport = webrtcSupport.screenSharing;
+    this.screenSharingSupport = webrtcSupport.supportScreenSharing;
 
     this.localStreams = [];
     this.localScreens = [];
@@ -5354,19 +5373,18 @@ LocalMedia.prototype.start = function (mediaConstraints, cb) {
 };
 
 LocalMedia.prototype.stop = function (stream) {
-    var self = this;
     // FIXME: duplicates cleanup code until fixed in FF
     if (stream) {
         stream.getTracks().forEach(function (track) { track.stop(); });
-        var idx = self.localStreams.indexOf(stream);
+        var idx = this.localStreams.indexOf(stream);
         if (idx > -1) {
-            self.emit('localStreamStopped', stream);
-            self.localStreams = self.localStreams.splice(idx, 1);
+            this.emit('localStreamStopped', stream);
+            this.localStreams.splice(idx, 1);
         } else {
-            idx = self.localScreens.indexOf(stream);
+            idx = this.localScreens.indexOf(stream);
             if (idx > -1) {
-                self.emit('localScreenStopped', stream);
-                self.localScreens = self.localScreens.splice(idx, 1);
+                this.emit('localScreenStopped', stream);
+                this.localScreens.splice(idx, 1);
             }
         }
     } else {
@@ -5418,7 +5436,11 @@ LocalMedia.prototype.stopScreenShare = function (stream) {
     var self = this;
     if (stream) {
         stream.getTracks().forEach(function (track) { track.stop(); });
-        this.emit('localScreenStopped', stream);
+        var idx = this.localScreens.indexOf(stream);
+        if (idx > -1) {
+            this.emit('localScreenStopped', stream);
+            this.localScreens.splice(idx, 1);
+        }
     } else {
         this.localScreens.forEach(function (stream) {
             stream.getTracks().forEach(function (track) { track.stop(); });
@@ -5563,7 +5585,7 @@ Object.defineProperty(LocalMedia.prototype, 'localScreen', {
 
 module.exports = LocalMedia;
 
-},{"getscreenmedia":27,"getusermedia":28,"hark":30,"mediastream-gain":38,"mockconsole":40,"util":67,"webrtcsupport":77,"wildemitter":78}],38:[function(require,module,exports){
+},{"getscreenmedia":28,"getusermedia":29,"hark":31,"mediastream-gain":39,"mockconsole":41,"util":70,"webrtcsupport":80,"wildemitter":81}],39:[function(require,module,exports){
 var support = require('webrtcsupport');
 
 
@@ -5610,7 +5632,7 @@ GainController.prototype.on = function () {
 
 module.exports = GainController;
 
-},{"webrtcsupport":39}],39:[function(require,module,exports){
+},{"webrtcsupport":40}],40:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var version;
@@ -5662,7 +5684,7 @@ module.exports = {
     getUserMedia: getUserMedia
 };
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 var methods = "assert,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,time,timeEnd,trace,warn".split(",");
 var l = methods.length;
 var fn = function () {};
@@ -5673,119 +5695,6 @@ while (l--) {
 }
 
 module.exports = mockconsole;
-
-},{}],41:[function(require,module,exports){
-/**
- * Helpers.
- */
-
-var s = 1000;
-var m = s * 60;
-var h = m * 60;
-var d = h * 24;
-var y = d * 365.25;
-
-/**
- * Parse or format the given `val`.
- *
- * Options:
- *
- *  - `long` verbose formatting [false]
- *
- * @param {String|Number} val
- * @param {Object} options
- * @return {String|Number}
- * @api public
- */
-
-module.exports = function(val, options){
-  options = options || {};
-  if ('string' == typeof val) return parse(val);
-  return options.long
-    ? long(val)
-    : short(val);
-};
-
-/**
- * Parse the given `str` and return milliseconds.
- *
- * @param {String} str
- * @return {Number}
- * @api private
- */
-
-function parse(str) {
-  var match = /^((?:\d+)?\.?\d+) *(ms|seconds?|s|minutes?|m|hours?|h|days?|d|years?|y)?$/i.exec(str);
-  if (!match) return;
-  var n = parseFloat(match[1]);
-  var type = (match[2] || 'ms').toLowerCase();
-  switch (type) {
-    case 'years':
-    case 'year':
-    case 'y':
-      return n * y;
-    case 'days':
-    case 'day':
-    case 'd':
-      return n * d;
-    case 'hours':
-    case 'hour':
-    case 'h':
-      return n * h;
-    case 'minutes':
-    case 'minute':
-    case 'm':
-      return n * m;
-    case 'seconds':
-    case 'second':
-    case 's':
-      return n * s;
-    case 'ms':
-      return n;
-  }
-}
-
-/**
- * Short format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function short(ms) {
-  if (ms >= d) return Math.round(ms / d) + 'd';
-  if (ms >= h) return Math.round(ms / h) + 'h';
-  if (ms >= m) return Math.round(ms / m) + 'm';
-  if (ms >= s) return Math.round(ms / s) + 's';
-  return ms + 'ms';
-}
-
-/**
- * Long format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function long(ms) {
-  return plural(ms, d, 'day')
-    || plural(ms, h, 'hour')
-    || plural(ms, m, 'minute')
-    || plural(ms, s, 'second')
-    || ms + ' ms';
-}
-
-/**
- * Pluralization helper.
- */
-
-function plural(ms, n, name) {
-  if (ms < n) return;
-  if (ms < n * 1.5) return Math.floor(ms / n) + ' ' + name;
-  return Math.ceil(ms / n) + ' ' + name + 's';
-}
 
 },{}],42:[function(require,module,exports){
 
@@ -5977,6 +5886,31 @@ module.exports = function parseuri(str) {
 // shim for using process in browser
 
 var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+(function () {
+  try {
+    cachedSetTimeout = setTimeout;
+  } catch (e) {
+    cachedSetTimeout = function () {
+      throw new Error('setTimeout is not defined');
+    }
+  }
+  try {
+    cachedClearTimeout = clearTimeout;
+  } catch (e) {
+    cachedClearTimeout = function () {
+      throw new Error('clearTimeout is not defined');
+    }
+  }
+} ())
 var queue = [];
 var draining = false;
 var currentQueue;
@@ -6001,7 +5935,7 @@ function drainQueue() {
     if (draining) {
         return;
     }
-    var timeout = setTimeout(cleanUpNextTick);
+    var timeout = cachedSetTimeout(cleanUpNextTick);
     draining = true;
 
     var len = queue.length;
@@ -6018,7 +5952,7 @@ function drainQueue() {
     }
     currentQueue = null;
     draining = false;
-    clearTimeout(timeout);
+    cachedClearTimeout(timeout);
 }
 
 process.nextTick = function (fun) {
@@ -6030,7 +5964,7 @@ process.nextTick = function (fun) {
     }
     queue.push(new Item(fun, args));
     if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
+        cachedSetTimeout(drainQueue, 0);
     }
 };
 
@@ -6959,7 +6893,7 @@ PeerConnection.prototype.getStats = function (cb) {
 
 module.exports = PeerConnection;
 
-},{"sdp-jingle-json":48,"traceablepeerconnection":64,"util":67,"webrtc-adapter":68,"wildemitter":78}],48:[function(require,module,exports){
+},{"sdp-jingle-json":48,"traceablepeerconnection":67,"util":70,"webrtc-adapter":71,"wildemitter":81}],48:[function(require,module,exports){
 var toSDP = require('./lib/tosdp');
 var toJSON = require('./lib/tojson');
 
@@ -8449,7 +8383,7 @@ exports.connect = lookup;
 exports.Manager = require('./manager');
 exports.Socket = require('./socket');
 
-},{"./manager":56,"./socket":58,"./url":59,"debug":10,"socket.io-parser":61}],56:[function(require,module,exports){
+},{"./manager":56,"./socket":58,"./url":59,"debug":60,"socket.io-parser":62}],56:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -8954,7 +8888,7 @@ Manager.prototype.onreconnect = function(){
   this.emitAll('reconnect', attempt);
 };
 
-},{"./on":57,"./socket":58,"./url":59,"backo2":4,"component-bind":7,"component-emitter":8,"debug":10,"engine.io-client":11,"indexof":33,"object-component":42,"socket.io-parser":61}],57:[function(require,module,exports){
+},{"./on":57,"./socket":58,"./url":59,"backo2":4,"component-bind":7,"component-emitter":8,"debug":60,"engine.io-client":10,"indexof":35,"object-component":42,"socket.io-parser":62}],57:[function(require,module,exports){
 
 /**
  * Module exports.
@@ -9367,7 +9301,7 @@ Socket.prototype.disconnect = function(){
   return this;
 };
 
-},{"./on":57,"component-bind":7,"component-emitter":8,"debug":10,"has-binary":31,"socket.io-parser":61,"to-array":63}],59:[function(require,module,exports){
+},{"./on":57,"component-bind":7,"component-emitter":8,"debug":60,"has-binary":32,"socket.io-parser":62,"to-array":66}],59:[function(require,module,exports){
 (function (global){
 
 /**
@@ -9444,7 +9378,146 @@ function url(uri, loc){
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"debug":10,"parseuri":45}],60:[function(require,module,exports){
+},{"debug":60,"parseuri":45}],60:[function(require,module,exports){
+
+/**
+ * Expose `debug()` as the module.
+ */
+
+module.exports = debug;
+
+/**
+ * Create a debugger with the given `name`.
+ *
+ * @param {String} name
+ * @return {Type}
+ * @api public
+ */
+
+function debug(name) {
+  if (!debug.enabled(name)) return function(){};
+
+  return function(fmt){
+    fmt = coerce(fmt);
+
+    var curr = new Date;
+    var ms = curr - (debug[name] || curr);
+    debug[name] = curr;
+
+    fmt = name
+      + ' '
+      + fmt
+      + ' +' + debug.humanize(ms);
+
+    // This hackery is required for IE8
+    // where `console.log` doesn't have 'apply'
+    window.console
+      && console.log
+      && Function.prototype.apply.call(console.log, console, arguments);
+  }
+}
+
+/**
+ * The currently active debug mode names.
+ */
+
+debug.names = [];
+debug.skips = [];
+
+/**
+ * Enables a debug mode by name. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} name
+ * @api public
+ */
+
+debug.enable = function(name) {
+  try {
+    localStorage.debug = name;
+  } catch(e){}
+
+  var split = (name || '').split(/[\s,]+/)
+    , len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    name = split[i].replace('*', '.*?');
+    if (name[0] === '-') {
+      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));
+    }
+    else {
+      debug.names.push(new RegExp('^' + name + '$'));
+    }
+  }
+};
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+debug.disable = function(){
+  debug.enable('');
+};
+
+/**
+ * Humanize the given `ms`.
+ *
+ * @param {Number} m
+ * @return {String}
+ * @api private
+ */
+
+debug.humanize = function(ms) {
+  var sec = 1000
+    , min = 60 * 1000
+    , hour = 60 * min;
+
+  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';
+  if (ms >= min) return (ms / min).toFixed(1) + 'm';
+  if (ms >= sec) return (ms / sec | 0) + 's';
+  return ms + 'ms';
+};
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+debug.enabled = function(name) {
+  for (var i = 0, len = debug.skips.length; i < len; i++) {
+    if (debug.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (var i = 0, len = debug.names.length; i < len; i++) {
+    if (debug.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Coerce `val`.
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+// persist
+
+try {
+  if (window.localStorage) debug.enable(localStorage.debug);
+} catch(e){}
+
+},{}],61:[function(require,module,exports){
 (function (global){
 /*global Blob,File*/
 
@@ -9589,7 +9662,7 @@ exports.removeBlobs = function(data, callback) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./is-buffer":62,"isarray":35}],61:[function(require,module,exports){
+},{"./is-buffer":63,"isarray":65}],62:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -9991,7 +10064,7 @@ function error(data){
   };
 }
 
-},{"./binary":60,"./is-buffer":62,"component-emitter":8,"debug":10,"isarray":35,"json3":36}],62:[function(require,module,exports){
+},{"./binary":61,"./is-buffer":63,"component-emitter":8,"debug":64,"isarray":65,"json3":37}],63:[function(require,module,exports){
 (function (global){
 
 module.exports = isBuf;
@@ -10008,7 +10081,11 @@ function isBuf(obj) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
+arguments[4][60][0].apply(exports,arguments)
+},{"dup":60}],65:[function(require,module,exports){
+arguments[4][33][0].apply(exports,arguments)
+},{"dup":33}],66:[function(require,module,exports){
 module.exports = toArray
 
 function toArray(list, index) {
@@ -10023,7 +10100,7 @@ function toArray(list, index) {
     return array
 }
 
-},{}],64:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 // based on https://github.com/ESTOS/strophe.jingle/
 // adds wildemitter support
 var util = require('util');
@@ -10244,7 +10321,7 @@ TraceablePeerConnection.prototype.getStats = function () {
 
 module.exports = TraceablePeerConnection;
 
-},{"util":67,"webrtc-adapter":68,"wildemitter":78}],65:[function(require,module,exports){
+},{"util":70,"webrtc-adapter":71,"wildemitter":81}],68:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/utf8js v2.0.0 by @mathias */
 ;(function(root) {
@@ -10492,14 +10569,14 @@ module.exports = TraceablePeerConnection;
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],66:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],67:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -11089,7 +11166,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":66,"_process":46,"inherits":34}],68:[function(require,module,exports){
+},{"./support/isBuffer":69,"_process":46,"inherits":36}],71:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -11183,7 +11260,7 @@ function hasOwnProperty(obj, prop) {
   }
 })();
 
-},{"./chrome/chrome_shim":69,"./edge/edge_shim":71,"./firefox/firefox_shim":73,"./safari/safari_shim":75,"./utils":76}],69:[function(require,module,exports){
+},{"./chrome/chrome_shim":72,"./edge/edge_shim":74,"./firefox/firefox_shim":76,"./safari/safari_shim":78,"./utils":79}],72:[function(require,module,exports){
 
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
@@ -11373,23 +11450,23 @@ var chromeShim = {
       });
     }
 
+    ['createOffer', 'createAnswer'].forEach(function(method) {
+      var nativeMethod = webkitRTCPeerConnection.prototype[method];
+      webkitRTCPeerConnection.prototype[method] = function() {
+        var self = this;
+        if (arguments.length < 1 || (arguments.length === 1 &&
+            typeof arguments[0] === 'object')) {
+          var opts = arguments.length === 1 ? arguments[0] : undefined;
+          return new Promise(function(resolve, reject) {
+            nativeMethod.apply(self, [resolve, reject, opts]);
+          });
+        }
+        return nativeMethod.apply(this, arguments);
+      };
+    });
+
     // add promise support -- natively available in Chrome 51
     if (browserDetails.version < 51) {
-      ['createOffer', 'createAnswer'].forEach(function(method) {
-        var nativeMethod = webkitRTCPeerConnection.prototype[method];
-        webkitRTCPeerConnection.prototype[method] = function() {
-          var self = this;
-          if (arguments.length < 1 || (arguments.length === 1 &&
-              typeof arguments[0] === 'object')) {
-            var opts = arguments.length === 1 ? arguments[0] : undefined;
-            return new Promise(function(resolve, reject) {
-              nativeMethod.apply(self, [resolve, reject, opts]);
-            });
-          }
-          return nativeMethod.apply(this, arguments);
-        };
-      });
-
       ['setLocalDescription', 'setRemoteDescription', 'addIceCandidate']
           .forEach(function(method) {
             var nativeMethod = webkitRTCPeerConnection.prototype[method];
@@ -11468,7 +11545,7 @@ module.exports = {
   reattachMediaStream: chromeShim.reattachMediaStream
 };
 
-},{"../utils.js":76,"./getusermedia":70}],70:[function(require,module,exports){
+},{"../utils.js":79,"./getusermedia":73}],73:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -11659,7 +11736,7 @@ module.exports = function() {
   }
 };
 
-},{"../utils.js":76}],71:[function(require,module,exports){
+},{"../utils.js":79}],74:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -11750,17 +11827,24 @@ var edgeShim = {
             break;
         }
       }
+      this.usingBundle = config && config.bundlePolicy === 'max-bundle';
+
       if (config && config.iceServers) {
         // Edge does not like
         // 1) stun:
         // 2) turn: that does not have all of turn:host:port?transport=udp
-        this.iceOptions.iceServers = config.iceServers.filter(function(server) {
+        var iceServers = JSON.parse(JSON.stringify(config.iceServers));
+        this.iceOptions.iceServers = iceServers.filter(function(server) {
           if (server && server.urls) {
-            server.urls = server.urls.filter(function(url) {
+            var urls = server.urls;
+            if (typeof urls === 'string') {
+              urls = [urls];
+            }
+            urls = urls.filter(function(url) {
               return url.indexOf('turn:') === 0 &&
                   url.indexOf('transport=udp') !== -1;
             })[0];
-            return !!server.urls;
+            return !!urls;
           }
           return false;
         });
@@ -11918,6 +12002,18 @@ var edgeShim = {
               event.candidate.candidate = SDPUtils.writeCandidate(cand);
             }
 
+            // update local description.
+            var sections = SDPUtils.splitSections(self.localDescription.sdp);
+            if (event.candidate.candidate.indexOf('typ endOfCandidates')
+                === -1) {
+              sections[event.candidate.sdpMLineIndex + 1] +=
+                  'a=' + event.candidate.candidate + '\r\n';
+            } else {
+              sections[event.candidate.sdpMLineIndex + 1] +=
+                  'a=end-of-candidates\r\n';
+            }
+            self.localDescription.sdp = sections.join('');
+
             var complete = self.transceivers.every(function(transceiver) {
               return transceiver.iceGatherer &&
                   transceiver.iceGatherer.state === 'completed';
@@ -12052,17 +12148,21 @@ var edgeShim = {
                   // ice-lite only includes host candidates in the SDP so we can
                   // use setRemoteCandidates (which implies an
                   // RTCIceCandidateComplete)
-                  iceTransport.setRemoteCandidates(cands);
+                  if (cands.length) {
+                    iceTransport.setRemoteCandidates(cands);
+                  }
                 }
-                iceTransport.start(iceGatherer, remoteIceParameters,
-                    isIceLite ? 'controlling' : 'controlled');
-
                 var remoteDtlsParameters = SDPUtils.getDtlsParameters(
                     mediaSection, sessionpart);
                 if (isIceLite) {
                   remoteDtlsParameters.role = 'server';
                 }
-                dtlsTransport.start(remoteDtlsParameters);
+
+                if (!self.usingBundle || sdpMLineIndex === 0) {
+                  iceTransport.start(iceGatherer, remoteIceParameters,
+                      isIceLite ? 'controlling' : 'controlled');
+                  dtlsTransport.start(remoteDtlsParameters);
+                }
 
                 // Calculate intersection of capabilities.
                 var params = self._getCommonCapabilities(localCapabilities,
@@ -12130,6 +12230,8 @@ var edgeShim = {
           var sessionpart = sections.shift();
           var isIceLite = SDPUtils.matchPrefix(sessionpart,
               'a=ice-lite').length > 0;
+          this.usingBundle = SDPUtils.matchPrefix(sessionpart,
+              'a=group:BUNDLE ').length > 0;
           sections.forEach(function(mediaSection, sdpMLineIndex) {
             var lines = SDPUtils.splitLines(mediaSection);
             var mline = lines[0].substr(2).split(' ');
@@ -12193,8 +12295,12 @@ var edgeShim = {
                   return cand.component === '1';
                 });
             if (description.type === 'offer' && !rejected) {
-              var transports = self._createIceAndDtlsTransports(mid,
-                  sdpMLineIndex);
+              var transports = self.usingBundle && sdpMLineIndex > 0 ? {
+                iceGatherer: self.transceivers[0].iceGatherer,
+                iceTransport: self.transceivers[0].iceTransport,
+                dtlsTransport: self.transceivers[0].dtlsTransport
+              } : self._createIceAndDtlsTransports(mid, sdpMLineIndex);
+
               if (isComplete) {
                 transports.iceTransport.setRemoteCandidates(cands);
               }
@@ -12257,12 +12363,14 @@ var edgeShim = {
                   remoteCapabilities;
               self.transceivers[sdpMLineIndex].cname = cname;
 
-              if (isIceLite || isComplete) {
+              if ((isIceLite || isComplete) && cands.length) {
                 iceTransport.setRemoteCandidates(cands);
               }
-              iceTransport.start(iceGatherer, remoteIceParameters,
-                  'controlling');
-              dtlsTransport.start(remoteDtlsParameters);
+              if (!self.usingBundle || sdpMLineIndex === 0) {
+                iceTransport.start(iceGatherer, remoteIceParameters,
+                    'controlling');
+                dtlsTransport.start(remoteDtlsParameters);
+              }
 
               self._transceive(transceiver,
                   direction === 'sendrecv' || direction === 'recvonly',
@@ -12495,7 +12603,11 @@ var edgeShim = {
         var kind = mline.kind;
         var mid = SDPUtils.generateIdentifier();
 
-        var transports = self._createIceAndDtlsTransports(mid, sdpMLineIndex);
+        var transports = self.usingBundle && sdpMLineIndex > 0 ? {
+          iceGatherer: transceivers[0].iceGatherer,
+          iceTransport: transceivers[0].iceTransport,
+          dtlsTransport: transceivers[0].dtlsTransport
+        } : self._createIceAndDtlsTransports(mid, sdpMLineIndex);
 
         var localCapabilities = RTCRtpSender.getCapabilities(kind);
         var rtpSender;
@@ -12526,6 +12638,13 @@ var edgeShim = {
           sendEncodingParameters: sendEncodingParameters,
           recvEncodingParameters: null
         };
+      });
+      if (this.usingBundle) {
+        sdp += 'a=group:BUNDLE ' + transceivers.map(function(t) {
+          return t.mid;
+        }).join(' ') + '\r\n';
+      }
+      tracks.forEach(function(mline, sdpMLineIndex) {
         var transceiver = transceivers[sdpMLineIndex];
         sdp += SDPUtils.writeMediaSection(transceiver,
             transceiver.localCapabilities, 'offer', self.localStreams[0]);
@@ -12546,6 +12665,11 @@ var edgeShim = {
       var self = this;
 
       var sdp = SDPUtils.writeSessionBoilerplate();
+      if (this.usingBundle) {
+        sdp += 'a=group:BUNDLE ' + this.transceivers.map(function(t) {
+          return t.mid;
+        }).join(' ') + '\r\n';
+      }
       this.transceivers.forEach(function(transceiver) {
         // Calculate intersection of capabilities.
         var commonCapabilities = self._getCommonCapabilities(
@@ -12569,7 +12693,7 @@ var edgeShim = {
     window.RTCPeerConnection.prototype.addIceCandidate = function(candidate) {
       if (candidate === null) {
         this.transceivers.forEach(function(transceiver) {
-          transceiver.iceTransport.addIceCandidate({});
+          transceiver.iceTransport.addRemoteCandidate({});
         });
       } else {
         var mLineIndex = candidate.sdpMLineIndex;
@@ -12663,7 +12787,7 @@ module.exports = {
   reattachMediaStream: edgeShim.reattachMediaStream
 };
 
-},{"../utils":76,"./getusermedia":72,"sdp":53}],72:[function(require,module,exports){
+},{"../utils":79,"./getusermedia":75,"sdp":53}],75:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -12697,7 +12821,7 @@ module.exports = function() {
   };
 };
 
-},{}],73:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -12846,109 +12970,6 @@ var firefoxShim = {
     };
   },
 
-  shimGetUserMedia: function() {
-    // getUserMedia constraints shim.
-    var getUserMedia_ = function(constraints, onSuccess, onError) {
-      var constraintsToFF37_ = function(c) {
-        if (typeof c !== 'object' || c.require) {
-          return c;
-        }
-        var require = [];
-        Object.keys(c).forEach(function(key) {
-          if (key === 'require' || key === 'advanced' ||
-              key === 'mediaSource') {
-            return;
-          }
-          var r = c[key] = (typeof c[key] === 'object') ?
-              c[key] : {ideal: c[key]};
-          if (r.min !== undefined ||
-              r.max !== undefined || r.exact !== undefined) {
-            require.push(key);
-          }
-          if (r.exact !== undefined) {
-            if (typeof r.exact === 'number') {
-              r. min = r.max = r.exact;
-            } else {
-              c[key] = r.exact;
-            }
-            delete r.exact;
-          }
-          if (r.ideal !== undefined) {
-            c.advanced = c.advanced || [];
-            var oc = {};
-            if (typeof r.ideal === 'number') {
-              oc[key] = {min: r.ideal, max: r.ideal};
-            } else {
-              oc[key] = r.ideal;
-            }
-            c.advanced.push(oc);
-            delete r.ideal;
-            if (!Object.keys(r).length) {
-              delete c[key];
-            }
-          }
-        });
-        if (require.length) {
-          c.require = require;
-        }
-        return c;
-      };
-      constraints = JSON.parse(JSON.stringify(constraints));
-      if (browserDetails.version < 38) {
-        logging('spec: ' + JSON.stringify(constraints));
-        if (constraints.audio) {
-          constraints.audio = constraintsToFF37_(constraints.audio);
-        }
-        if (constraints.video) {
-          constraints.video = constraintsToFF37_(constraints.video);
-        }
-        logging('ff37: ' + JSON.stringify(constraints));
-      }
-      return navigator.mozGetUserMedia(constraints, onSuccess, onError);
-    };
-
-    navigator.getUserMedia = getUserMedia_;
-
-    // Returns the result of getUserMedia as a Promise.
-    var getUserMediaPromise_ = function(constraints) {
-      return new Promise(function(resolve, reject) {
-        navigator.getUserMedia(constraints, resolve, reject);
-      });
-    };
-
-    // Shim for mediaDevices on older versions.
-    if (!navigator.mediaDevices) {
-      navigator.mediaDevices = {getUserMedia: getUserMediaPromise_,
-        addEventListener: function() { },
-        removeEventListener: function() { }
-      };
-    }
-    navigator.mediaDevices.enumerateDevices =
-        navigator.mediaDevices.enumerateDevices || function() {
-          return new Promise(function(resolve) {
-            var infos = [
-              {kind: 'audioinput', deviceId: 'default', label: '', groupId: ''},
-              {kind: 'videoinput', deviceId: 'default', label: '', groupId: ''}
-            ];
-            resolve(infos);
-          });
-        };
-
-    if (browserDetails.version < 41) {
-      // Work around http://bugzil.la/1169665
-      var orgEnumerateDevices =
-          navigator.mediaDevices.enumerateDevices.bind(navigator.mediaDevices);
-      navigator.mediaDevices.enumerateDevices = function() {
-        return orgEnumerateDevices().then(undefined, function(e) {
-          if (e.name === 'NotFoundError') {
-            return [];
-          }
-          throw e;
-        });
-      };
-    }
-  },
-
   // Attach a media stream to an element.
   attachMediaStream: function(element, stream) {
     logging('DEPRECATED, attachMediaStream will soon be removed.');
@@ -12971,7 +12992,7 @@ module.exports = {
   reattachMediaStream: firefoxShim.reattachMediaStream
 };
 
-},{"../utils":76,"./getusermedia":74}],74:[function(require,module,exports){
+},{"../utils":79,"./getusermedia":77}],77:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -13065,12 +13086,10 @@ module.exports = function() {
     });
   };
 
-  navigator.getUserMedia = getUserMedia_;
-
   // Returns the result of getUserMedia as a Promise.
   var getUserMediaPromise_ = function(constraints) {
     return new Promise(function(resolve, reject) {
-      navigator.getUserMedia(constraints, resolve, reject);
+      getUserMedia_(constraints, resolve, reject);
     });
   };
 
@@ -13114,9 +13133,18 @@ module.exports = function() {
       });
     };
   }
+  navigator.getUserMedia = function(constraints, onSuccess, onError) {
+    if (browserDetails.version < 44) {
+      return getUserMedia_(constraints, onSuccess, onError);
+    }
+    // Replace Firefox 44+'s deprecation warning with unprefixed version.
+    console.warn('navigator.getUserMedia has been replaced by ' +
+                 'navigator.mediaDevices.getUserMedia');
+    navigator.mediaDevices.getUserMedia(constraints).then(onSuccess, onError);
+  };
 };
 
-},{"../utils":76}],75:[function(require,module,exports){
+},{"../utils":79}],78:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -13152,7 +13180,7 @@ module.exports = {
   // reattachMediaStream: safariShim.reattachMediaStream
 };
 
-},{}],76:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
@@ -13297,7 +13325,7 @@ module.exports = {
   extractVersion: utils.extractVersion
 };
 
-},{}],77:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 // created by @HenrikJoreteg
 var prefix;
 var version;
@@ -13344,7 +13372,7 @@ module.exports = {
     getUserMedia: getUserMedia
 };
 
-},{}],78:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 /*
 WildEmitter.js is a slim little event emitter by @henrikjoreteg largely based
 on @visionmedia's Emitter from UI Kit.
@@ -13499,52 +13527,7 @@ WildEmitter.mixin = function (constructor) {
 
 WildEmitter.mixin(WildEmitter);
 
-},{}],79:[function(require,module,exports){
-
-/**
- * Module dependencies.
- */
-
-var global = (function() { return this; })();
-
-/**
- * WebSocket constructor.
- */
-
-var WebSocket = global.WebSocket || global.MozWebSocket;
-
-/**
- * Module exports.
- */
-
-module.exports = WebSocket ? ws : null;
-
-/**
- * WebSocket constructor.
- *
- * The third `opts` options object gets ignored in web browsers, since it's
- * non-standard, and throws a TypeError if passed to the constructor.
- * See: https://github.com/einaros/ws/issues/227
- *
- * @param {String} uri
- * @param {Array} protocols (optional)
- * @param {Object) opts (optional)
- * @api public
- */
-
-function ws(uri, protocols, opts) {
-  var instance;
-  if (protocols) {
-    instance = new WebSocket(uri, protocols);
-  } else {
-    instance = new WebSocket(uri);
-  }
-  return instance;
-}
-
-if (WebSocket) ws.prototype = WebSocket.prototype;
-
-},{}],80:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var PeerConnection = require('rtcpeerconnection');
@@ -13800,9 +13783,12 @@ Peer.prototype.handleRemoteStreamAdded = function (event) {
 };
 
 Peer.prototype.handleStreamRemoved = function () {
-    this.parent.peers.splice(this.parent.peers.indexOf(this), 1);
-    this.closed = true;
-    this.parent.emit('peerStreamRemoved', this);
+    var peerIndex = this.parent.peers.indexOf(this);
+    if (peerIndex > -1) {
+        this.parent.peers.splice(peerIndex, 1);
+        this.closed = true;
+        this.parent.emit('peerStreamRemoved', this);
+    }
 };
 
 Peer.prototype.handleDataChannelAdded = function (channel) {
@@ -13833,7 +13819,7 @@ Peer.prototype.sendFile = function (file) {
 
 module.exports = Peer;
 
-},{"filetransfer":26,"rtcpeerconnection":47,"util":67,"webrtcsupport":77,"wildemitter":78}],81:[function(require,module,exports){
+},{"filetransfer":27,"rtcpeerconnection":47,"util":70,"webrtcsupport":80,"wildemitter":81}],83:[function(require,module,exports){
 var WebRTC = require('./webrtc');
 var WildEmitter = require('wildemitter');
 var webrtcSupport = require('webrtcsupport');
@@ -14094,7 +14080,7 @@ SimpleWebRTC.prototype.leaveRoom = function () {
     if (this.roomName) {
         this.connection.emit('leave');
         while (this.webrtc.peers.length) {
-            this.webrtc.peers.shift().end();
+            this.webrtc.peers[0].end();
         }
         if (this.getLocalScreen()) {
             this.stopScreenShare();
@@ -14299,7 +14285,7 @@ SimpleWebRTC.prototype.sendFile = function () {
 
 module.exports = SimpleWebRTC;
 
-},{"./socketioconnection":82,"./webrtc":83,"attachmediastream":3,"mockconsole":40,"webrtcsupport":77,"wildemitter":78}],82:[function(require,module,exports){
+},{"./socketioconnection":84,"./webrtc":85,"attachmediastream":3,"mockconsole":41,"webrtcsupport":80,"wildemitter":81}],84:[function(require,module,exports){
 var io = require('socket.io-client');
 
 function SocketIoConnection(config) {
@@ -14324,7 +14310,7 @@ SocketIoConnection.prototype.disconnect = function () {
 
 module.exports = SocketIoConnection;
 
-},{"socket.io-client":54}],83:[function(require,module,exports){
+},{"socket.io-client":54}],85:[function(require,module,exports){
 var util = require('util');
 var webrtc = require('webrtcsupport');
 var WildEmitter = require('wildemitter');
@@ -14485,5 +14471,5 @@ WebRTC.prototype.sendDirectlyToAll = function (channel, message, payload) {
 
 module.exports = WebRTC;
 
-},{"./peer":80,"localmedia":37,"mockconsole":40,"util":67,"webrtcsupport":77,"wildemitter":78}]},{},[81])(81)
+},{"./peer":82,"localmedia":38,"mockconsole":41,"util":70,"webrtcsupport":80,"wildemitter":81}]},{},[83])(83)
 });

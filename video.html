@@ -89,6 +89,7 @@
                 enableDataChannels: false,
                 autoAdjustMic: false
             });
+            webrtc.webrtc.config.peerConnectionConfig.bundlePolicy = 'max-bundle';
 
             // when it's ready, join if we got a room from the URL
             webrtc.on('readyToCall', function () {

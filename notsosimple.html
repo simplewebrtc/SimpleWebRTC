@@ -443,37 +443,25 @@ webrtc.on('localScreenRemoved', function (video) {
 
         <h2 id="device-selection">Selecting a microphone and camera</h2>
 
-        <p>The first step to selecting media input devices is to enumerate sources. As of version 36, Firefox does not currently support enumerating media devices. Chrome 30+ provides access to media devices via <i>MediaStreamTrack.getSources</i>.</p>
-
-        <p>Enumerate media sources in the callback passed to <i>MediaStreamTrack.getSources</i>. Separate and label audio and video devices:</p>
+        <p>The first step to selecting media input devices is to enumerate sources which is done in a callback passed to <i>navigator.mediaDevices.enumerateDevices</i>. Separate and label audio and video devices:</p>
         <pre><code>var audioDevices = [],
     videoDevices = [];
-if (typeof MediaStreamTrack === 'undefined') {
-  console.log('This browser does not support MediaStreamTrack.');
-  audioDevices.push({
-      id: 'default',
-      label: 'Default'
-  });
-  videoDevices.push({
-      id: 'default',
-      label: 'Default'
-  });
-} else {
-    MediaStreamTrack.getSources(function (sourceInfos) {
-      for (var i = 0; i !== sourceInfos.length; ++i) {
-          var sourceInfo = sourceInfos[i];
-          if (sourceInfo.kind === 'audio') {
-              sourceInfo.label = sourceInfo.label || 'microphone ' + (audioDevices.length + 1);
-              audioDevices.push(sourceInfo);
-          } else if (sourceInfo.kind === 'video') {
-              sourceInfo.label = sourceInfo.label || 'camera ' + (audioDevices.length + 1);
-              videoDevices.push(sourceInfo);
+    navigator.mediaDevices.enumerateDevices().then(function (devices) {
+      for (var i = 0; i !== devices.length; ++i) {
+          var device = devices[i];
+          if (device.kind === 'audioinput') {
+              device.label = device.label || 'microphone ' + (audioDevices.length + 1);
+              audioDevices.push(device);
+          } else if (device.kind === 'videoinput') {
+              device.label = device.label || 'camera ' + (videoDevices.length + 1);
+              videoDevices.push(device);
           }
       }
     });
 }</code></pre>
+        <p>Note that device labels are empty if you do not yet have permission to access the camera or microphone.</p>
 
-        <p>You can then use these audio and video devices to populate a selection UI like a <i>select</i> tag. For example simplicity, we'll assume you can populate the UI with options and extract the selected option.</p>
+        <p>You can then use these audio and video devices to populate a selection UI like a <i>select</i> tag, e.g. as shown <a href="https://webrtc.github.io/samples/src/content/devices/input-output/">here</a>. For example simplicity, we'll assume you can populate the UI with options and extract the selected option.</p>
 
         <p>Once you have the selected option, the user can trigger starting the connection. You'll create the SimpleWebRTC object similar to the basic example, but with additional options passed to the <i>media</i> option:</p>
         <pre><code>//default media options
@@ -483,16 +471,12 @@ var mediaOptions = {
 };
 if (selectedAudioDevice && selectedAudioDevice.sourceId) {
     mediaOptions.audio = {
-        mandatory: [
-          { sourceId: selectedAudioDevice.sourceId }
-        ]
+        deviceId: selectedAudioDevice.deviceId
     };
 }
 if (selectedVideoDevice && selectedVideoDevice.sourceId) {
     mediaOptions.video = {
-        mandatory: [
-          { sourceId: selectedVideoDevice.sourceId }
-        ]
+        deviceId: selectedDevice.deviceId
     };
 }
 var webrtc = new SimpleWebRTC({

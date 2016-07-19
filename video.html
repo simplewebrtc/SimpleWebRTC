@@ -89,7 +89,24 @@
                 enableDataChannels: false,
                 autoAdjustMic: false
             });
-            webrtc.webrtc.config.peerConnectionConfig.bundlePolicy = 'max-bundle';
+
+            // disable BUNDLE
+            if (window.location.hash.indexOf('nobundle') !== -1) {
+                webrtc.webrtc.config.peerConnectionConfig.bundlePolicy = 'max-bundle';
+            }
+            // disable IPv6
+            if (window.location.hash.indexOf('noipv6') !== -1) {
+                webrtc.connection.emit = function() {
+                    if (arguments[1] && arguments[1].type === 'candidate' && arguments[1].payload && arguments[1].payload.candidate && arguments[1].payload.candidate.candidate) {
+                        var parts = arguments[1].payload.candidate.candidate.split(' ');
+                        if (parts && parts[4] && parts[4].indexOf(':') !== -1) {
+                            console.log('dropped ІPv6 candidate', parts[4]);
+                            return;
+                        }
+                    }
+                    webrtc.connection.connection.emit.apply(webrtc.connection.connection, arguments);
+                };
+            }
 
             // when it's ready, join if we got a room from the URL
             webrtc.on('readyToCall', function () {

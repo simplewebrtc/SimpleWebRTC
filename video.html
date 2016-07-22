@@ -85,14 +85,16 @@
                 // immediately ask for camera access
                 autoRequestMedia: true,
                 debug: false,
-                detectSpeakingEvents: true,
+                detectSpeakingEvents: false,
                 enableDataChannels: false,
-                autoAdjustMic: false
+                autoAdjustMic: false,
+                debug: true
             });
 
+            webrtc.webrtc.config.peerConnectionConfig.bundlePolicy = 'max-bundle';
             // disable BUNDLE
             if (window.location.hash.indexOf('nobundle') !== -1) {
-                webrtc.webrtc.config.peerConnectionConfig.bundlePolicy = 'max-bundle';
+                delete webrtc.webrtc.config.peerConnectionConfig.bundlePolicy;
             }
             // disable IPv6
             if (window.location.hash.indexOf('noipv6') !== -1) {

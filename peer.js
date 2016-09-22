@@ -8,6 +8,14 @@ var FileTransfer = require('filetransfer');
 // followed by the actual data. Receiver closes the datachannel upon completion
 var INBAND_FILETRANSFER_V1 = 'https://simplewebrtc.com/protocol/filetransfer#inband-v1';
 
+function isAllTracksEnded(stream) {
+    var isAllTracksEnded = true;
+    stream.getTracks().forEach(function (t) {
+        isAllTracksEnded = t.readyState === 'ended' && isAllTracksEnded;
+    });
+    return isAllTracksEnded;
+}
+
 function Peer(options) {
     var self = this;
 
@@ -243,11 +251,15 @@ Peer.prototype.handleRemoteStreamAdded = function (event) {
         this.logger.warn('Already have a remote stream');
     } else {
         this.stream = event.stream;
-        // FIXME: addEventListener('ended', ...) would be nicer
-        // but does not work in firefox
-        this.stream.onended = function () {
-            self.end();
-        };
+
+        this.stream.getTracks().forEach(function (track) {
+            track.addEventListener('ended', function () {
+                if (isAllTracksEnded(self.stream)) {
+                    self.end();
+                }
+            });
+        });
+
         this.parent.emit('peerStreamAdded', this);
     }
 };

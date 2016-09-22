@@ -4,3 +4,6 @@ npm-debug.log
 
 browsers
 firefox*.bz2
+
+# JetBrains IDEs
+.idea

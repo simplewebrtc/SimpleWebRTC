@@ -1,6 +1,5 @@
 var util = require('util');
-var webrtc = require('webrtcsupport');
-var WildEmitter = require('wildemitter');
+var webrtcSupport = require('webrtcsupport');
 var mockconsole = require('mockconsole');
 var localMedia = require('localmedia');
 var Peer = require('./peer');
@@ -26,9 +25,6 @@ function WebRTC(opts) {
         };
     var item;
 
-    // expose screensharing check
-    this.screenSharingSupport = webrtc.screenSharing;
-
     // We also allow a 'logger' option. It can be any object that implements
     // log, warn, and error methods.
     // We log nothing by default, following "the rule of silence":
@@ -48,11 +44,13 @@ function WebRTC(opts) {
 
     // set options
     for (item in options) {
-        this.config[item] = options[item];
+        if (options.hasOwnProperty(item)) {
+            this.config[item] = options[item];
+        }
     }
 
     // check for support
-    if (!webrtc.support) {
+    if (!webrtcSupport.support) {
         this.logger.error('Your browser doesn\'t seem to support WebRTC');
     }
 

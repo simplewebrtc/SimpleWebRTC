@@ -1,6 +1,6 @@
 {
   "name": "simplewebrtc",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "repository": {
     "type": "git",
     "url": "git@github.com:henrikjoreteg/SimpleWebRTC.git"
@@ -18,7 +18,7 @@
     "mockconsole": "0.0.1"
   },
   "devDependencies": {
-    "browserify": "13.0.1",
+    "browserify": "^13.1.0",
     "chromedriver": "^2.16.0",
     "express": "4.x.x",
     "precommit-hook": "3.0.x",
@@ -27,7 +27,7 @@
     "tape": "^4.0.0",
     "testling": "^1.7.1",
     "travis-multirunner": "^3.0.0",
-    "uglify-js": "2.6.2"
+    "uglify-js": "^2.7.3"
   },
   "license": "MIT",
   "scripts": {
@@ -38,7 +38,6 @@
   },
   "pre-commit": [
     "lint",
-    "validate",
-    "test"
+    "validate"
   ]
 }

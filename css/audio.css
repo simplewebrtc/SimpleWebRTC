@@ -152,9 +152,11 @@ hr {
   opacity: 1;
 }
 
+/*
 .button:focus {
   outline: none;
 }
+*/
 
 .button-small {
   padding: 6px 10px 7px;

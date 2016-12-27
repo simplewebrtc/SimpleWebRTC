@@ -1,15 +1,15 @@
 {
   "name": "simplewebrtc",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "repository": {
     "type": "git",
-    "url": "git@github.com:henrikjoreteg/SimpleWebRTC.git"
+    "url": "https://github.com/andyet/SimpleWebRTC.git"
   },
   "main": "./simplewebrtc.js",
   "description": "World's easiest webrtc",
   "dependencies": {
     "filetransfer": "^2.0.4",
-    "localmedia": "^2.1.0",
+    "localmedia": "^2.2.0",
     "rtcpeerconnection": "^5.1.1",
     "webrtcsupport": "^2.2.0",
     "wildemitter": "1.x",

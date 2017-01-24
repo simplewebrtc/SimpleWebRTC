@@ -10704,6 +10704,16 @@ PeerConnection.prototype.handleAnswer = function (answer, cb) {
     cb = cb || function () {};
     var self = this;
     if (answer.jingle) {
+        if (self.restrictBandwidth > 0) {
+            if (answer.jingle.contents.length >= 2 && answer.jingle.contents[1].name === 'video') {
+                var content = answer.jingle.contents[1];
+                var hasBw = content.application && content.application.bandwidth && content.application.bandwidth.bandwidth;
+                if (!hasBw) {
+                    answer.jingle.contents[1].application.bandwidth = { type: 'AS', bandwidth: self.restrictBandwidth.toString() };
+                }
+            }
+        }
+
         answer.sdp = SJJ.toSessionSDP(answer.jingle, {
             sid: self.config.sdpSessionID,
             role: self._role(),

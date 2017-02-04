@@ -257,7 +257,7 @@
                 setButton = function (bool) {
                     button.innerText = bool ? 'share screen' : 'stop sharing';
                 };
-            if (!webrtc.capabilities.screenSharing) {
+            if (!webrtc.capabilities.supportScreenSharing) {
                 button.disabled = 'disabled';
             }
             webrtc.on('localScreenRemoved', function () {

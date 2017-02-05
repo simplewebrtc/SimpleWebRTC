@@ -12,7 +12,7 @@
     "localmedia": "^2.2.0",
     "rtcpeerconnection": "^5.1.1",
     "webrtcsupport": "^2.2.0",
-    "wildemitter": "1.x",
+    "wildemitter": "^1.2.0",
     "socket.io-client": "1.3.7",
     "attachmediastream": "^1.4.1",
     "mockconsole": "0.0.1"
@@ -20,10 +20,11 @@
   "devDependencies": {
     "browserify": "^13.1.0",
     "chromedriver": "^2.16.0",
-    "express": "4.x.x",
-    "precommit-hook": "3.0.x",
+    "express": "^4.14.1",
+    "geckodriver": "^1.3.0",
+    "precommit-hook": "^3.0.0",
     "request": "^2.72.0",
-    "selenium-webdriver": "^2.53.1",
+    "selenium-webdriver": "^3.0.1",
     "tape": "^4.0.0",
     "testling": "^1.7.1",
     "travis-multirunner": "^3.0.0",

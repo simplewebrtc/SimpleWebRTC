@@ -127,7 +127,7 @@ interface WebRTCSupport {
 }
 
 declare module "webrtcsupport" {
-	export = simpleWebRTC;
+	export = webrtcsupport;
 }
 
 declare var webrtcsupport: WebRTCSupport;

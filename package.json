@@ -8,6 +8,8 @@
   "main": "./simplewebrtc.js",
   "description": "World's easiest webrtc",
   "dependencies": {
+    "@types/webrtc": "^0.0.21",
+    "@types/socket.io-client": "^1.4.29",
     "filetransfer": "^2.0.4",
     "localmedia": "^2.2.0",
     "rtcpeerconnection": "^5.1.1",
@@ -17,6 +19,7 @@
     "attachmediastream": "^1.4.1",
     "mockconsole": "0.0.1"
   },
+  "types": "./ts-defs/simplewebrtc.d.ts",
   "devDependencies": {
     "browserify": "^13.1.0",
     "chromedriver": "^2.16.0",

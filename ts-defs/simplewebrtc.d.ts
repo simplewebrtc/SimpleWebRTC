@@ -4,7 +4,7 @@
 
 /// <reference types="socket.io-client" />
 /// <reference types="webrtc" />
-/// <reference path="webrtcsupport.d.ts" />
+/// <reference types="webrtcsupport" />
 
 interface SimpleWebRTC {
 	new (options: SimpleWebRTCOptions): SimpleWebRTC;

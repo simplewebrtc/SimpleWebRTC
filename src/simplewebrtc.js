@@ -371,7 +371,7 @@ SimpleWebRTC.prototype.getEl = function (idOrEl) {
 
 SimpleWebRTC.prototype.startLocalVideo = function () {
     var self = this;
-    this.webrtc.startLocalMedia(this.config.media, function (err, stream) {
+    this.webrtc.start(this.config.media, function (err, stream) {
         if (err) {
             self.emit('localMediaError', err);
         } else {
@@ -381,7 +381,7 @@ SimpleWebRTC.prototype.startLocalVideo = function () {
 };
 
 SimpleWebRTC.prototype.stopLocalVideo = function () {
-    this.webrtc.stopLocalMedia();
+    this.webrtc.stop();
 };
 
 // this accepts either element ID or element
@@ -411,7 +411,7 @@ SimpleWebRTC.prototype.shareScreen = function (cb) {
 };
 
 SimpleWebRTC.prototype.getLocalScreen = function () {
-    return this.webrtc.localScreen;
+    return this.webrtc.localScreens && this.webrtc.localScreens[0];
 };
 
 SimpleWebRTC.prototype.stopScreenShare = function () {

@@ -4,7 +4,6 @@ var mockconsole = require('mockconsole');
 var localMedia = require('localmedia');
 var Peer = require('./peer');
 
-
 function WebRTC(opts) {
     var self = this;
     var options = opts || {};

@@ -1,6 +1,6 @@
 {
   "name": "simplewebrtc",
-  "version": "2.2.3",
+  "version": "3.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/andyet/SimpleWebRTC.git"
@@ -9,18 +9,17 @@
   "description": "World's easiest webrtc",
   "dependencies": {
     "filetransfer": "^2.0.4",
-    "localmedia": "^2.2.1",
-    "rtcpeerconnection": "^5.1.1",
+    "localmedia": "^4.0.0",
+    "rtcpeerconnection": "^8.0.0",
     "webrtcsupport": "^2.2.0",
     "wildemitter": "^1.2.0",
     "socket.io-client": "1.3.7",
-    "attachmediastream": "^1.4.1",
+    "attachmediastream": "^1.0.0",
     "mockconsole": "0.0.1"
   },
   "devDependencies": {
     "browserify": "^13.1.0",
     "chromedriver": "^2.16.0",
-    "express": "^4.14.1",
     "geckodriver": "^1.3.0",
     "precommit-hook": "^3.0.0",
     "request": "^2.72.0",
@@ -28,14 +27,20 @@
     "tape": "^4.0.0",
     "testling": "^1.7.1",
     "travis-multirunner": "^3.0.0",
-    "uglify-js": "^2.7.3"
+    "uglify-js": "^2.7.3",
+    "webrtc-adapter": "^4.0.0"
+  },
+  "peerDependencies": {
+    "webrtc-adapter": "^4.0.0"
   },
   "license": "MIT",
   "scripts": {
+    "build": "node build.js",
     "test-travis": "test/run-selenium",
     "updateLatest": "./scripts/updateLatest.sh",
-    "lint": "jshint .",
-    "validate": "npm ls"
+    "lint": "jshint src",
+    "validate": "npm ls",
+    "test-page": "open https://localhost:8443/test/ && stupid-server -s"
   },
   "pre-commit": [
     "lint",

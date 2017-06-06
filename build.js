@@ -1,13 +1,15 @@
-var bundle = require('browserify')({standalone: 'SimpleWebRTC'}),
-    fs = require('fs'),
-    request = require('request'),
-    uglify = require('uglify-js');
+const browserify = require('browserify');
+const fs = require('fs');
+const request = require('request');
+const uglify = require('uglify-js');
 
-bundle.add('./simplewebrtc');
+const bundle = browserify({ standalone: 'SimpleWebRTC' });
+bundle.add('./src/simplewebrtc');
 bundle.bundle(function (err, source) {
-    if (err) console.error(err);
-    fs.writeFileSync('simplewebrtc.bundle.js', source);
-    fs.writeFile('latest-v2.js', uglify.minify(source.toString('utf8'), {fromString: true}).code, function (err) {
-      if (err) throw err;
-    });
+  if (err) {
+    console.error(err);
+  }
+  fs.writeFileSync('out/simplewebrtc.bundle.js', source);
+  const adapter = fs.readFileSync('node_modules/webrtc-adapter/out/adapter.js').toString();
+  fs.writeFileSync('out/simplewebrtc-with-adapter.bundle.js', `${adapter}\n${source}`);
 });

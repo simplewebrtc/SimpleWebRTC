@@ -37,7 +37,7 @@
         </div>
         <div id="remotes"></div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-        <script src="simplewebrtc.bundle.js"></script>
+        <script src="../out/simplewebrtc-with-adapter.bundle.js"></script>
         <script>
             // grab the room from the URL
             var room = location.search && location.search.split('?')[1];
@@ -122,7 +122,7 @@
                     var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
                     webrtc.createRoom(val, function (err, name) {
                         console.log(' create room cb', arguments);
-                    
+
                         var newUrl = location.pathname + '?' + name;
                         if (!err) {
                             history.replaceState({foo: 'bar'}, null, newUrl);
@@ -131,7 +131,7 @@
                             console.log(err);
                         }
                     });
-                    return false;          
+                    return false;
                 });
             }
 
@@ -157,7 +157,7 @@
                             setButton(false);
                         }
                     });
-                    
+
                 }
             });
         </script>

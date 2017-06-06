@@ -61,7 +61,7 @@ function Peer(options) {
         case 'failed':
             // currently, in chrome only the initiator goes to failed
             // so we need to signal this to the peer
-            if (self.pc.pc.peerconnection.localDescription.type === 'offer') {
+            if (self.pc.pc.localDescription.type === 'offer') {
                 self.parent.emit('iceFailed', self);
                 self.send('connectivityError');
             }
@@ -73,9 +73,9 @@ function Peer(options) {
 
     // handle screensharing/broadcast mode
     if (options.type === 'screen') {
-        if (this.parent.localScreen && this.sharemyscreen) {
+        if (this.parent.localScreens && this.parent.localScreens[0] && this.sharemyscreen) {
             this.logger.log('adding local screen stream to peer connection');
-            this.pc.addStream(this.parent.localScreen);
+            this.pc.addStream(this.parent.localScreens[0]);
             this.broadcaster = options.broadcaster;
         }
     } else {
@@ -140,7 +140,7 @@ Peer.prototype.handleMessage = function (message) {
     } else if (message.type === 'endOfCandidates') {
         // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
         // shim this will only be called in Edge.
-        var mLines = this.pc.pc.peerconnection.transceivers || [];
+        var mLines = this.pc.pc.transceivers || [];
         mLines.forEach(function (mLine) {
             if (mLine.iceTransport) {
                 mLine.iceTransport.addRemoteCandidate({});

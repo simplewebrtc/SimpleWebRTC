@@ -14,13 +14,13 @@
     "webrtcsupport": "^2.2.0",
     "wildemitter": "^1.2.0",
     "socket.io-client": "1.3.7",
-    "attachmediastream": "^1.0.0",
+    "attachmediastream": "^2.0.0",
     "mockconsole": "0.0.1"
   },
   "devDependencies": {
     "browserify": "^13.1.0",
-    "chromedriver": "^2.16.0",
-    "geckodriver": "^1.3.0",
+    "chromedriver": "^2.29.0",
+    "geckodriver": "^1.6.1",
     "precommit-hook": "^3.0.0",
     "request": "^2.72.0",
     "selenium-webdriver": "^3.0.1",
@@ -40,10 +40,12 @@
     "updateLatest": "./scripts/updateLatest.sh",
     "lint": "jshint src",
     "validate": "npm ls",
-    "test-page": "open https://localhost:8443/test/ && stupid-server -s"
+    "test-page": "open https://localhost:8443/test/ && stupid-server -s",
+    "test": "node test/selenium/index.js"
   },
   "pre-commit": [
     "lint",
     "validate"
-  ]
+  ],
+  "false": {}
 }

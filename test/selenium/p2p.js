@@ -6,7 +6,7 @@ var seleniumHelpers = require('./selenium-lib');
 var webdriver = require('selenium-webdriver');
 
 function doJoin(driver, room) {
-    return driver.get('file://' + process.cwd() + '/index.html?' + room);
+    return driver.get('file://' + process.cwd() + '/test/index.html?' + room);
 }
 
 function testP2P(browserA, browserB, t) {
@@ -18,25 +18,23 @@ function testP2P(browserA, browserB, t) {
     var userB = seleniumHelpers.buildDriver(browserB);
     doJoin(userB, room);
 
-    userA.getWindowHandle().then(function (userAWindow) {
-        userA.wait(function () {
-            return userA.executeScript(function () {
-                if (userAWindow.webrtc) {
-                  return userAWindow.webrtc.getPeers().length === 1 && window.webrtc.getPeers()[0].pc.iceConnectionState === 'connected';
-                }
-            });
-        }, 30 * 1000)
-    }).then(function () {
+    userA.wait(function () {
+        return userA.executeScript(function () {
+            return window.webrtc && window.webrtc.getPeers().length === 1 && window.webrtc.getPeers()[0].pc.iceConnectionState === 'connected';
+        });
+    }, 30 * 1000)
+    .then(function () {
         t.pass('P2P connected');
         userA.quit();
         userB.quit().then(function () {
             t.end();
         });
-    }).then(null, function (err) {
+    })
+    .then(null, function (err) {
         t.fail(err);
         userA.quit();
         userB.quit();
-    });
+    })
 }
 
 test('P2P, Chrome-Chrome', function (t) {

@@ -5,6 +5,7 @@
 
 Want to see it in action? Check out the demo: https://simplewebrtc.com/demo.html
 
+Want to run it locally? `npm install && npm run test-page`
 
 ## It's so easy:
 

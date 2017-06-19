@@ -138,14 +138,7 @@ Peer.prototype.handleMessage = function (message) {
     } else if (message.type === 'unmute') {
         this.parent.emit('unmute', {id: message.from, name: message.payload.name});
     } else if (message.type === 'endOfCandidates') {
-        // Edge requires an end-of-candidates. Since only Edge will have mLines or tracks on the
-        // shim this will only be called in Edge.
-        var mLines = this.pc.pc.transceivers || [];
-        mLines.forEach(function (mLine) {
-            if (mLine.iceTransport) {
-                mLine.iceTransport.addRemoteCandidate({});
-            }
-        });
+        this.pc.pc.addIceCandidate(undefined);
     }
 };
 

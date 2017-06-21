@@ -1,13 +1,16 @@
-sudo: false
+dist: trusty
 language: node_js
 node_js:
   - 6
+sudo: false
+
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.8
+      - pulseaudio
 cache:
   directories:
     - node_modules
@@ -16,12 +19,14 @@ env:
   global:
     - CXX=g++-4.8
   matrix:
-    - BROWSER=chrome  BVER=stable
+    - BVER=stable
 
 before_script:
-  - ./node_modules/travis-multirunner/setup.sh
+  - BROWSER=chrome ./node_modules/travis-multirunner/setup.sh
+  - BROWSER=firefox ./node_modules/travis-multirunner/setup.sh
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
+  - pulseaudio --start
 
 script:
   - npm run test-travis

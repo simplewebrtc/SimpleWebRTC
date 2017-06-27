@@ -5,7 +5,7 @@
     "type": "git",
     "url": "https://github.com/andyet/SimpleWebRTC.git"
   },
-  "main": "./simplewebrtc.js",
+  "main": "./src/simplewebrtc.js",
   "description": "World's easiest webrtc",
   "dependencies": {
     "filetransfer": "^2.0.4",

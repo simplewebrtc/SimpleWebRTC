@@ -33,6 +33,18 @@ Want to run it locally? `npm install && npm run test-page`
 
 ```
 
+### Installing through NPM
+```sh
+npm install --save simplewebrtc
+
+# for yarn users
+yarn add simplewebrtc
+```
+After that simply import simplewebrtc into your project
+```js
+import SimpleWebRTC from 'simplewebrtc';
+```
+
 ### 2. Create our WebRTC object
 
 ```js

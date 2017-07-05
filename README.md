@@ -5,7 +5,12 @@
 
 Want to see it in action? Check out the demo: https://simplewebrtc.com/demo.html
 
-Want to run it locally? `npm install && npm run test-page`
+Want to run it locally? 
+1 - Install stupid-server globally
+`npm install stupid-server global`
+
+2 - Install all dependencies and run the test page
+`npm install && npm run test-page`
 
 ## It's so easy:
 

@@ -40,7 +40,7 @@
     "updateLatest": "./scripts/updateLatest.sh",
     "lint": "jshint src",
     "validate": "npm ls",
-    "test-page": "echo \"open https://localhost:8443/test/\" && stupid-server -s",
+    "test-page": "echo \"open https://0.0.0.0:8443/test/\" && stupid-server -s -h 0.0.0.0",
     "test": "node test/selenium/index.js"
   },
   "pre-commit": [

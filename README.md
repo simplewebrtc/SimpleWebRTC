@@ -6,10 +6,13 @@
 Want to see it in action? 
 Check out the demo: https://simplewebrtc.com/demo.html
 
-Want to run it locally? <br>
-1 - Install all dependencies and run the test page <br>
-`npm install && npm run test-page` <br>
-2 - open your browser to https://0.0.0.0:8443/test/ <br>
+Want to run it locally?
+1. Install all dependencies and run the test page
+```bash
+npm install && npm run test-page
+```
+
+2. open your browser to https://0.0.0.0:8443/test/
 
 ## It's so easy:
 

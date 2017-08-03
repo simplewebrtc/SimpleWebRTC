@@ -56,7 +56,7 @@ li .filename {
 
         <p>This is a filetransfer demo. See <a href="notsosimple.html#filetransfer">here</a> for some background information. As it is just a demo, we are not providing the TURN relay servers that are required to get close to 100% connectivity and connections might fail.</p>
 
-        <h3 id="title">Start a room</h3>
+        <h3 id="title">Start a session</h3>
         <form id="createRoom">
             <input id="sessionInput"/>
             <button disabled type="submit">Create it!</button>
@@ -81,10 +81,8 @@ var webrtc = new SimpleWebRTC({
     autoRequestMedia: false,
     // dont negotiate media
     receiveMedia: {
-        mandatory: {
-            OfferToReceiveAudio: false,
-            OfferToReceiveVideo: false
-        }
+        offerToReceiveAudio: false,
+        offerToReceiveVideo: false
     }
 });
 
@@ -261,7 +259,7 @@ webrtc.on('connectivityError', function (peer) {
 
 function setRoom(name) {
     document.querySelector('form').remove();
-    document.getElementById('title').innerText = 'Room: ' + name;
+    document.getElementById('title').innerText = 'Session: ' + name;
     document.getElementById('subTitle').innerText =  'Link to join: ' + location.href;
     $('body').addClass('active');
 }

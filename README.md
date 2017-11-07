@@ -101,11 +101,7 @@ http://simplewebrtc.com/notsosimple.html for some examples.
 
 ## Got questions?
 
-Join the SimpleWebRTC discussion list:
-
-http://lists.andyet.com/mailman/listinfo/simplewebrtc
-
-or the Gitter channel:
+Join the Gitter channel:
 
 https://gitter.im/HenrikJoreteg/SimpleWebRTC
 

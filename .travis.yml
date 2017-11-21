@@ -11,15 +11,13 @@ addons:
     packages:
       - g++-4.8
       - pulseaudio
-cache:
-  directories:
-    - node_modules
 
 env:
   global:
     - CXX=g++-4.8
   matrix:
     - BVER=stable
+    - BVER=beta
 
 before_script:
   - BROWSER=chrome ./node_modules/travis-multirunner/setup.sh

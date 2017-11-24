@@ -19,17 +19,15 @@
   },
   "devDependencies": {
     "browserify": "^13.1.0",
-    "chromedriver": "^2.29.0",
-    "geckodriver": "^1.6.1",
     "precommit-hook": "^3.0.0",
     "request": "^2.72.0",
-    "selenium-webdriver": "^3.0.1",
     "tape": "^4.0.0",
     "testling": "^1.7.1",
-    "travis-multirunner": "^3.0.0",
+    "travis-multirunner": "^4.0.0",
     "uglify-js": "^2.7.3",
     "stupid-server": "^0.2.2",
-    "webrtc-adapter": "^4.0.0"
+    "webrtc-adapter": "^4.0.0",
+    "webrtc-testbed": "git+https://github.com/fippo/testbed.git"
   },
   "peerDependencies": {
     "webrtc-adapter": "^4.0.0"

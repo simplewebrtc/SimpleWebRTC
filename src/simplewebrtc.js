@@ -280,13 +280,17 @@ SimpleWebRTC.prototype.disconnect = function () {
 SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
     var self = this;
     var container = this.getRemoteVideoContainer();
+    var wrapper = document.createElement('div');
     var video = attachMediaStream(peer.stream);
 
     // store video element as part of peer for easy removal
     peer.videoEl = video;
     video.id = this.getDomId(peer);
 
-    if (container) container.appendChild(video);
+    if (container) {
+      wrapper.appendChild(video);
+      container.appendChild(wrapper);
+    }
 
     this.emit('videoAdded', video, peer);
 
@@ -306,9 +310,10 @@ SimpleWebRTC.prototype.handlePeerStreamAdded = function (peer) {
 
 SimpleWebRTC.prototype.handlePeerStreamRemoved = function (peer) {
     var container = this.getRemoteVideoContainer();
+    var videoElWrapper = peer.videoEl.parentElement;
     var videoEl = peer.videoEl;
-    if (this.config.autoRemoveVideos && container && videoEl) {
-        container.removeChild(videoEl);
+    if (this.config.autoRemoveVideos && container && videoElWrapper) {
+        container.removeChild(videoElWrapper);
     }
     if (videoEl) this.emit('videoRemoved', videoEl, peer);
 };

@@ -19,6 +19,7 @@
         "exports",
         "console",
         "Buffer",
-        "module"
+        "module",
+        "RTCPeerConnection"
     ]
 }

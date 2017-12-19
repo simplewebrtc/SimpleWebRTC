@@ -17,6 +17,7 @@
     "attachmediastream": "^2.0.0",
     "mockconsole": "0.0.1"
   },
+  "types": "./ts-defs/simplewebrtc.d.ts",
   "devDependencies": {
     "browserify": "^13.1.0",
     "precommit-hook": "^3.0.0",

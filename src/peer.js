@@ -139,6 +139,8 @@ Peer.prototype.handleMessage = function (message) {
         this.parent.emit('unmute', {id: message.from, name: message.payload.name});
     } else if (message.type === 'endOfCandidates') {
         this.pc.pc.addIceCandidate(undefined);
+    } else {
+        this.parent.emit(message.type, message.payload);
     }
 };
 

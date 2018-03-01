@@ -67,8 +67,8 @@ function waitAllVideosHaveEnoughData(driver) {
 function testP2P(browserA, browserB, t) {
     const room = 'testing_' + Math.floor(Math.random() * 100000);
 
-    const driverA = seleniumHelpers.buildDriver(browserA, {bver: process.env.BVER});
-    const driverB = seleniumHelpers.buildDriver(browserB, {bver: process.env.BVER});
+    const driverA = seleniumHelpers.buildDriver(browserA, {bver: process.env.BVER, noSandbox: true});
+    const driverB = seleniumHelpers.buildDriver(browserB, {bver: process.env.BVER, noSandbox: true});
     const drivers = [driverA, driverB];
 
     return Promise.all(drivers.map(driver => doJoin(driver, room)))

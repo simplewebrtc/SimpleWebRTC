@@ -220,6 +220,8 @@ same event
 
 - `el` the element that contains the local screen stream
 
+`'joinedRoom', roomName` - emitted after successfully joining a room with the name roomName
+
 `'leftRoom', roomName` - emitted after successfully leaving the current room,
 ending all peers, and stopping the local screen stream
 

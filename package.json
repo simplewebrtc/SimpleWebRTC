@@ -1,9 +1,32 @@
 {
-  "name": "webrtc.js",
-  "version": "0.0.1",
-  "repository": {
-    "type": "git", 
-    "url": "git@github.com:henrikjoreteg/webrtc.js.git"
+  name: "simplewebrtc.com",
+  repository: {
+    type: "git",
+    url: "git@github.com:andyet/SimpleWebRTC.git"
   },
-  "description": "World's easiest webrtc"
-}
+  scripts: {
+  start: "grunt serve",
+  build: "grunt build",
+  lint: "eslint ."
+  },
+  devDependencies: {
+    autoprefixer-stylus: "^0.11.0",
+    deasync: "^0.1.9",
+    eslint: "^3.11.1",
+    grunt: "^1.0.1",
+    grunt-browserify: "^5.0.0",
+    grunt-cli: "^1.2.0",
+    grunt-contrib-pug: "^1.0.0",
+    grunt-contrib-uglify: "^2.0.0",
+    grunt-modernizr: "^1.0.2",
+    jstransformer-markdown-it: "^2.0.0",
+    yeticss: "^7.3.0"
+  },
+  dependencies: {
+    grunt-contrib-connect: "^1.0.2",
+    grunt-contrib-copy: "^1.0.0",
+    grunt-contrib-cssmin: "^1.0.2",
+    grunt-contrib-stylus: "^1.2.0",
+    grunt-contrib-watch: "^1.0.0"
+    }
+  }

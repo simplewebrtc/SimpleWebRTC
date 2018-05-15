@@ -1,13 +1,97 @@
 extends _layout.pug
 
 block vars
-  - var pageDescription = 'Leadershippy is an &yet project for people first people'
+  - var pageDescription = 'SimpleWebRTC'
   - var bodyClass = 'page-home'
   - var headerClass = 'home'
 
 block title
-  | Leadershippy
+  | SimpleWebRTC
 
 block content
 
-  p testing
+  include includes/header
+
+  .container
+
+    section
+
+      h2 Why is it so difficult to embed real-time communication tools into my app?
+
+      ul
+        li WebRTC is a powerful API, but harnessing its abilities is time consuming and expensive.
+        li I don’t want to hire an expert, I don’t want to take six months to learn to use it, and I certainly don’t want to host it myself.
+        li I need this functionality in my app, but it seems like an impossible task.
+
+    section
+
+      h2 WebRTC is awesome!
+      p You’ve done the research. WebRTC is secure and it has the features you want. Voice, video, and screen-sharing with widespread browser and mobile support with seamless functionality for users. <strong>It seems too good to be true, and unfortunately, it is. </strong>
+
+    section
+
+      h2 WebRTC is complex!
+      p On the ~2013 version of the SimpleWebRTC site, we said, <strong>“You can build cool stuff with WebRTC in five minutes.”</strong> And that’s true! You can build great, fun demo-ware with our legacy open source tools. Then there’s the laundry list of complexities and edge-cases involved in making your service production quality.
+
+      p Using WebRTC effectively in your website or application can be <em>bang-your-head-on-the-desk</em> hard if you want users to have a high quality, reliable experience. Even for our team of experts, some of who’ve been building realtime applications for 20 years, this stuff is <em>hard</em>. And creating a solid UX? Get ready to invest time by the bucketful. There are a hundred edge cases to cover in a single “hair check” screen.
+
+    section
+
+      h2 So here are your options:
+
+      ul
+        li <strong>Learn it over the next few months, and build it over the next year.</strong> Check out the original open-source SimpleWebRTC and try it out. Pay a company like XirSys to host it, or figure out the signaling and TURN hosting on your own. Either way, you’re tackling all the development and UX edge cases yourself.
+        li <strong>Pay $100k+ to hire a company to build it into your app and pay them for support for its life cycle.</strong> Pay them for any upgrades or changes that need to be made. Pay them for the next application that needs communication tools. Pay them for… (you see where this is going).
+        li <strong>Recruit another full-time employee for $100k+/annual</strong> with this specific skill set to build and support this functionality.
+        li <strong>Sign up for a quality but pay-by-the minute service like TokBox that charges you for call time, even for data transfer that costs them $0.</strong> You’ll need to learn their API, have someone who’s great at building realtime applications, and you’re still on the hook for the UX edge cases.
+
+      h3 Why do none of these options sound very good?
+      p Because they aren’t very good options.
+
+    section
+      h2 This is where we come in. <br/> <cue superhero music>
+      p We’re &yet, and we’ve done this before (many times and for amazing clients that you might know). We made <a href="https://talky.io/">Talky</a>. We also made the original open-source SimpleWebRTC. Since then, we’ve learned a ton. The new SimpleWebRTC incorporates everything we’ve learned and truly delivers on the promise of making cool stuff with WebRTC in five minutes. 
+
+      h2 We are making it simple
+
+      img(src='../images/webrtc-logo.svg' alt='WebRTC logo' title='WebRTC logo')
+      img(src='../images/react-logo.svg', alt='React logo' title='React logo')
+
+      p Do you like React? We sure do. It is easy to use, has cross platform support, and <em>makes things simple</em>. We thought to ourselves, “developing WebRTC apps would be so much easier if we had this functionality in React modules.” 
+      p So we are making a turducken. We are stuffing WebRTC inside of React, seasoning it liberally, and baking until golden brown. We call it ReaWebRct. We call it SimpleWebRTC, and we serve it with a side of mashed potatoes.
+
+      h2 Here’s what you need
+      h3 1. A developer familiar with React
+      p <strong>Seriously, that is all that you need.</strong> We take care of the rest. Secure streaming video, voice, and screen-sharing, hosted by us, in your website or application. 
+      p We’ll handle the UX edge cases. We’ll handle the uptime. We’ll take care of the annoying boring parts so you can focus on building and scaling your awesome idea.
+      p The best part is…
+
+    section
+      h2 You can request access to the private beta right now, for free
+      a.button request beta access
+      p <strong>We’ll send you a key and a link to download our components so that you can start coding right away.</strong> We’ll even give you free bandwidth so you can test everything out. If you love using it, you can pay us. If you sign up for our service during the limited beta period we’ll guarantee our special beta subscription rate for your first year of service.
+
+    section
+      h2 Pricing
+      p Sign up during our beta to save on your subscription.
+
+      p <sup>*</sup>Developer consultation consists of a developer assisting with the functionality and implementation of SimpleWebRTC components. Session is one hour long.
+      
+      h3 Frequently Asked Questions
+
+      h4 I don’t want to sign up for anything yet…
+      p Don’t! Just try out the modules. We won’t take your credit card, and you still get full use of our service.
+
+      h4 What if it doesn’t work?
+      p We guarantee that our servers will remain stable, and we’ll give you your money back if they aren’t.
+
+      h4 I still want to explore other options.
+      p We encourage you to! Our competitors do great things, and we want you to look at every option before you make any commitment. <strong>We trust that you will return to us because of our transparent pricing model and easy to use React modules.</strong>
+
+      p Here are some of the most popular competing services: <a href="https://xirsys.com/">Xirsys</a>, <a href="https://www.twilio.com/">Twilio</a> and <a href="https://tokbox.com/">Tokbox</a>. <cue elevator music>
+
+      h4 Okay, I’m back.
+      p We missed you. <a href="">Get started with our free trial</a>.
+
+      h4 Have questions?
+      p We are an open book. Email us at <a href="mailto:help@simplewebrtc.com">help@simplewebrtc.com</a>.

@@ -6,6 +6,7 @@
 
 .arrowed-list
   padding: 0
+  margin: 0
 
   li
     list-style: none 
@@ -20,6 +21,9 @@
 .bullet-list
   padding: 0
   text-align: left
+
+  @media screen and (min-width: $breakpoint-tablet)
+    min-height: 360px
 
   li
     list-style: none

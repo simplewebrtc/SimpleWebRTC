@@ -5,16 +5,31 @@
 --------------------------------------------------------------------*/
 
 header
-  padding: 0 0 $ui-padding-extra-spaced 0
+  padding: 0 0 $spacing-base 0
 
   h1
-    margin-bottom: $ui-padding-default
+    margin-bottom: $spacing-s
 
   h4
     color: $gray-dark
     font-weight: $font-weight-regular
 
-@media screen and (max-width: $breakpoint-mid-mobile)
+  @media screen and (min-width: $breakpoint-desktop)
+
+    .container
+      display: flex
+      align-items: center
+      justify-content: center
+
+    .tagline-wrapper
+      margin-left: $spacing-base*2
+
+    .swrtc-logo
+      max-width: 250px    
+
+@media screen and (max-width: $breakpoint-desktop)
   header
     text-align: center
-    padding-bottom: 0
+  
+  .swrtc-logo
+    margin-bottom: $spacing-base

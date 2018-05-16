@@ -1,16 +1,19 @@
 header(role='banner')
 
   .message.message-success
-    p Introducing a new, powerful version of SimpleWebRTC.
-    p If you are looking for the 2013 edition of SimpleWebRTC, it has been deprecated and <a href="https://github.com/andyet/SimpleWebRTC">remains available as unsupported Open Source software</a>.
+    .container
+      p If you are looking for the 2013 edition of SimpleWebRTC, it has been deprecated and <a href="https://github.com/andyet/SimpleWebRTC">remains available as unsupported Open Source software</a>.
 
   .container
-    .grid-flex-container
+    nav(role='navigation' class='nav')
+      ul.list-unstyled.list-inline.cf
+        li: a(href='#pricing') Pricing
+        li: a.button.button-primary.button-large Try now
 
-      .grid-flex-cell-1of3
-        img(src='../images/simplewebrtc-logo.svg' title='SimpleWebRTC logo' alt='SimpleWebRTC logo')
+  .container
+        
+      img(src='../images/simplewebrtc-logo.svg' title='SimpleWebRTC logo' alt='SimpleWebRTC logo' class='swrtc-logo')
 
-      .grid-flex-cell
-
+      .tagline-wrapper
         h1 React components for realtime. 
         h4 All of the awesome. None of the painful.

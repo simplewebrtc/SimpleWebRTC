@@ -1,0 +1,33 @@
+/*--------------------------------------------------------------------
+*
+* Pricing
+*
+--------------------------------------------------------------------*/
+
+.pricing-wrapper
+  border-radius: 6px
+  border: 1px solid $gray-lighter
+  box-shadow: 0 1px 4px $gray-lighter
+  margin-bottom: $ui-padding-extra-spaced
+
+  @media screen and (min-width: $breakpoint-tablet)
+    display: flex
+
+    .plan
+      &:last-child
+       border-left: 1px solid $gray-lighter
+
+.plan
+  padding: $ui-padding-extra-spaced
+  text-align: center
+  flex: 50%
+
+  @media screen and (max-width: $breakpoint-tablet)
+
+    &:last-child
+      border-top: 1px solid $gray-lighter
+
+  h4
+    text-transform: uppercase
+    letter-spacing: 1px
+    font-size: $font-base

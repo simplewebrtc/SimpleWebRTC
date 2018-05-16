@@ -5,8 +5,28 @@
 --------------------------------------------------------------------*/
 
 section 
-  max-width: 700px
-  margin: $ui-padding-extra-spaced*3 auto
+  max-width: 660px
+  margin: 0 auto
+  padding: $ui-padding-extra-spaced*2 0
+
+  @media screen and (max-width: $breakpoint-tablet)
+    padding: $ui-padding-extra-spaced 0
 
   h2, h3
     text-align: center
+
+  p:last-of-type
+    margin: 0
+
+.section-wrapper-dark
+  background-color: $blue-saturated-light
+  text-align: center
+  
+  h3, p, strong 
+    color: white
+  
+  .button
+    margin-bottom: $ui-padding-extra-spaced
+
+.section-wrapper-light
+  background-color: $blue-lighter

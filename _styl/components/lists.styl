@@ -13,3 +13,23 @@
     background-position: 0 2px
     margin-bottom: $ui-padding-extra-spaced
     padding-left: $ui-padding-extra-spaced
+
+    &:last-child
+      margin: 0
+
+.bullet-list
+  padding: 0
+  text-align: left
+
+  li
+    list-style: none
+    position: relative
+    padding-left: $ui-padding-spaced
+    margin-bottom: $ui-padding-default
+
+    &:before
+      position: absolute
+      top: 0
+      left: 0
+      content: '•'
+      color: $pink-light

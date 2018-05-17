@@ -387,6 +387,7 @@ fileinput.addEventListener('change', function() {
         <p>Older versions of Chrome used a flag called <i>enable-usermedia-screen-capture</i>. This is no longer the supported mechanism for screen capture in Chrome, but is still used in Chromium Embedded Framework and Node Webkit applications.</p>
 
         <h4>Firefox</h4>
+        <p>Firefox enabled screen media capturing by default for secure origins. In you need to care about older versions, see below.</p>
         <p>Firefox enables screen media capturing through the <i>media.getusermedia.screensharing.allowed_domains</i> config setting. This can be modified automatically via an add-on, or it can be modified manually by navigating to <i>about:config</i> in Firefox. Modifying the setting manually to add <i>localhost</i> is easiest for development.
         <p><a href="https://github.com/HenrikJoreteg/getScreenMedia/">getScreenMedia</a> also contains a <a href="https://github.com/HenrikJoreteg/getScreenMedia/tree/master/firefox-extension-sample">Firefox extension sample</a>. Just modify the <i>boostrap.js</i> to match your domain:</p>
         <pre><code>var domains = ["simplewebrtc.com"];</code></pre>

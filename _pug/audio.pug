@@ -6,7 +6,7 @@ block vars
   - var headerClass = 'audio'
 
 block title
-  | Audio Example SimpleWebRTC
+  | Audio Example - SimpleWebRTC
 
 block content
 
@@ -34,7 +34,7 @@ block content
           .local-details
             input#nickInput(placeholder='Add your name')
             audio#localAudio(controls='', oncontextmenu='return false;', disabled='')
-            img#snapshot.avatar(src='img/avatar-default.png')
+            img#snapshot.avatar(src='/images/avatar-default.png')
             video#snapshotvideo.avatar
             #countdown
             // add class of 'muted' when so
@@ -60,5 +60,3 @@ block content
     if (window.self !== window.top) {
         parent.postMessage(document.body.scrollHeight, 'https://developer.microsoft.com');
     }
-  script(src='audio.js')
-  script(src='latest-v2.js')

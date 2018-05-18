@@ -1,0 +1,197 @@
+/*--------------------------------------------------------------------
+*
+* Page - /audio
+*
+--------------------------------------------------------------------*/
+
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section
+    display block
+
+ol, ul
+    list-style none
+
+blockquote, q
+    quotes none
+
+blockquote:before, blockquote:after,
+q:before, q:after
+    content ''
+    content none
+
+table
+    border-collapse collapse
+    border-spacing 0
+
+.caption, .caption--alt, .subtitle, .title, figure, h3, h4, h5, h6, input, li, p, select, textarea, thead th
+    max-width 100%
+
+hr
+    border none
+    border-bottom 1px solid #e6eaed
+
+.content
+    width 700px
+    margin 5em auto
+    padding 20px
+
+.button-small
+    padding 6px 10px 7px
+
+.form-input
+    padding 10px 15px
+    border-radius 3px
+    border 1px solid #e6eaed
+    &:focus
+        background #e3f8ff
+    &:disabled
+        background-color #eee
+
+.form-input:hover,
+.form-input:focus
+    border-color #74ddff
+    transition all .2s ease-in
+    outline none
+
+#roomContainer
+    padding 40px 0
+    margin: 40px 0
+    border-top 1px solid #e6eaed
+    border-bottom 1px solid #e6eaed
+
+#createRoom
+    margin 40px 0
+    text-align center
+    .form-input
+        height auto
+        min-width 300px
+        max-width 100%
+        margin-right 5px
+    & ~ .peerContainer
+        display none
+
+.peerContainer
+    &.local
+        width 35%
+        float left
+
+.local-details
+    min-height 208px
+    margin-bottom 15px
+    padding 5px
+    position relative
+    border 1px solid #e6eaed
+
+.nick
+    padding 5px
+    min-height 28px
+
+.avatar
+    width 100%
+    height auto
+    margin-top 0
+    display block
+    background #eee
+    border none
+    border-radius 0
+
+.button-mute
+    width 30px
+    position absolute
+    bottom 10px
+    right 10px
+    background #828c8f url('../img/icons.svg') no-repeat center 5px
+    text-indent -9999em
+    line-height 1
+    visibility hidden
+    &.muted
+        background-color #ec008c
+        background-position center -28px
+
+.local-controls
+    visibility hidden
+    margin-top 0
+    padding 15px 10px
+    background #f7f7f7
+    text-align center
+    p
+        margin 12px 0 10px
+        font-size .9em
+
+.remote-details
+    min-height 183px
+    margin-bottom 10px
+    padding 5px
+    position relative
+    border 1px solid #e6eaed
+
+#nickInput
+    width 100%
+    padding 3px 5px 5px
+    border 1px solid transparent
+    font-size 1.4em
+    outline none
+    &:focus
+        border-color #74ddff
+
+#selectfile
+    width 80%
+    margin 5px auto 0
+
+#remotes
+    width 65%
+    padding-left 20px
+    float left
+    .peerContainer
+        width calc(50% - 2px)
+        margin-top 0
+        margin-bottom 6px
+        float left
+        video
+            display none
+        &:nth-child(odd)
+            margin-right 2px
+        &:nth-child(even)
+            margin-left 2px
+
+.peerName
+    padding 5px
+    padding-bottom 8px
+    font-size .8em
+
+.connectionstate
+    padding 10px 5px 5px
+    font-size .8em
+
+audio
+    display none
+
+#snapshot
+    transform scaleX(-1)
+
+#snapshotvideo
+    display none
+
+#countdown
+    display none
+    position absolute
+    top 50%
+    width 100%
+    text-align center
+    font-size 36pt
+    color white
+
+#supportWarning,#microphoneWarning
+    display none
+
+.clear
+    clear both
+
+.cf:before,
+.cf:after
+    content " "
+    display table
+
+.cf
+    &:after
+        clear both

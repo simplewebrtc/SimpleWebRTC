@@ -136,6 +136,16 @@ module.exports = function initGrunt(grunt) {
             dest: 'public'
           }
         ]
+      },
+      legacyJs: {
+        files: [
+          {
+            cwd: '_js',
+            expand: true,
+            src: ['audio.js', 'latest.js', 'latest-v2.js', 'latest-v3.js'],
+            dest: 'public'
+          }
+        ]
       }
     },
 

@@ -363,3 +363,4 @@ function GUM() {
         });
     }
 }
+GUM();

@@ -56,6 +56,8 @@ block content
 
   include includes/footer
 
+  script(src='/latest-v2.js')
+  script(src='/audio.js')
   script.
     if (window.self !== window.top) {
         parent.postMessage(document.body.scrollHeight, 'https://developer.microsoft.com');

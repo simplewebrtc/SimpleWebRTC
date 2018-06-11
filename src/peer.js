@@ -33,6 +33,7 @@ function Peer(options) {
     this.receiveMedia = options.receiveMedia || this.parent.config.receiveMedia;
     this.channels = {};
     this.sid = options.sid || Date.now().toString();
+    this.iceRestart = false;
     // Create an RTCPeerConnection via the polyfill
     this.pc = new PeerConnection(this.parent.config.peerConnectionConfig, this.parent.config.peerConnectionConstraints);
     this.pc.on('ice', this.onIceCandidate.bind(this));
@@ -153,6 +154,11 @@ Peer.prototype.send = function (messageType, payload) {
         payload: payload,
         prefix: webrtcSupport.prefix
     };
+    if (this.iceRestart) {
+        message.iceRestart = true;
+        message.oldSessionId = this.oldSessionId;
+        this.iceRestart = false;
+    }
     this.logger.log('sending', messageType, message);
     this.parent.emit('message', message);
 };
@@ -225,10 +231,16 @@ Peer.prototype.start = function () {
         //self.send('offer', sessionDescription);
     });
 };
-
-Peer.prototype.icerestart = function () {
+/*
+    @sessionId - webrtc id from which the icerestart has been initiated. Using it to keep the old
+    session.
+ */
+Peer.prototype.icerestart = function (sessionId) {
     var constraints = this.receiveMedia;
-    constraints.mandatory.IceRestart = true;
+    this.iceRestart = true;
+    this.oldSessionId = sessionId;
+    constraints.iceRestart = true;
+    this.parent.emit('iceRestart');
     this.pc.offer(constraints, function (err, success) { });
 };
 

@@ -26,11 +26,11 @@
     "travis-multirunner": "^4.0.0",
     "uglify-js": "^2.7.3",
     "stupid-server": "^0.2.2",
-    "webrtc-adapter": "^4.0.0",
+    "webrtc-adapter": "^6.0.0",
     "webrtc-testbed": "git+https://github.com/fippo/testbed.git"
   },
   "peerDependencies": {
-    "webrtc-adapter": "^4.0.0"
+    "webrtc-adapter": "^6.0.0"
   },
   "license": "MIT",
   "scripts": {

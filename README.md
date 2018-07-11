@@ -159,6 +159,23 @@ https://gitter.im/HenrikJoreteg/SimpleWebRTC
   ```
   - `object logger` - *optional* alternate logger for the instance; any object
   that implements `log`, `warn`, and `error` methods.
+  - `object peerConnectionConfig` - *optional* options to specify own your own STUN/TURN servers. 
+  By default these options are overridden when the signaling server specifies the STUN/TURN server configuration. 
+  Example on how to specify the peerConnectionConfig: 
+  ```javascript
+  {
+    "iceServers": [{
+            "url": "stun3.l.google.com:19302"
+        },
+        {
+            "url": "turn:your.turn.servers.here",
+            "username": "your.turn.server.username",
+            "credential": "your.turn.server.password"
+        }
+    ],
+    iceTransports: 'relay'
+  }
+  ```
 
 ### Fields
 
@@ -196,6 +213,9 @@ webrtc.on('connectionReady', function (sessionId) {
 
 - `peer` - the object representing the peer and underlying peer connection
 
+`'channelMessage', peer, channelLabel, {messageType, payload}` - emitted when a broadcast message to all peers is received via dataChannel by using the method sendDirectlyToAll(). 
+
+
 `'stunservers', [...args]` - emitted when the signaling connection emits the
 same event
 
@@ -205,6 +225,8 @@ same event
 `'localScreenAdded', el` - emitted after triggering the start of screen sharing
 
 - `el` the element that contains the local screen stream
+
+`'joinedRoom', roomName` - emitted after successfully joining a room with the name roomName
 
 `'leftRoom', roomName` - emitted after successfully leaving the current room,
 ending all peers, and stopping the local screen stream

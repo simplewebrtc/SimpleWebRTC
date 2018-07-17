@@ -6,8 +6,6 @@ Read more about the "new" SimpleWebRTC (which is an entirely different thing) on
 
 # SimpleWebRTC - World's easiest WebRTC lib
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/HenrikJoreteg/SimpleWebRTC?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 
 Want to see it in action? 
 Check out the demo: https://simplewebrtc.com/demo.html
@@ -104,12 +102,6 @@ different approach.
 
 Sometimes you need to do more advanced stuff. See
 http://simplewebrtc.com/notsosimple.html for some examples.
-
-## Got questions?
-
-Join the Gitter channel:
-
-https://gitter.im/HenrikJoreteg/SimpleWebRTC
 
 ## API
 

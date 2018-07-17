@@ -103,12 +103,6 @@ different approach.
 Sometimes you need to do more advanced stuff. See
 http://simplewebrtc.com/notsosimple.html for some examples.
 
-## Got questions?
-
-Join the Gitter channel:
-
-https://gitter.im/HenrikJoreteg/SimpleWebRTC
-
 ## API
 
 ### Constructor

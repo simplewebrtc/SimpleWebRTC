@@ -9,7 +9,7 @@
   "description": "World's easiest webrtc",
   "dependencies": {
     "filetransfer": "^2.0.4",
-    "localmedia": "^4.0.0",
+    "localmedia": "^5.0.0",
     "rtcpeerconnection": "^8.0.0",
     "webrtcsupport": "^2.2.0",
     "wildemitter": "^1.2.0",

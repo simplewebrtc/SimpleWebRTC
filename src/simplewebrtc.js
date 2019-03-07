@@ -36,6 +36,8 @@ function SimpleWebRTC(opts) {
         };
     var item, connection;
 
+    this.iceRestart = false;
+
     // We also allow a 'logger' option. It can be any object that implements
     // log, warn, and error methods.
     // We log nothing by default, following "the rule of silence":
@@ -80,13 +82,25 @@ function SimpleWebRTC(opts) {
     });
 
     connection.on('message', function (message) {
-        var peers = self.webrtc.getPeers(message.from, message.roomType);
-        var peer;
+        var peers, peer;
+        if (message.iceRestart) {
+            peers = self.webrtc.getPeers(message.oldSessionId, message.roomType);
+
+            self.iceRestart = true;
+        }
+        else{
+            peers = self.webrtc.getPeers(message.from, message.roomType);
+        }
 
         if (message.type === 'offer') {
             if (peers.length) {
                 peers.forEach(function (p) {
-                    if (p.sid == message.sid) peer = p;
+                    if (p.sid == message.sid) {
+                        peer = p;
+                        if (message.iceRestart) {
+                            self.webrtc.updatePeerId(peer, message.from);
+                        }
+                    }
                 });
                 //if (!peer) peer = peers[0]; // fallback for old protocol versions
             }
@@ -246,6 +260,14 @@ function SimpleWebRTC(opts) {
         if (data.type == 'volume') {
             self.emit('remoteVolumeChange', peer, data.volume);
         }
+    });
+
+    this.webrtc.on('iceRestart', function() {
+        self.connection.emit('join', self.roomName, function(err, roomDescription) {
+            if(err) {
+                self.emit('error', err)
+            }
+        });
     });
 
     if (this.config.autoRequestMedia) this.startLocalVideo();

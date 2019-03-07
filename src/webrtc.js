@@ -122,6 +122,10 @@ WebRTC.prototype.createPeer = function (opts) {
     return peer;
 };
 
+WebRTC.prototype.updatePeerId = function(peer, sessionId) {
+    peer.id = sessionId;
+};
+
 // removes peers
 WebRTC.prototype.removePeers = function (id, type) {
     this.getPeers(id, type).forEach(function (peer) {
